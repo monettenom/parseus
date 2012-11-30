@@ -48,7 +48,7 @@ void tToken::SetName(const char* strName)
     m_bNameSet = true;
 };
 
-tToken& tToken::operator=(tToken& token)
+tToken& tToken::operator=(const tToken& token)
 {
     m_Token = token.m_Token;
     m_strName = token.m_strName;

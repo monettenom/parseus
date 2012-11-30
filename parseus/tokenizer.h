@@ -26,7 +26,7 @@ struct tToken
 
     void SetName(const char* strName);
     void SetName(const char* strName, int iLen);
-    tToken& operator=(tToken& token);
+    tToken& operator=(const tToken& token);
 
     static void SetStringMem(cStringMem* pStringMem);
     static cStringMem* s_pStringMem;
