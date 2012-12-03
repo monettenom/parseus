@@ -2,6 +2,7 @@
 #include "stdafx.h"
 #include "cpp_tokenprinter.h"
 #include "time.h"
+#include <sstream>
 
 using namespace std;
 
@@ -55,14 +56,61 @@ tTestData sTestData[] =
   },
   // keywords C++11
   {
-    "alignas alignof char16_t char32_t constexpr decltype noexcept nullptr static_assert thread_local",
-    10,
+    "alignas alignof char16_t char32_t constexpr decltype noexcept final nullptr override static_assert thread_local",
+    12,
     true,
     {""},
-    {TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD,
+    {TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD,
+    TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD},
+    {KW_11_ALIGNAS, KW_11_ALIGNOF, KW_11_CHAR16_T, KW_11_CHAR32_T, KW_11_CONSTEXPR, KW_11_DECLTYPE, 
+     KW_11_NOEXCEPT, KW_11_FINAL, KW_11_NULLPTR, KW_11_OVERRIDE, KW_11_STATIC_ASSERT, KW_11_THREAD_LOCAL}
+  },
+  // assignment operators
+  {
+    "= += -= *= /= %= &= |= ^= <<= >>=",
+    11,
+    true,
+    {""},
+    {TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR,
+     TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR},
+    {OP_ASSIGNMENT, OP_SUM_ASSIGNMENT, OP_DIFFERENCE_ASSIGNMENT, OP_PRODUCT_ASSIGNMENT, OP_QUOTIENT_ASSIGNMENT,
+     OP_REMAINDER_ASSIGNMENT, OP_AND_ASSIGNMENT, OP_OR_ASSIGNMENT, OP_XOR_ASSIGNMENT, OP_SHIFT_LEFT_ASSIGNMENT,
+     OP_SHIFT_RIGHT_ASSIGNMENT
+    }
+  },
+  // arithmetic operators
+  {
+    "+ - * / % ~ & | ^ << >> ++ --",
+    13,
+    true,
+    {""},
+    {TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR,
+    TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR},
+    {OP_ADDITION, OP_SUBTRACTION, OP_ASTERISK, OP_DIVIDE, OP_MODULUS, OP_COMPLEMENT, OP_BITWISE_AND, 
+     OP_BITWISE_OR, OP_BITWISE_XOR, OP_SHIFT_LEFT, OP_SHIFT_RIGHT, OP_INCREMENT, OP_DECREMENT}
+  },
+  // logical and comparison operators
+  {
+    "! && || == != < > <= >=",
+    9,
+    true,
+    {""},
+    {TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, 
+     TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR},
+    {OP_LOGICAL_NOT, OP_LOGICAL_AND, OP_LOGICAL_OR, OP_EQUAL, OP_NOT_EQUAL, 
+     OP_SMALLER, OP_BIGGER, OP_SMALLER_OR_EQUAL, OP_BIGGER_OR_EQUAL}
+  },
+  // alternative operators
+  {
+    "and and_eq bitand bitor compl not not_eq or or_eq xor xor_eq",
+    11,
+    true,
+    {""},
+    //TODO: Token should be better TOKEN_OPERATOR
+    {TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD,
      TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD},
-    {KW_11_ALIGNAS, KW_11_ALIGNOF, KW_11_CHAR16_T, KW_11_CHAR32_T, KW_11_CONSTEXPR, 
-     KW_11_DECLTYPE, KW_11_NOEXCEPT, KW_11_NULLPTR, KW_11_STATIC_ASSERT, KW_11_THREAD_LOCAL}
+    {OP_LOGICAL_AND, OP_AND_ASSIGNMENT, OP_BITWISE_AND, OP_BITWISE_OR, OP_COMPLEMENT, OP_LOGICAL_NOT,
+     OP_NOT_EQUAL, OP_LOGICAL_OR, OP_OR_ASSIGNMENT, OP_BITWISE_XOR, OP_XOR_ASSIGNMENT}
   },
   {
     "int a = 1;", 
@@ -182,6 +230,7 @@ void cTestCPPTokenizer::HandleError(const char* strError, int iLine)
 
 void cTestCPPTokenizer::LogEntry(const char* strLog)
 {
+  std::cout << strLog << std::endl;
 }
 
 int cTestCPPTokenizer::GetTokenCount()
@@ -206,10 +255,15 @@ bool cTestCPPTokenizer::Test(tTestData* pTestData)
 
 int cTestCPPTokenizer::RunTests()
 {
+  std::stringstream strLog;
+
   int m_nTestCount = 0;
   int nResult = 0;
   for (int nTestCase = 0; sTestData[nTestCase].m_nExpectedTokens != -1; nTestCase++)
   {
+    strLog.str("");
+    strLog << "Running test case " << (nTestCase + 1);
+    LogEntry(strLog.str().c_str());
     nResult += Test(&sTestData[nTestCase]) ? 0 : 1;
   }
   return nResult;

@@ -60,9 +60,11 @@ const char* g_OperatorString[OP_MAX] = {
   "OP_BITWISE_OR",
   "OP_XOR_ASSIGNMENT",
   "OP_BITWISE_XOR",
-  "OP_LOGICAL_BITWISE_NOT",
+  "OP_COMPLEMENT",
   "OP_COLON",
   "OP_SCOPE",
+  "OP_PRODUCT_ASSIGNMENT",
+  "OP_QUOTIENT_ASSIGNMENT"
 };
 
 tKeyword g_KeyWords[] = {
@@ -86,6 +88,8 @@ tKeyword g_KeyWords[] = {
   {"__int64", KW_TYPE_INT64},
   {"alignas", KW_11_ALIGNAS},
   {"alignof", KW_11_ALIGNOF},
+  {"and", OP_LOGICAL_AND},
+  {"and_eq", OP_AND_ASSIGNMENT},
   {"asm", KW_ASM},
   {"auto", KW_AUTO},
   {"bitand", OP_BITWISE_AND},
@@ -98,7 +102,7 @@ tKeyword g_KeyWords[] = {
   {"char16_t", KW_11_CHAR16_T},
   {"char32_t", KW_11_CHAR32_T},
   {"class", KW_CLASS},
-  {"compl", OP_LOGICAL_BITWISE_NOT},
+  {"compl", OP_COMPLEMENT},
   {"const", KW_TYPE_CONST},
   {"constexpr", KW_11_CONSTEXPR},
   {"const_cast", KW_CONST_CAST},
@@ -211,9 +215,11 @@ tKeyword g_Operators[] = {
     {"|", OP_BITWISE_OR},
     {"^=", OP_XOR_ASSIGNMENT},
     {"^", OP_BITWISE_XOR},
-    {"~", OP_LOGICAL_BITWISE_NOT},
+    {"~", OP_COMPLEMENT},
     {":", OP_COLON},
     {"::", OP_SCOPE},
+    {"*=", OP_PRODUCT_ASSIGNMENT},
+    {"/=", OP_QUOTIENT_ASSIGNMENT},
     {"unknown", OP_UNKNOWN}
 };
 
@@ -283,26 +289,6 @@ void cCPPTokenizer::PushToken(tToken& token)
   if (!m_pTokenHandler)
     return;
 
-  std::stringstream strLog;
-
-  if (token.m_bNameSet)
-  {
-    strLog << g_TokenString[token.m_Token] << " '" << token.m_strName << "' " << std::endl;
-  }
-  else if(token.m_Token == TOKEN_OPERATOR)
-  {
-    strLog << g_TokenString[token.m_Token] << ": " << g_OperatorString[token.m_Type] << std::endl;
-  }
-  else if(token.m_Token == TOKEN_KEYWORD)
-  {
-    strLog << "KEYWORD: " << GetKeywordString(token.m_Type) << std::endl;
-  }
-  else
-  {
-    strLog << g_TokenString[token.m_Token] << std::endl;
-  }
-
-  m_pTokenHandler->LogEntry(strLog.str().c_str());
   m_pTokenHandler->HandleToken(token);
 }
 
@@ -627,7 +613,7 @@ bool cCPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkip
   char c;
   bool bSlashFound = false;
 
-  strLog << std::endl << ++m_iLine << ": |" << strLine << "|" << std::endl << std::endl;
+  strLog << ++m_iLine << ": |" << strLine << "|";
   m_pTokenHandler->LogEntry(strLog.str().c_str());
 
   if (m_bBlockComment)
@@ -721,9 +707,15 @@ bool cCPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkip
         case ')': PushToken(TOKEN_OPERATOR, OP_BRACKET_CLOSE); break;
         case '[': PushToken(TOKEN_OPERATOR, OP_INDEX_OPEN); break;
         case ']': PushToken(TOKEN_OPERATOR, OP_INDEX_CLOSE); break;
-        case '*': PushToken(TOKEN_OPERATOR, OP_ASTERISK); break;
-        case '~': PushToken(TOKEN_OPERATOR, OP_LOGICAL_BITWISE_NOT); break;
-
+        case '~': PushToken(TOKEN_OPERATOR, OP_COMPLEMENT); break;
+        case '*': 
+          switch(*strLine)
+          {
+            case '=': PushToken(TOKEN_OPERATOR, OP_PRODUCT_ASSIGNMENT); strLine++; break;
+            default: PushToken(TOKEN_OPERATOR, OP_ASTERISK); break;
+          }
+          break;
+          
         case '+': //+, ++, += 
           switch(*strLine)
           {
@@ -868,6 +860,10 @@ bool cCPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkip
           if (!bSkipComments)
             PushToken(TOKEN_LINECOMMENT, strLine-2);
           return true;
+
+        case '=':
+          PushToken(TOKEN_OPERATOR, OP_QUOTIENT_ASSIGNMENT);
+          break;
 
         default:
           PushToken(TOKEN_OPERATOR, OP_DIVIDE);
