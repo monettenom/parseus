@@ -24,7 +24,7 @@ const char* g_OperatorString[OP_MAX] = {
   "OP_MEMBER_ACCESS",
   "OP_LIST",
   "OP_COMMAND_END",
-  "OP_TRINARY",
+  "OP_CONDITIONAL",
   "OP_BRACKET_OPEN", 
   "OP_BRACKET_CLOSE", 
   "OP_INDEX_OPEN",
@@ -64,7 +64,10 @@ const char* g_OperatorString[OP_MAX] = {
   "OP_COLON",
   "OP_SCOPE",
   "OP_PRODUCT_ASSIGNMENT",
-  "OP_QUOTIENT_ASSIGNMENT"
+  "OP_QUOTIENT_ASSIGNMENT",
+  "OP_POINTER_DEREFERNCE",
+  "OP_MEMBER_ACCESS_DEREFERENCE",
+  "OP_ELLIPSIS"
 };
 
 tKeyword g_KeyWords[] = {
@@ -179,7 +182,7 @@ tKeyword g_Operators[] = {
     {".", OP_MEMBER_ACCESS},
     {",", OP_LIST},
     {";", OP_COMMAND_END},
-    {"?", OP_TRINARY},
+    {"?", OP_CONDITIONAL},
     {"(", OP_BRACKET_OPEN},
     {")", OP_BRACKET_CLOSE},
     {"[", OP_INDEX_OPEN},
@@ -220,6 +223,9 @@ tKeyword g_Operators[] = {
     {"::", OP_SCOPE},
     {"*=", OP_PRODUCT_ASSIGNMENT},
     {"/=", OP_QUOTIENT_ASSIGNMENT},
+    {"->*", OP_POINTER_DEREFERNCE},
+    {".*", OP_MEMBER_ACCESS_DEREFERENCE},
+    {"...", OP_ELLIPSIS},
     {"unknown", OP_UNKNOWN}
 };
 
@@ -699,10 +705,24 @@ bool cCPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkip
         case '{': PushToken(TOKEN_BLOCK_BEGIN); break;
         case '}': PushToken(TOKEN_BLOCK_END); break;
 
-        case '.': PushToken(TOKEN_OPERATOR, OP_MEMBER_ACCESS); break;
+        case '.': 
+          switch(*strLine)
+          {
+            case '*': PushToken(TOKEN_OPERATOR, OP_MEMBER_ACCESS_DEREFERENCE); strLine++; break;
+            case '.':
+              if (strLine[1] == '.')
+              {
+                PushToken(TOKEN_OPERATOR, OP_ELLIPSIS); 
+                strLine += 2;
+              }
+              break;
+            default: PushToken(TOKEN_OPERATOR, OP_MEMBER_ACCESS); break;
+          }
+          break;
+
         case ',': PushToken(TOKEN_OPERATOR, OP_LIST); break;
         case ';': PushToken(TOKEN_OPERATOR, OP_COMMAND_END); break;
-        case '?': PushToken(TOKEN_OPERATOR, OP_TRINARY); break;
+        case '?': PushToken(TOKEN_OPERATOR, OP_CONDITIONAL); break;
         case '(': PushToken(TOKEN_OPERATOR, OP_BRACKET_OPEN); break;
         case ')': PushToken(TOKEN_OPERATOR, OP_BRACKET_CLOSE); break;
         case '[': PushToken(TOKEN_OPERATOR, OP_INDEX_OPEN); break;
@@ -730,7 +750,16 @@ bool cCPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkip
           {
             case '-': PushToken(TOKEN_OPERATOR, OP_DECREMENT); strLine++; break;
             case '=': PushToken(TOKEN_OPERATOR, OP_DIFFERENCE_ASSIGNMENT); strLine++; break;
-            case '>': PushToken(TOKEN_OPERATOR, OP_POINTER); strLine++; break;
+            case '>': 
+            {
+              strLine++; 
+              switch(*strLine)
+              {
+                case '*': PushToken(TOKEN_OPERATOR, OP_POINTER_DEREFERNCE); strLine++; break;
+                default: PushToken(TOKEN_OPERATOR, OP_POINTER); break;
+              }
+            }
+            break;
             default: PushToken(TOKEN_OPERATOR, OP_SUBTRACTION); break;
           }
           break;

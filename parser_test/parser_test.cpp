@@ -21,8 +21,8 @@ tTestData sTestData[] =
   // types
   {
     "bool char short int long float double wchar_t signed unsigned", 
-      10,
-      true,
+    10,
+    true,
     {""},
     {TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, 
      TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, -1},
@@ -35,8 +35,8 @@ tTestData sTestData[] =
     "extern false for friend goto if inline mutable namespace new operator private protected public register "
     "reinterpret_cast return sizeof static static_cast struct switch template this throw true try typedef typeid typename "
     "union using virtual void volatile while", 
-      53,
-      true,
+    53,
+    true,
     {""},
     {TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, 
      TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, 
@@ -100,6 +100,26 @@ tTestData sTestData[] =
     {OP_LOGICAL_NOT, OP_LOGICAL_AND, OP_LOGICAL_OR, OP_EQUAL, OP_NOT_EQUAL, 
      OP_SMALLER, OP_BIGGER, OP_SMALLER_OR_EQUAL, OP_BIGGER_OR_EQUAL}
   },
+  // member access operators
+  {
+    "[] -> . ->* .* ::",
+    7,
+    true,
+    {""},
+    {TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, 
+     TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR},
+    {OP_INDEX_OPEN, OP_INDEX_CLOSE, OP_POINTER, OP_MEMBER_ACCESS, 
+     OP_POINTER_DEREFERNCE, OP_MEMBER_ACCESS_DEREFERENCE, OP_SCOPE}
+  },
+  // misc operators
+  {
+    "?: ... , (){}",
+    8, 
+    true,
+    {""},
+    {TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_BLOCK_BEGIN, TOKEN_BLOCK_END},
+    {OP_CONDITIONAL, OP_COLON, OP_ELLIPSIS, OP_LIST, OP_BRACKET_OPEN, OP_BRACKET_CLOSE, OP_UNKNOWN, OP_UNKNOWN}
+  },
   // alternative operators
   {
     "and and_eq bitand bitor compl not not_eq or or_eq xor xor_eq",
@@ -112,10 +132,19 @@ tTestData sTestData[] =
     {OP_LOGICAL_AND, OP_AND_ASSIGNMENT, OP_BITWISE_AND, OP_BITWISE_OR, OP_COMPLEMENT, OP_LOGICAL_NOT,
      OP_NOT_EQUAL, OP_LOGICAL_OR, OP_OR_ASSIGNMENT, OP_BITWISE_XOR, OP_XOR_ASSIGNMENT}
   },
+  // preprocessor
+  {
+    "#define xyz(a) fc(a)",
+    1,
+    true,
+    {"define xyz(a) fc(a)"},
+    {TOKEN_PREPROC},
+    {OP_UNKNOWN}
+  },
   {
     "int a = 1;", 
-      8,
-      false,
+    8,
+    false,
     {"", " ", "a", " ", "", " ", "1", ""},
     {TOKEN_KEYWORD, TOKEN_WHITESPACE, TOKEN_LABEL, TOKEN_WHITESPACE, TOKEN_OPERATOR, TOKEN_WHITESPACE, TOKEN_LITERAL, TOKEN_OPERATOR, -1},
     {KW_TYPE_INT, OP_UNKNOWN, OP_UNKNOWN, OP_UNKNOWN, OP_ASSIGNMENT, OP_UNKNOWN, OP_UNKNOWN, OP_COMMAND_END}
@@ -198,6 +227,7 @@ void cTestCPPTokenizer::HandleToken(tToken& oToken)
       }
       break;
 
+      case TOKEN_PREPROC:
       case TOKEN_WHITESPACE:
       case TOKEN_LITERAL:
       case TOKEN_LABEL:
@@ -208,7 +238,12 @@ void cTestCPPTokenizer::HandleToken(tToken& oToken)
       case TOKEN_MULTILINE_STRING:
       {
         if (strcmp(oToken.m_strName, m_pTestData->m_pNameList[m_nTokenCount]) != 0)
+        {
+          stringstream strMessage;
+          strMessage << "expected: \"" << m_pTestData->m_pNameList[m_nTokenCount] << "\", result: \"" << oToken.m_strName << "\"";
+          HandleError(strMessage.str().c_str(), m_nTokenCount);
           m_bResult = false;
+        }
       }
       break;
 
