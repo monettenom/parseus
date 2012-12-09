@@ -132,6 +132,53 @@ tTestData sTestData[] =
     {OP_LOGICAL_AND, OP_AND_ASSIGNMENT, OP_BITWISE_AND, OP_BITWISE_OR, OP_COMPLEMENT, OP_LOGICAL_NOT,
      OP_NOT_EQUAL, OP_LOGICAL_OR, OP_OR_ASSIGNMENT, OP_BITWISE_XOR, OP_XOR_ASSIGNMENT}
   },
+  // integer literals with type suffix
+  {
+    "1 2l 3u 4ul 5ll 6ull 2L 3U 4UL 5LL 6ULL",
+    11,
+    true,
+    {"1", "2l", "3u", "4ul", "5ll", "6ull", "2L", "3U", "4UL", "5LL", "6ULL"},
+    {TOKEN_LITERAL, TOKEN_LITERAL, TOKEN_LITERAL, TOKEN_LITERAL, TOKEN_LITERAL, TOKEN_LITERAL,
+     TOKEN_LITERAL, TOKEN_LITERAL, TOKEN_LITERAL, TOKEN_LITERAL, TOKEN_LITERAL},
+    {OP_UNKNOWN, OP_UNKNOWN, OP_UNKNOWN, OP_UNKNOWN, OP_UNKNOWN, OP_UNKNOWN, 
+     OP_UNKNOWN, OP_UNKNOWN, OP_UNKNOWN, OP_UNKNOWN, OP_UNKNOWN}
+  },
+  // octal and hexadecimal
+  {
+    "01 -07 0x1 0xabcd 0xFEDCBA",
+    6,
+    true,
+    {"01", "", "07", "0x1", "0xabcd", "0xFEDCBA"},
+    {TOKEN_LITERAL, TOKEN_OPERATOR, TOKEN_LITERAL, TOKEN_LITERAL, TOKEN_LITERAL, TOKEN_LITERAL},
+    {OP_UNKNOWN, OP_SUBTRACTION, OP_UNKNOWN, OP_UNKNOWN, OP_UNKNOWN, OP_UNKNOWN}
+  },
+  // floating point numbers
+  {
+    "1.23456e-65 .1E4f 58. 4e2 1.6e-19 6.02e23f 3.14159L",
+    7,
+    true,
+    {"1.23456e-65", ".1E4f", "58.", "4e2", "1.6e-19", "6.02e23f", "3.14159L"},
+    {TOKEN_LITERAL, TOKEN_LITERAL, TOKEN_LITERAL, TOKEN_LITERAL, TOKEN_LITERAL, TOKEN_LITERAL, TOKEN_LITERAL},
+    {OP_UNKNOWN, OP_UNKNOWN, OP_UNKNOWN, OP_UNKNOWN, OP_UNKNOWN, OP_UNKNOWN, OP_UNKNOWN}
+  },
+  // string literals
+  {
+    "\"test\" \"two\nlines\" L\"wide chars\"",
+    3,
+    true,
+    {"\"test\"", "\"two\nlines\"", "L\"wide chars\""},
+    {TOKEN_STRING, TOKEN_STRING, TOKEN_STRING},
+    {OP_UNKNOWN, OP_UNKNOWN, OP_UNKNOWN}
+  },
+  // character literals
+  {
+    "'a''b''\n' '\x20'",
+    4,
+    true,
+    {"'a'", "'b'", "'\n'", "'\x20'"},
+    {TOKEN_CHAR, TOKEN_CHAR, TOKEN_CHAR, TOKEN_CHAR},
+    {OP_UNKNOWN, OP_UNKNOWN, OP_UNKNOWN, OP_UNKNOWN}
+  },
   // preprocessor
   {
     "#define xyz(a) fc(a)",
@@ -140,6 +187,26 @@ tTestData sTestData[] =
     {"define xyz(a) fc(a)"},
     {TOKEN_PREPROC},
     {OP_UNKNOWN}
+  },
+  // digraphs
+  {
+    "<% %> <: :> %:define x y",
+    5,
+    true,
+    {"", "", "", "", "define x y"},
+    {TOKEN_BLOCK_BEGIN, TOKEN_BLOCK_END, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_PREPROC},
+    {OP_UNKNOWN, OP_UNKNOWN, OP_INDEX_OPEN, OP_INDEX_CLOSE, OP_UNKNOWN}
+  },
+  // trigraphs
+  {
+    "??< ??> ??( ??) ??' ??! ??- ??=", // '??/' is equivalent to \ and must be handled like this
+    8,
+    true,
+    {"", "", "", "", "", "", "", ""},
+    {TOKEN_BLOCK_BEGIN, TOKEN_BLOCK_END, TOKEN_OPERATOR, TOKEN_OPERATOR, 
+     TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_PREPROC},
+    {OP_UNKNOWN, OP_UNKNOWN, OP_INDEX_OPEN, OP_INDEX_CLOSE, 
+     OP_BITWISE_XOR, OP_BITWISE_OR, OP_COMPLEMENT, OP_UNKNOWN}
   },
   {
     "int a = 1;", 
@@ -210,7 +277,10 @@ void cTestCPPTokenizer::HandleToken(tToken& oToken)
   if (oToken.m_Token != m_pTestData->m_pTokenList[m_nTokenCount])
   {
     m_bResult = false;
-    HandleError("Token mismatch", m_nTokenCount);
+    stringstream strMessage;
+    strMessage << "Token mismatch! Expected: " << m_Tokenizer.GetTokenString(m_pTestData->m_pTokenList[m_nTokenCount]) << 
+                                   " result: " << m_Tokenizer.GetTokenString(oToken.m_Token);
+    HandleError(strMessage.str().c_str(), m_nTokenCount);
   }
   else
   {
@@ -234,6 +304,7 @@ void cTestCPPTokenizer::HandleToken(tToken& oToken)
       case TOKEN_COMMENT:
       case TOKEN_LINECOMMENT:
       case TOKEN_STRING:
+      case TOKEN_CHAR:
       case TOKEN_NUMBER:
       case TOKEN_MULTILINE_STRING:
       {
@@ -247,10 +318,9 @@ void cTestCPPTokenizer::HandleToken(tToken& oToken)
       }
       break;
 
-      case TOKEN_CHAR:
       case TOKEN_BLOCK_BEGIN:
       case TOKEN_BLOCK_END:
-      break;
+        break;
 
     }
   }
@@ -290,17 +360,21 @@ bool cTestCPPTokenizer::Test(tTestData* pTestData)
 
 int cTestCPPTokenizer::RunTests()
 {
-  std::stringstream strLog;
-
-  int m_nTestCount = 0;
+  int nTokenCount = 0;
   int nResult = 0;
   for (int nTestCase = 0; sTestData[nTestCase].m_nExpectedTokens != -1; nTestCase++)
   {
-    strLog.str("");
+    std::stringstream strLog;
     strLog << "Running test case " << (nTestCase + 1);
     LogEntry(strLog.str().c_str());
     nResult += Test(&sTestData[nTestCase]) ? 0 : 1;
+    nTokenCount += sTestData[nTestCase].m_nExpectedTokens;
   }
+
+  std::stringstream strLog;
+  strLog << "Tokens checked: " << nTokenCount;
+  LogEntry(strLog.str().c_str());
+
   return nResult;
 }
 

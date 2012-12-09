@@ -184,6 +184,7 @@ public:
 
   void AddKeywords(tKeyword* pKeywords);
   void AddOperators(tKeyword* pKeywords); 
+  const char* GetTokenString(int nToken);
   const char* GetKeywordString(int type);
   const char* GetOperatorString(int type);
 

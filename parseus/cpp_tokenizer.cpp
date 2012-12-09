@@ -381,6 +381,11 @@ const char* cCPPTokenizer::HandlePreProc(const char* strLine)
     m_strBuffer = strLine;
     m_bConcatPreProc = true;
   }
+  else if ((iLen >= 3) && (strcmp(strLine + iLen-3, "?""?""/") == 0)) // trigraphs will also be handled inside strings
+  {
+    m_strBuffer = strLine;
+    m_bConcatPreProc = true;
+  }
   else
   {
     PushToken(TOKEN_PREPROC, strLine);
@@ -469,6 +474,15 @@ int cCPPTokenizer::IsKeyword(const char* strLabel)
     return it->second;
   }
   return KW_UNKNOWN;
+}
+
+const char* cCPPTokenizer::GetTokenString(int nToken)
+{
+  if (nToken < TOKEN_MAX)
+  {
+    return g_TokenString[nToken];
+  }
+  return "unknown";
 }
 
 const char* cCPPTokenizer::GetKeywordString(int type)
@@ -604,6 +618,13 @@ const char* cCPPTokenizer::ParseLiteral(const char* strLine)
       case 'l':
       case 'L':
         strCrsr++;
+        switch (*strCrsr) // c++11: ll & ull
+        {
+        case 'l':
+        case 'L':
+          strCrsr++;
+          break;
+        }
         break;
       }
       break;
@@ -716,13 +737,44 @@ bool cCPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkip
                 strLine += 2;
               }
               break;
+            case '0': case '1': case '2': case '3': case '4':
+            case '5': case '6': case '7': case '8': case '9':
+              strLine = ParseLiteral(strLine-1);
+              if (strLine == NULL)
+                return false;
+              break;
             default: PushToken(TOKEN_OPERATOR, OP_MEMBER_ACCESS); break;
           }
           break;
 
         case ',': PushToken(TOKEN_OPERATOR, OP_LIST); break;
         case ';': PushToken(TOKEN_OPERATOR, OP_COMMAND_END); break;
-        case '?': PushToken(TOKEN_OPERATOR, OP_CONDITIONAL); break;
+        case '?': 
+          switch(*strLine)
+          {
+            case '?':
+              strLine++;
+              switch(*strLine)
+              {
+                case '<': PushToken(TOKEN_BLOCK_BEGIN); strLine++; break;
+                case '>': PushToken(TOKEN_BLOCK_END); strLine++; break;
+                case '(': PushToken(TOKEN_OPERATOR, OP_INDEX_OPEN); strLine++; break;
+                case ')': PushToken(TOKEN_OPERATOR, OP_INDEX_CLOSE); strLine++; break;
+                case '\'': PushToken(TOKEN_OPERATOR, OP_BITWISE_XOR); strLine++; break;
+                case '!':  PushToken(TOKEN_OPERATOR, OP_BITWISE_OR); strLine++; break;
+                case '-': PushToken(TOKEN_OPERATOR, OP_COMPLEMENT); strLine++; break;
+                case '=': 
+                  strLine++; 
+                  strLine = HandlePreProc(++strLine); 
+                  if (strLine == NULL)
+                    return true;
+                  break;
+                default: m_pTokenHandler->HandleError("unexpected character follows ?? (trigraph)", m_iLine); break;
+              }
+              break;
+            default: PushToken(TOKEN_OPERATOR, OP_CONDITIONAL); break;
+          }
+          break;
         case '(': PushToken(TOKEN_OPERATOR, OP_BRACKET_OPEN); break;
         case ')': PushToken(TOKEN_OPERATOR, OP_BRACKET_CLOSE); break;
         case '[': PushToken(TOKEN_OPERATOR, OP_INDEX_OPEN); break;
@@ -768,6 +820,12 @@ bool cCPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkip
           switch(*strLine)
           {
             case '=': PushToken(TOKEN_OPERATOR, OP_REMAINDER_ASSIGNMENT); strLine++; break;
+            case '>': PushToken(TOKEN_BLOCK_END); strLine++; break;
+            case ':':           
+              strLine = HandlePreProc(++strLine); 
+              if (strLine == NULL)
+                return true;
+              break;
             default: PushToken(TOKEN_OPERATOR, OP_MODULUS); break;
           }
           break;
@@ -792,6 +850,8 @@ bool cCPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkip
           switch(*strLine)
           {
             case '=': PushToken(TOKEN_OPERATOR, OP_SMALLER_OR_EQUAL); strLine++; break;
+            case '%': PushToken(TOKEN_BLOCK_BEGIN); strLine++; break;
+            case ':': PushToken(TOKEN_OPERATOR, OP_INDEX_OPEN); strLine++; break;
             case '<': 
               strLine++;
               switch(*strLine)
@@ -850,6 +910,7 @@ bool cCPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkip
           switch(*strLine)
           {
             case ':': PushToken(TOKEN_OPERATOR, OP_SCOPE); strLine++; break;
+            case '>': PushToken(TOKEN_OPERATOR, OP_INDEX_CLOSE); strLine++; break;
             default: PushToken(TOKEN_OPERATOR, OP_COLON); break;
           }
           break;

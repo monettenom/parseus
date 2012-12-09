@@ -35,6 +35,7 @@ struct tToken
 class ITokenizer
 {
 public:
+  virtual const char* GetTokenString(int nToken) = 0;
   virtual const char* GetKeywordString(int nKeyword) = 0;
   virtual const char* GetOperatorString(int type) = 0;
   virtual void Reset() = 0;
