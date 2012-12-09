@@ -428,11 +428,25 @@ const char* cCPPTokenizer::HandleString(const char* strLine, char cDelimiter, in
     if (strEnd == NULL)
     {
       int iLen = strlen(strLine)-1;
-      if (nToken == TOKEN_STRING && strLine[iLen] == '\\')
+      if (nToken == TOKEN_STRING)
       {
-        m_strBuffer.assign(strLine, iLen+1);
-        m_bMultiLineString = true;
-        return strLine + iLen + 1;
+        switch (strLine[iLen])
+        {
+          case '\\':
+            m_strBuffer.assign(strLine, iLen+1);
+            m_bMultiLineString = true;
+            return strLine + iLen + 1;
+          case '/':
+            if (strncmp(strLine + iLen-2, "?""?""/", 3) == 0)
+            {
+              m_strBuffer.assign(strLine, iLen+1);
+              m_bMultiLineString = true;
+              return strLine + iLen + 1;
+            }
+            break;
+          default: // continue
+            break;
+        }
       }
       strError << "ERROR: Missing end of string character " << *strLine << std::endl;
       m_pTokenHandler->HandleError(strError.str().c_str(), m_iLine);

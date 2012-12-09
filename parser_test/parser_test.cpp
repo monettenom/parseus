@@ -8,7 +8,7 @@ using namespace std;
 
 struct tTestData
 {
-  const char* m_strCode;
+  const char* m_strCode[128];
   const int m_nExpectedTokens;
   const bool m_bIgnoreWhitespace;
   const char* m_pNameList[128];
@@ -20,7 +20,7 @@ tTestData sTestData[] =
 {
   // types
   {
-    "bool char short int long float double wchar_t signed unsigned", 
+    {"bool char short int long float double wchar_t signed unsigned", NULL},
     10,
     true,
     {""},
@@ -31,10 +31,10 @@ tTestData sTestData[] =
   },
   // keywords
   {
-    "asm auto break case catch class const const_cast continue default delete do dynamic_cast else enum explicit export "
-    "extern false for friend goto if inline mutable namespace new operator private protected public register "
-    "reinterpret_cast return sizeof static static_cast struct switch template this throw true try typedef typeid typename "
-    "union using virtual void volatile while", 
+    {"asm auto break case catch class const const_cast continue default delete do dynamic_cast else enum explicit export",
+    "extern false for friend goto if inline mutable namespace new operator private protected public register",
+    "reinterpret_cast return sizeof static static_cast struct switch template this throw true try typedef typeid typename",
+    "union using virtual void volatile while", NULL}, 
     53,
     true,
     {""},
@@ -56,7 +56,7 @@ tTestData sTestData[] =
   },
   // keywords C++11
   {
-    "alignas alignof char16_t char32_t constexpr decltype noexcept final nullptr override static_assert thread_local",
+    {"alignas alignof char16_t char32_t constexpr decltype noexcept final nullptr override static_assert thread_local", NULL},
     12,
     true,
     {""},
@@ -67,7 +67,7 @@ tTestData sTestData[] =
   },
   // assignment operators
   {
-    "= += -= *= /= %= &= |= ^= <<= >>=",
+    {"= += -= *= /= %= &= |= ^= <<= >>=", NULL},
     11,
     true,
     {""},
@@ -80,7 +80,7 @@ tTestData sTestData[] =
   },
   // arithmetic operators
   {
-    "+ - * / % ~ & | ^ << >> ++ --",
+    {"+ - * / % ~ & | ^ << >> ++ --", NULL},
     13,
     true,
     {""},
@@ -91,7 +91,7 @@ tTestData sTestData[] =
   },
   // logical and comparison operators
   {
-    "! && || == != < > <= >=",
+    {"! && || == != < > <= >=", NULL},
     9,
     true,
     {""},
@@ -102,7 +102,7 @@ tTestData sTestData[] =
   },
   // member access operators
   {
-    "[] -> . ->* .* ::",
+    {"[] -> . ->* .* ::", NULL},
     7,
     true,
     {""},
@@ -113,7 +113,7 @@ tTestData sTestData[] =
   },
   // misc operators
   {
-    "?: ... , (){}",
+    {"?: ... , (){}", NULL}, 
     8, 
     true,
     {""},
@@ -122,7 +122,7 @@ tTestData sTestData[] =
   },
   // alternative operators
   {
-    "and and_eq bitand bitor compl not not_eq or or_eq xor xor_eq",
+    {"and and_eq bitand bitor compl not not_eq or or_eq xor xor_eq", NULL}, 
     11,
     true,
     {""},
@@ -134,7 +134,7 @@ tTestData sTestData[] =
   },
   // integer literals with type suffix
   {
-    "1 2l 3u 4ul 5ll 6ull 2L 3U 4UL 5LL 6ULL",
+    {"1 2l 3u 4ul 5ll 6ull 2L 3U 4UL 5LL 6ULL", NULL}, 
     11,
     true,
     {"1", "2l", "3u", "4ul", "5ll", "6ull", "2L", "3U", "4UL", "5LL", "6ULL"},
@@ -145,7 +145,7 @@ tTestData sTestData[] =
   },
   // octal and hexadecimal
   {
-    "01 -07 0x1 0xabcd 0xFEDCBA",
+    {"01 -07 0x1 0xabcd 0xFEDCBA", NULL}, 
     6,
     true,
     {"01", "", "07", "0x1", "0xabcd", "0xFEDCBA"},
@@ -154,7 +154,7 @@ tTestData sTestData[] =
   },
   // floating point numbers
   {
-    "1.23456e-65 .1E4f 58. 4e2 1.6e-19 6.02e23f 3.14159L",
+    {"1.23456e-65 .1E4f 58. 4e2 1.6e-19 6.02e23f 3.14159L", NULL}, 
     7,
     true,
     {"1.23456e-65", ".1E4f", "58.", "4e2", "1.6e-19", "6.02e23f", "3.14159L"},
@@ -163,16 +163,25 @@ tTestData sTestData[] =
   },
   // string literals
   {
-    "\"test\" \"two\nlines\" L\"wide chars\"",
-    3,
+    {"\"test\" \"two\nlines\" L\"wide chars\"", 
+     "\"multi\\",
+     "line\"",
+     "\"digraph-""?""?""/",
+     "test\"",
+     "\"multiwrap 1st line\\",
+     "second line\\",
+     "third line\"",
+     NULL}, 
+    6,
     true,
-    {"\"test\"", "\"two\nlines\"", "L\"wide chars\""},
-    {TOKEN_STRING, TOKEN_STRING, TOKEN_STRING},
-    {OP_UNKNOWN, OP_UNKNOWN, OP_UNKNOWN}
+    {"\"test\"", "\"two\nlines\"", "L\"wide chars\"", "\"multi\\\nline\"", "\"digraph-""?""?""/""\ntest\"",
+     "\"multiwrap 1st line\\\nsecond line\\\nthird line\""},
+    {TOKEN_STRING, TOKEN_STRING, TOKEN_STRING, TOKEN_MULTILINE_STRING, TOKEN_MULTILINE_STRING, TOKEN_MULTILINE_STRING},
+    {OP_UNKNOWN, OP_UNKNOWN, OP_UNKNOWN, OP_UNKNOWN, OP_UNKNOWN, OP_UNKNOWN}
   },
   // character literals
   {
-    "'a''b''\n' '\x20'",
+    {"'a''b''\n' '\x20'", NULL}, 
     4,
     true,
     {"'a'", "'b'", "'\n'", "'\x20'"},
@@ -181,16 +190,23 @@ tTestData sTestData[] =
   },
   // preprocessor
   {
-    "#define xyz(a) fc(a)",
-    1,
+    {"#define xyz(a) fc(a)", 
+     "#define wrap(x) 1st line \\",
+     "second line",
+     "#define multiwrap(x) 1st line \\",
+     "second line \\",
+     "third line",
+      NULL}, 
+    3,
     true,
-    {"define xyz(a) fc(a)"},
-    {TOKEN_PREPROC},
-    {OP_UNKNOWN}
+    {"define xyz(a) fc(a)", "define wrap(x) 1st line \\\nsecond line",
+     "define multiwrap(x) 1st line \\\nsecond line \\\nthird line"},
+    {TOKEN_PREPROC, TOKEN_PREPROC, TOKEN_PREPROC},
+    {OP_UNKNOWN, OP_UNKNOWN, OP_UNKNOWN}
   },
   // digraphs
   {
-    "<% %> <: :> %:define x y",
+    {"<% %> <: :> %:define x y", NULL}, 
     5,
     true,
     {"", "", "", "", "define x y"},
@@ -199,7 +215,8 @@ tTestData sTestData[] =
   },
   // trigraphs
   {
-    "??< ??> ??( ??) ??' ??! ??- ??=", // '??/' is equivalent to \ and must be handled like this
+    {"??< ??> ??( ??) ??' ??! ??- ??=", // '??/' is equivalent to \ and is tested with macros and strings
+      NULL},
     8,
     true,
     {"", "", "", "", "", "", "", ""},
@@ -208,16 +225,9 @@ tTestData sTestData[] =
     {OP_UNKNOWN, OP_UNKNOWN, OP_INDEX_OPEN, OP_INDEX_CLOSE, 
      OP_BITWISE_XOR, OP_BITWISE_OR, OP_COMPLEMENT, OP_UNKNOWN}
   },
+  // stopping entry
   {
-    "int a = 1;", 
-    8,
-    false,
-    {"", " ", "a", " ", "", " ", "1", ""},
-    {TOKEN_KEYWORD, TOKEN_WHITESPACE, TOKEN_LABEL, TOKEN_WHITESPACE, TOKEN_OPERATOR, TOKEN_WHITESPACE, TOKEN_LITERAL, TOKEN_OPERATOR, -1},
-    {KW_TYPE_INT, OP_UNKNOWN, OP_UNKNOWN, OP_UNKNOWN, OP_ASSIGNMENT, OP_UNKNOWN, OP_UNKNOWN, OP_COMMAND_END}
-  },
-  {
-    "", -1, false, {""}, {-1}, {-1}
+    {NULL}, -1, false, {""}, {-1}, {-1}
   }
 };
 
@@ -354,7 +364,10 @@ bool cTestCPPTokenizer::Test(tTestData* pTestData)
 {
   m_nTestCount++;
   InitTest(pTestData);
-  m_Tokenizer.Parse(pTestData->m_strCode); 
+  for (int i = 0; pTestData->m_strCode[i] != NULL; i++)
+  {
+    m_Tokenizer.Parse(pTestData->m_strCode[i]); 
+  }
   return m_bResult && pTestData->m_nExpectedTokens == m_nTokenCount;
 }
 
