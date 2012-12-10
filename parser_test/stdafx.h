@@ -7,13 +7,15 @@
 
 #include <stdio.h>
 #include <tchar.h>
-#include <iostream>
-#include <vector>
 #include <string>
-#include <sstream>
+#include <vector>
 #include <map>
+#include <sstream>
 #include <fstream>
+#include <iostream>
 
 #include "parseus.h"
+#include "testtokenhandler.h"
+#include "testcpptokenhandler.h"
 
 
