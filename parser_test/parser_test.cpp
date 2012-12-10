@@ -126,9 +126,8 @@ tTestData sTestData[] =
     11,
     true,
     {""},
-    //TODO: Token should be better TOKEN_OPERATOR
-    {TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD,
-     TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD},
+    {TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR,
+     TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR},
     {OP_LOGICAL_AND, OP_AND_ASSIGNMENT, OP_BITWISE_AND, OP_BITWISE_OR, OP_COMPLEMENT, OP_LOGICAL_NOT,
      OP_NOT_EQUAL, OP_LOGICAL_OR, OP_OR_ASSIGNMENT, OP_BITWISE_XOR, OP_XOR_ASSIGNMENT}
   },
@@ -194,13 +193,13 @@ tTestData sTestData[] =
      "#define wrap(x) 1st line \\",
      "second line",
      "#define multiwrap(x) 1st line \\",
-     "second line \\",
+     "second line ""?""?""/",
      "third line",
       NULL}, 
     3,
     true,
     {"define xyz(a) fc(a)", "define wrap(x) 1st line \\\nsecond line",
-     "define multiwrap(x) 1st line \\\nsecond line \\\nthird line"},
+     "define multiwrap(x) 1st line \\\nsecond line ""?""?""/""\nthird line"},
     {TOKEN_PREPROC, TOKEN_PREPROC, TOKEN_PREPROC},
     {OP_UNKNOWN, OP_UNKNOWN, OP_UNKNOWN}
   },

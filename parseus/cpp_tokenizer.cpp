@@ -404,6 +404,10 @@ const char* cCPPTokenizer::AppendPreProc(const char* strLine)
   {
     m_bConcatPreProc = true;
   }
+  else if ((iLen >= 3) && (strcmp(strLine + iLen-3, "?""?""/") == 0)) // trigraphs will also be handled inside strings
+  {
+    m_bConcatPreProc = true;
+  }
   else
   {
     PushToken(TOKEN_PREPROC, m_strBuffer.c_str());
@@ -538,7 +542,26 @@ const char* cCPPTokenizer::ParseLabel(const char* strLine)
   int kw = IsKeyword(strBuffer);
   if (kw != KW_UNKNOWN)
   {
-    PushToken(TOKEN_KEYWORD, kw);
+    // filter keywords which are operators (alternative operators)
+    switch (kw)
+    {
+      case OP_LOGICAL_AND:
+      case OP_AND_ASSIGNMENT:
+      case OP_BITWISE_AND:
+      case OP_BITWISE_OR:
+      case OP_COMPLEMENT:
+      case OP_LOGICAL_NOT:
+      case OP_NOT_EQUAL:
+      case OP_LOGICAL_OR:
+      case OP_OR_ASSIGNMENT:
+      case OP_BITWISE_XOR:
+      case OP_XOR_ASSIGNMENT:
+        PushToken(TOKEN_OPERATOR, kw);
+        break;
+      default:
+        PushToken(TOKEN_KEYWORD, kw);
+        break;
+    }    
   }
   else
   {
