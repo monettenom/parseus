@@ -5,7 +5,7 @@
 using namespace std;
 
 cTestCPPTokenHandler::cTestCPPTokenHandler()
-: m_Tokenizer(1<<20)
+: m_Tokenizer()
 , m_pTestData(NULL)
 , m_bResult(false)
 , m_nTestCount(0)

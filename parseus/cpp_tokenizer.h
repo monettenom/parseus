@@ -2,27 +2,6 @@
 
 #include "tokenizer.h"
 
-enum eCPPToken
-{
-  TOKEN_UNKNOWN = 0, // 0
-  TOKEN_COMMENT,     // 1
-  TOKEN_LINECOMMENT, // 2
-  TOKEN_NEWLINE,     // 3
-  TOKEN_WHITESPACE,  // 4
-  TOKEN_PREPROC,     // 5
-  TOKEN_LABEL,       // 6
-  TOKEN_LITERAL,     // 7
-  TOKEN_STRING,      // 8
-  TOKEN_MULTILINE_STRING, // 9
-  TOKEN_CHAR,        // 10
-  TOKEN_NUMBER,      // 11
-  TOKEN_OPERATOR,    // 12
-  TOKEN_BLOCK_BEGIN, // 13
-  TOKEN_BLOCK_END,   // 14
-  TOKEN_KEYWORD,     // 15
-  TOKEN_MAX         
-};
-
 enum eCPPTokenType
 {
   OP_UNKNOWN = 0,
@@ -76,23 +55,6 @@ enum eCPPTokenType
   OP_MAX,
 
   KW_UNKNOWN,
-  //KW_PP_DEFINE,
-  //KW_PP_UNDEF,
-  //KW_PP_IFDEF,
-  //KW_PP_IFNDEF,
-  //KW_PP_IF,
-  //KW_PP_ENDIF,
-  //KW_PP_ELSE,
-  //KW_PP_ELIF,
-  //KW_PP_INCLUDE,
-  //KW_PP_PRAGMA,
-  //KW_PP_LINE,
-  //KW_PP_ERROR,
-  //KW_PPM_LINE,
-  //KW_PPM_FILE,
-  //KW_PPM_DATE,
-  //KW_PPM_TIME,
-  //KW_PPM_CPLUSPLUS,
   KW_TYPE_INT64,
   KW_11_ALIGNAS,
   KW_11_ALIGNOF,
@@ -173,33 +135,15 @@ enum eCPPTokenType
   KW_USER,
 };
 
-class cCPPTokenizer: public ITokenizer
+class cCPPTokenizer: public cTokenizer
 {
 public:
-  cCPPTokenizer(int nStringBufferSize = 1 << 18);
+  cCPPTokenizer();
   ~cCPPTokenizer();
-
-  void Reset();
-  void SetTokenHandler(ITokenHandler* pTokenHandler);
-
-  void AddKeywords(tKeyword* pKeywords);
-  void AddOperators(tKeyword* pKeywords); 
-  const char* GetTokenString(int nToken);
-  const char* GetKeywordString(int type);
-  const char* GetOperatorString(int type);
 
   bool Parse(const char* strLine, bool bSkipWhiteSpaces = false, bool bSkipComments = false);
 
-  int GetLine() const;
-
 protected:
-  void PushEOL();
-
-  void PushToken(tToken& token);
-  void PushToken(int nToken);
-  void PushToken(int nTokenType, int opType);
-  void PushToken(int nTokenType, const char* strName, int iLen = 0);
-
   const char* HandleBlockComment(const char* strLine, bool bSkipComments = false);
   const char* HandleString(const char* strLine, char cDelimiter, int token);
   const char* HandlePreProc(const char* strLine);
@@ -209,24 +153,11 @@ protected:
   const char* ParseLabel(const char* strLine);
   const char* ParseLiteral(const char* strLine);
 
-  int IsKeyword(const char* strLabel);
-
 private:
   bool m_bBlockComment;
   bool m_bMultiLineString;
   bool m_bConcatPreProc;
-  int m_iLine;
 
-  typedef std::map<std::string, int> tKeywordMap;
-  tKeywordMap m_Keywords;
-  tKeywordMap m_Operators;
-
-  typedef std::map<int, std::string> tKeywordStringMap;
-  tKeywordStringMap m_KeywordStrings;
-  tKeywordStringMap m_OperatorStrings;
-
-  ITokenHandler* m_pTokenHandler;
-  cStringMem* m_pStringMem;
   std::string m_strBuffer;
 };
 

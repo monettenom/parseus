@@ -5,7 +5,6 @@ using namespace std;
 
 cCPPTokenPrinter::cCPPTokenPrinter()
 : m_iTokenCount(0)
-, m_Tokenizer(1<<20)
 {
   m_Tokenizer.SetTokenHandler(this);
 }

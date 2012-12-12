@@ -1,25 +1,7 @@
 #include "stdafx.h"
+#include "cpp_tokenizer.h"
 
-const char* g_TokenString[TOKEN_MAX] = {
-  "TOKEN_UNKNOWN",
-  "TOKEN_COMMENT",
-  "TOKEN_LINECOMMENT",
-  "TOKEN_NEWLINE",
-  "TOKEN_WHITESPACE",
-  "TOKEN_PREPROC",
-  "TOKEN_LABEL",
-  "TOKEN_LITERAL",
-  "TOKEN_STRING",
-  "TOKEN_MULTILINE_STRING",
-  "TOKEN_CHAR",
-  "TOKEN_NUMBER",
-  "TOKEN_OPERATOR",
-  "TOKEN_BLOCK_BEGIN",
-  "TOKEN_BLOCK_END",
-  "TOKEN_KEYWORD",
-};
-
-const char* g_OperatorString[OP_MAX] = {
+static const char* g_OperatorString[OP_MAX] = {
   "OP_UNKNOWN",
   "OP_MEMBER_ACCESS",
   "OP_LIST",
@@ -70,24 +52,7 @@ const char* g_OperatorString[OP_MAX] = {
   "OP_ELLIPSIS"
 };
 
-tKeyword g_KeyWords[] = {
-  //{"define", KW_PP_DEFINE},
-  //{"undef", KW_PP_UNDEF},
-  //{"ifdef", KW_PP_IFDEF},
-  //{"ifndef", KW_PP_IFNDEF},
-  //{"if", KW_PP_IF},
-  //{"endif", KW_PP_ENDIF},
-  //{"else", KW_PP_ELSE},
-  //{"elif", KW_PP_ELIF},
-  //{"include", KW_PP_INCLUDE},
-  //{"pragma", KW_PP_PRAGMA},
-  //{"line", KW_PP_LINE},
-  //{"error", KW_PP_ERROR},
-  //{"__LINE__", KW_PPM_LINE},
-  //{"__FILE__", KW_PPM_FILE},
-  //{"__DATE__", KW_PPM_DATE},
-  //{"__TIME__", KW_PPM_TIME},
-  //{"__cplusplus", KW_PPM_CPLUSPLUS},
+static tKeyword g_KeyWords[] = {
   {"__int64", KW_TYPE_INT64},
   {"alignas", KW_11_ALIGNAS},
   {"alignof", KW_11_ALIGNOF},
@@ -178,159 +143,71 @@ tKeyword g_KeyWords[] = {
   {"unknown", KW_UNKNOWN}
 };
 
-tKeyword g_Operators[] = {
-    {".", OP_MEMBER_ACCESS},
-    {",", OP_LIST},
-    {";", OP_COMMAND_END},
-    {"?", OP_CONDITIONAL},
-    {"(", OP_BRACKET_OPEN},
-    {")", OP_BRACKET_CLOSE},
-    {"[", OP_INDEX_OPEN},
-    {"]", OP_INDEX_CLOSE},
-    {"*", OP_ASTERISK},
-    {"++", OP_INCREMENT},
-    {"/", OP_DIVIDE},
-    {"+=", OP_SUM_ASSIGNMENT},
-    {"+", OP_ADDITION},
-    {"--", OP_DECREMENT}, 
-    {"-=", OP_DIFFERENCE_ASSIGNMENT},
-    {"-", OP_SUBTRACTION},
-    {"->", OP_POINTER},
-    {"%=", OP_REMAINDER_ASSIGNMENT},
-    {"%", OP_MODULUS},
-    {"==", OP_EQUAL},
-    {"=", OP_ASSIGNMENT},
-    {"!=", OP_NOT_EQUAL},
-    {"!", OP_LOGICAL_NOT},
-    {"<=", OP_SMALLER_OR_EQUAL},
-    {"<<", OP_SHIFT_LEFT},
-    {"<", OP_SMALLER}, 
-    {"<<=", OP_SHIFT_LEFT_ASSIGNMENT},
-    {">=", OP_BIGGER_OR_EQUAL},
-    {">>=", OP_SHIFT_RIGHT_ASSIGNMENT},
-    {">>", OP_SHIFT_RIGHT},
-    {">", OP_BIGGER},
-    {"&=", OP_AND_ASSIGNMENT},
-    {"&&", OP_LOGICAL_AND},
-    {"&", OP_BITWISE_AND},
-    {"|=", OP_OR_ASSIGNMENT},
-    {"||", OP_LOGICAL_OR},
-    {"|", OP_BITWISE_OR},
-    {"^=", OP_XOR_ASSIGNMENT},
-    {"^", OP_BITWISE_XOR},
-    {"~", OP_COMPLEMENT},
-    {":", OP_COLON},
-    {"::", OP_SCOPE},
-    {"*=", OP_PRODUCT_ASSIGNMENT},
-    {"/=", OP_QUOTIENT_ASSIGNMENT},
-    {"->*", OP_POINTER_DEREFERNCE},
-    {".*", OP_MEMBER_ACCESS_DEREFERENCE},
-    {"...", OP_ELLIPSIS},
-    {"unknown", OP_UNKNOWN}
+static tKeyword g_Operators[] = {
+  {".", OP_MEMBER_ACCESS},
+  {",", OP_LIST},
+  {";", OP_COMMAND_END},
+  {"?", OP_CONDITIONAL},
+  {"(", OP_BRACKET_OPEN},
+  {")", OP_BRACKET_CLOSE},
+  {"[", OP_INDEX_OPEN},
+  {"]", OP_INDEX_CLOSE},
+  {"*", OP_ASTERISK},
+  {"++", OP_INCREMENT},
+  {"/", OP_DIVIDE},
+  {"+=", OP_SUM_ASSIGNMENT},
+  {"+", OP_ADDITION},
+  {"--", OP_DECREMENT}, 
+  {"-=", OP_DIFFERENCE_ASSIGNMENT},
+  {"-", OP_SUBTRACTION},
+  {"->", OP_POINTER},
+  {"%=", OP_REMAINDER_ASSIGNMENT},
+  {"%", OP_MODULUS},
+  {"==", OP_EQUAL},
+  {"=", OP_ASSIGNMENT},
+  {"!=", OP_NOT_EQUAL},
+  {"!", OP_LOGICAL_NOT},
+  {"<=", OP_SMALLER_OR_EQUAL},
+  {"<<", OP_SHIFT_LEFT},
+  {"<", OP_SMALLER}, 
+  {"<<=", OP_SHIFT_LEFT_ASSIGNMENT},
+  {">=", OP_BIGGER_OR_EQUAL},
+  {">>=", OP_SHIFT_RIGHT_ASSIGNMENT},
+  {">>", OP_SHIFT_RIGHT},
+  {">", OP_BIGGER},
+  {"&=", OP_AND_ASSIGNMENT},
+  {"&&", OP_LOGICAL_AND},
+  {"&", OP_BITWISE_AND},
+  {"|=", OP_OR_ASSIGNMENT},
+  {"||", OP_LOGICAL_OR},
+  {"|", OP_BITWISE_OR},
+  {"^=", OP_XOR_ASSIGNMENT},
+  {"^", OP_BITWISE_XOR},
+  {"~", OP_COMPLEMENT},
+  {":", OP_COLON},
+  {"::", OP_SCOPE},
+  {"*=", OP_PRODUCT_ASSIGNMENT},
+  {"/=", OP_QUOTIENT_ASSIGNMENT},
+  {"->*", OP_POINTER_DEREFERNCE},
+  {".*", OP_MEMBER_ACCESS_DEREFERENCE},
+  {"...", OP_ELLIPSIS},
+  {"unknown", OP_UNKNOWN}
 };
 
 // cCPPTokenizer
 
-cCPPTokenizer::cCPPTokenizer(int nStringBufferSize)
-: m_pTokenHandler(NULL)
+cCPPTokenizer::cCPPTokenizer()
+: cTokenizer()
 , m_bBlockComment(false)
 , m_bMultiLineString(false)
 , m_bConcatPreProc(false)
-, m_iLine(0)
-, m_pStringMem(NULL)
 {
-  AddKeywords(g_KeyWords);
-  AddOperators(g_Operators);
-  m_pStringMem = new cStringMem(nStringBufferSize);
-  tToken::SetStringMem(m_pStringMem);
+  AddKeywords(g_KeyWords, KW_UNKNOWN);
+  AddOperators(g_Operators, OP_UNKNOWN);
 }
 
 cCPPTokenizer::~cCPPTokenizer()
 {
-  delete m_pStringMem;
-  m_pStringMem = NULL;
-}
-
-void cCPPTokenizer::Reset()
-{
-  if (m_pStringMem)
-    m_pStringMem->Reset();
-  m_iLine = 0;
-}
-
-int cCPPTokenizer::GetLine() const
-{
-  return m_iLine;
-}
-
-void cCPPTokenizer::SetTokenHandler(ITokenHandler* pTokenHandler)
-{
-  m_pTokenHandler = pTokenHandler;
-}
-
-void cCPPTokenizer::AddKeywords(tKeyword* pKeywords)
-{
-  tKeyword* pCrsr = pKeywords;
-  while (pCrsr->m_Type != KW_UNKNOWN)
-  {
-    m_Keywords.insert(std::pair<std::string, int>(pCrsr->m_strKeyword, pCrsr->m_Type));
-    m_KeywordStrings.insert(std::pair<int, std::string>(pCrsr->m_Type, pCrsr->m_strKeyword));
-    pCrsr++;
-  }
-}
-
-void cCPPTokenizer::AddOperators(tKeyword* pOperators)
-{
-  tKeyword* pCrsr = pOperators;
-  while (pCrsr->m_Type != OP_UNKNOWN)
-  {
-    m_Operators.insert(std::pair<std::string, int>(pCrsr->m_strKeyword, pCrsr->m_Type));
-    m_OperatorStrings.insert(std::pair<int, std::string>(pCrsr->m_Type, pCrsr->m_strKeyword));
-    pCrsr++;
-  }
-}
-
-void cCPPTokenizer::PushToken(tToken& token)
-{
-  if (!m_pTokenHandler)
-    return;
-
-  m_pTokenHandler->HandleToken(token);
-}
-
-void cCPPTokenizer::PushToken(int nToken)
-{
-  tToken token;
-  token.m_Token = nToken;
-  PushToken(token);
-}
-
-void cCPPTokenizer::PushEOL()
-{
-  PushToken(TOKEN_NEWLINE);
-}
-
-void cCPPTokenizer::PushToken(int nTokenType, int nOpType)
-{
-  tToken token;
-  token.m_Token = nTokenType;
-  token.m_Type = nOpType;
-  PushToken(token);
-}
-
-void cCPPTokenizer::PushToken(int nTokenType, const char* strName, int iLen)
-{
-  tToken token;
-  token.m_Token = nTokenType;
-  if (iLen == 0)
-  {
-    token.SetName(strName);
-  }
-  else
-  {
-    token.SetName(strName, iLen);
-  }
-  PushToken(token);
 }
 
 const char* cCPPTokenizer::HandleBlockComment(const char* strLine, bool bSkipComments)
@@ -453,7 +330,7 @@ const char* cCPPTokenizer::HandleString(const char* strLine, char cDelimiter, in
         }
       }
       strError << "ERROR: Missing end of string character " << *strLine << std::endl;
-      m_pTokenHandler->HandleError(strError.str().c_str(), m_iLine);
+      GetTokenHandler()->HandleError(strError.str().c_str(), GetLine());
       return NULL;
     }
     strCrsr = strEnd;
@@ -482,45 +359,6 @@ const char* cCPPTokenizer::AppendString(const char* strLine)
   m_strBuffer.clear();
 
   return strEnd + 1;
-}
-
-int cCPPTokenizer::IsKeyword(const char* strLabel)
-{
-  tKeywordMap::iterator it = m_Keywords.find(std::string(strLabel));
-  if (it != m_Keywords.end())
-  {
-    return it->second;
-  }
-  return KW_UNKNOWN;
-}
-
-const char* cCPPTokenizer::GetTokenString(int nToken)
-{
-  if (nToken < TOKEN_MAX)
-  {
-    return g_TokenString[nToken];
-  }
-  return "unknown";
-}
-
-const char* cCPPTokenizer::GetKeywordString(int type)
-{
-  tKeywordStringMap::iterator it = m_KeywordStrings.find(type);
-  if (it != m_KeywordStrings.end())
-  {
-    return it->second.c_str();
-  }
-  return "unknown";
-}
-
-const char* cCPPTokenizer::GetOperatorString(int type)
-{
-  tKeywordStringMap::iterator it = m_OperatorStrings.find(type);
-  if (it != m_OperatorStrings.end())
-  {
-    return it->second.c_str();
-  }
-  return "unknown";
 }
 
 const char* cCPPTokenizer::ParseLabel(const char* strLine)
@@ -673,12 +511,14 @@ const char* cCPPTokenizer::ParseLiteral(const char* strLine)
 
 bool cCPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkipComments)
 {
-  std::stringstream strLog;
-  char c;
   bool bSlashFound = false;
+  char c;
 
-  strLog << ++m_iLine << ": |" << strLine << "|";
-  m_pTokenHandler->LogEntry(strLog.str().c_str());
+  if (!GetTokenHandler())
+    return false;
+
+  IncLine();
+  LogLine(strLine);
 
   if (m_bBlockComment)
   {
@@ -692,10 +532,10 @@ bool cCPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkip
   {
     strLine = AppendPreProc(strLine);
   }
-  else if (m_iLine > 1)
+  else if (GetLine() > 1)
   {
     if (!bSkipWhiteSpaces)
-      PushEOL();
+      PushToken(TOKEN_NEWLINE);
   }
 
   if (strLine == NULL)
@@ -806,7 +646,7 @@ bool cCPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkip
                   if (strLine == NULL)
                     return true;
                   break;
-                default: m_pTokenHandler->HandleError("unexpected character follows ?? (trigraph)", m_iLine); break;
+                default: GetTokenHandler()->HandleError("unexpected character follows ?? (trigraph)", GetLine()); break;
               }
               break;
             default: PushToken(TOKEN_OPERATOR, OP_CONDITIONAL); break;
@@ -963,8 +803,9 @@ bool cCPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkip
           }
           else
           {
-            strLog << "unkown character " << c;
-            m_pTokenHandler->HandleError(strLog.str().c_str(), m_iLine);
+            std::stringstream strLog;
+            strLog << "unknown character " << c;
+            GetTokenHandler()->HandleError(strLog.str().c_str(), GetLine());
           }
           if (strLine == NULL)
             return false;

@@ -6,11 +6,13 @@ add_library(parseus
   stdafx.h
   stdafx.cpp
   parseus.h
-  cpp_tokenizer.h
-  cpp_tokenizer.cpp
   stringmem.h
   stringmem.cpp
   tokenizer.h
   tokenizer.cpp
+  cpp_tokenizer.h
+  cpp_tokenizer.cpp
+  pas_tokenizer.h
+  pas_tokenizer.cpp
 )
 

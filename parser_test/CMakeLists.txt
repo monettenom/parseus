@@ -12,6 +12,11 @@ add_executable(parser_test
   cpp_tokenprinter.cpp
   stdafx.h
   stdafx.cpp
+  testtokenhandler.h
+
+  cpptestdata.inc
+  testcpptokenhandler.cpp
+  testcpptokenhandler.h
 )
 
 target_link_libraries (parser_test parseus) 
