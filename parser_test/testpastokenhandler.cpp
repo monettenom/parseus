@@ -1,22 +1,22 @@
 #include "stdafx.h"
-#include "testcpptokenhandler.h"
-#include "cpptestdata.inc"
+#include "testpastokenhandler.h"
+#include "pastestdata.inc"
 
 using namespace std;
 
-cTestCPPTokenHandler::cTestCPPTokenHandler()
-: cTestTokenHandler(&m_Tokenizer, sCPPTestData)
+cTestPasTokenHandler::cTestPasTokenHandler()
+: cTestTokenHandler(&m_Tokenizer, sPasTestData)
 , m_Tokenizer()
 {
   m_Tokenizer.SetTokenHandler(this);
 }
 
-cTestCPPTokenHandler::~cTestCPPTokenHandler()
+cTestPasTokenHandler::~cTestPasTokenHandler()
 {
 
 }
 
-void cTestCPPTokenHandler::HandleToken(tToken& oToken)
+void cTestPasTokenHandler::HandleToken(tToken& oToken)
 {
   if (!GetResult())
     return;
@@ -77,5 +77,4 @@ void cTestCPPTokenHandler::HandleToken(tToken& oToken)
   }
   IncTokenCount();
 }
-
 

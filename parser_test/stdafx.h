@@ -16,6 +16,5 @@
 
 #include "parseus.h"
 #include "testtokenhandler.h"
-#include "testcpptokenhandler.h"
 
 

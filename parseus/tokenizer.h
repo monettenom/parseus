@@ -1,23 +1,26 @@
 #pragma once
+
+#include <map>
+
 enum eToken
 {
-  TOKEN_UNKNOWN = 0, // 0
-  TOKEN_COMMENT,     // 1
-  TOKEN_LINECOMMENT, // 2
-  TOKEN_NEWLINE,     // 3
-  TOKEN_WHITESPACE,  // 4
-  TOKEN_PREPROC,     // 5
-  TOKEN_LABEL,       // 6
-  TOKEN_LITERAL,     // 7
-  TOKEN_STRING,      // 8
+  TOKEN_UNKNOWN = 0,      // 0
+  TOKEN_COMMENT,          // 1
+  TOKEN_LINECOMMENT,      // 2
+  TOKEN_NEWLINE,          // 3
+  TOKEN_WHITESPACE,       // 4
+  TOKEN_PREPROC,          // 5
+  TOKEN_LABEL,            // 6
+  TOKEN_LITERAL,          // 7
+  TOKEN_STRING,           // 8
   TOKEN_MULTILINE_STRING, // 9
-  TOKEN_CHAR,        // 10
-  TOKEN_NUMBER,      // 11
-  TOKEN_OPERATOR,    // 12
-  TOKEN_BLOCK_BEGIN, // 13
-  TOKEN_BLOCK_END,   // 14
-  TOKEN_KEYWORD,     // 15
-  TOKEN_MAX         
+  TOKEN_CHAR,             // 10
+  TOKEN_NUMBER,           // 11
+  TOKEN_OPERATOR,         // 12
+  TOKEN_BLOCK_BEGIN,      // 13
+  TOKEN_BLOCK_END,        // 14
+  TOKEN_KEYWORD,          // 15
+  TOKEN_MAX
 };
 
 struct tKeyword
@@ -25,6 +28,8 @@ struct tKeyword
   const char* m_strKeyword;
   int m_Type;
 };
+
+class cStringMem;
 
 struct tToken
 {
@@ -58,6 +63,7 @@ public:
   virtual const char* GetTokenString(int nToken) = 0;
   virtual const char* GetKeywordString(int nKeyword) = 0;
   virtual const char* GetOperatorString(int type) = 0;
+  virtual bool Parse(const char* strLine, bool bSkipWhiteSpaces = false, bool bSkipComments = false) = 0;
   virtual void Reset() = 0;
 };
 

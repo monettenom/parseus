@@ -13,10 +13,14 @@ add_executable(parser_test
   stdafx.h
   stdafx.cpp
   testtokenhandler.h
+  testtokenhandler.cpp
 
   cpptestdata.inc
+  pastestdata.inc
   testcpptokenhandler.cpp
   testcpptokenhandler.h
+  testpastokenhandler.cpp
+  testpastokenhandler.h
 )
 
 target_link_libraries (parser_test parseus) 

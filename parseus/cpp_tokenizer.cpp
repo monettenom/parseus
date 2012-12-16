@@ -210,6 +210,19 @@ cCPPTokenizer::~cCPPTokenizer()
 {
 }
 
+const char* cCPPTokenizer::HandleWhiteSpace(const char* strLine, bool bSkipWhiteSpaces)
+{
+  const char* strCrsr = strLine-1;
+  char c = *strLine;
+  while(c && (c == ' ' || c == '\t'))
+  {
+    c = *strLine++;
+  }
+  if (!bSkipWhiteSpaces)
+    PushToken(TOKEN_WHITESPACE, strCrsr, strLine - strCrsr);
+  return strLine;
+}
+
 const char* cCPPTokenizer::HandleBlockComment(const char* strLine, bool bSkipComments)
 {
   tToken token;
@@ -544,23 +557,13 @@ bool cCPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkip
   while(c = *strLine++)
   {
     tToken token;
-    int bufidx = 0;
 
     switch(c)
     {
       case ' ':
       case '\t':
-      {
-        const char* strCrsr = strLine-1;
-        while(c && (c == ' ' || c == '\t'))
-        {
-          c = *strLine++;
-        }
-        strLine--;
-        if (!bSkipWhiteSpaces)
-          PushToken(TOKEN_WHITESPACE, strCrsr, strLine - strCrsr);
+        strLine = HandleWhiteSpace(strLine, bSkipWhiteSpaces);
         break;
-      }
 
       case '/':
         bSlashFound = true;

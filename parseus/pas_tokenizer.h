@@ -190,15 +190,17 @@ enum ePASTokenType
   PAS_KW_USER
 };
 
-class cPASTokenizer: public cTokenizer
+class cPasTokenizer: public cTokenizer
 {
 public:
-  cPASTokenizer();
-  ~cPASTokenizer();
+  cPasTokenizer();
+  ~cPasTokenizer();
 
   bool Parse(const char* strLine, bool bSkipWhiteSpaces = false, bool bSkipComments = false);
 
 protected:
+  const char* HandleWhiteSpace(const char* strLine, bool bSkipWhiteSpaces);
+  const char* HandleString(const char* strLine);
 
 private:
   bool m_bBlockComment;

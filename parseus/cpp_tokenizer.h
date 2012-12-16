@@ -144,6 +144,7 @@ public:
   bool Parse(const char* strLine, bool bSkipWhiteSpaces = false, bool bSkipComments = false);
 
 protected:
+  const char* HandleWhiteSpace(const char* strLine, bool bSkipWhiteSpaces);
   const char* HandleBlockComment(const char* strLine, bool bSkipComments = false);
   const char* HandleString(const char* strLine, char cDelimiter, int token);
   const char* HandlePreProc(const char* strLine);

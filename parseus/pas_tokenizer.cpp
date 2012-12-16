@@ -214,9 +214,9 @@ static tKeyword g_Operators[] = {
   {"&", PAS_OP_AMPERSAND}
 };
 
-// cPASTokenizer
+// cPasTokenizer
 
-cPASTokenizer::cPASTokenizer()
+cPasTokenizer::cPasTokenizer()
 : cTokenizer()
 , m_bBlockComment(false)
 , m_bMultiLineString(false)
@@ -226,17 +226,75 @@ cPASTokenizer::cPASTokenizer()
   AddOperators(g_Operators, PAS_OP_UNKNOWN);
 }
 
-cPASTokenizer::~cPASTokenizer()
+cPasTokenizer::~cPasTokenizer()
 {
 }
 
-bool cPASTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkipComments)
+const char* cPasTokenizer::HandleWhiteSpace(const char* strLine, bool bSkipWhiteSpaces)
+{
+  const char* strCrsr = strLine-1;
+  char c = *strLine;
+  while(c && (c == ' ' || c == '\t'))
+  {
+    c = *strLine++;
+  }
+  if (!bSkipWhiteSpaces)
+    PushToken(TOKEN_WHITESPACE, strCrsr, strLine - strCrsr);
+  return strLine;
+}
+
+const char* cPasTokenizer::HandleString(const char* strLine)
+{
+  std::stringstream strError;
+  const char* strEnd = NULL;
+  const char* strCrsr = strLine;
+
+  if (*strLine == 'l' || *strLine == 'L')
+    strCrsr++;
+
+  strEnd = strchr(strCrsr+1, '\'');
+  if (strEnd == NULL)
+  {
+    strError << "ERROR: Missing end of string character " << *strLine << std::endl;
+    GetTokenHandler()->HandleError(strError.str().c_str(), GetLine());
+    return NULL;
+  }
+  strCrsr = strEnd;
+
+  int iLen = strEnd - strLine + 1;
+  PushToken(TOKEN_STRING, strLine, iLen);
+  return strLine + iLen;
+}
+
+bool cPasTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkipComments)
 {
   if (!GetTokenHandler())
     return false;
 
   IncLine();
   LogLine(strLine);
+
+  if (GetLine() > 1)
+  {
+    if (!bSkipWhiteSpaces)
+      PushToken(TOKEN_NEWLINE);
+  }
+
+  if (strLine == NULL)
+    return false;
+
+  while(char c = *strLine++)
+  {
+    tToken token;
+
+    switch(c)
+    {
+      case ' ':
+      case '\t':
+        strLine = HandleWhiteSpace(strLine, bSkipWhiteSpaces);
+        break;
+    }
+  }
 
   return false;
 }
