@@ -1,197 +1,197 @@
 #include "stdafx.h"
 #include "cpp_tokenizer.h"
 
-static const char* g_OperatorString[OP_MAX] = {
-  "OP_UNKNOWN",
-  "OP_MEMBER_ACCESS",
-  "OP_LIST",
-  "OP_COMMAND_END",
-  "OP_CONDITIONAL",
-  "OP_BRACKET_OPEN", 
-  "OP_BRACKET_CLOSE", 
-  "OP_INDEX_OPEN",
-  "OP_INDEX_CLOSE",
-  "OP_ASTERISK",
-  "OP_INCREMENT",
-  "OP_DIVIDE",
-  "OP_SUM_ASSIGNMENT",
-  "OP_ADDITION",
-  "OP_DECREMENT", 
-  "OP_DIFFERENCE_ASSIGNMENT",
-  "OP_SUBTRACTION",
-  "OP_POINTER",
-  "OP_REMAINDER_ASSIGNMENT",
-  "OP_MODULUS",
-  "OP_EQUAL",
-  "OP_ASSIGNMENT",
-  "OP_NOT_EQUAL",
-  "OP_LOGICAL_NOT",
-  "OP_SMALLER_OR_EQUAL",
-  "OP_SHIFT_LEFT", 
-  "OP_SMALLER", 
-  "OP_SHIFT_LEFT_ASSIGNMENT",
-  "OP_BIGGER_OR_EQUAL",
-  "OP_SHIFT_RIGHT_ASSIGNMENT",
-  "OP_SHIFT_RIGHT",
-  "OP_BIGGER",
-  "OP_AND_ASSIGNMENT",
-  "OP_LOGICAL_AND",
-  "OP_BITWISE_AND",
-  "OP_OR_ASSIGNMENT",
-  "OP_LOGICAL_OR",
-  "OP_BITWISE_OR",
-  "OP_XOR_ASSIGNMENT",
-  "OP_BITWISE_XOR",
-  "OP_COMPLEMENT",
-  "OP_COLON",
-  "OP_SCOPE",
-  "OP_PRODUCT_ASSIGNMENT",
-  "OP_QUOTIENT_ASSIGNMENT",
-  "OP_POINTER_DEREFERNCE",
-  "OP_MEMBER_ACCESS_DEREFERENCE",
-  "OP_ELLIPSIS"
+static const char* g_OperatorString[CPP_OP_MAX] = {
+  "CPP_OP_UNKNOWN",
+  "CPP_OP_MEMBER_ACCESS",
+  "CPP_OP_LIST",
+  "CPP_OP_COMMAND_END",
+  "CPP_OP_CONDITIONAL",
+  "CPP_OP_BRACKET_OPEN", 
+  "CPP_OP_BRACKET_CLOSE", 
+  "CPP_OP_INDEX_OPEN",
+  "CPP_OP_INDEX_CLOSE",
+  "CPP_OP_ASTERISK",
+  "CPP_OP_INCREMENT",
+  "CPP_OP_DIVIDE",
+  "CPP_OP_SUM_ASSIGNMENT",
+  "CPP_OP_ADDITION",
+  "CPP_OP_DECREMENT", 
+  "CPP_OP_DIFFERENCE_ASSIGNMENT",
+  "CPP_OP_SUBTRACTION",
+  "CPP_OP_POINTER",
+  "CPP_OP_REMAINDER_ASSIGNMENT",
+  "CPP_OP_MODULUS",
+  "CPP_OP_EQUAL",
+  "CPP_OP_ASSIGNMENT",
+  "CPP_OP_NOT_EQUAL",
+  "CPP_OP_LOGICAL_NOT",
+  "CPP_OP_SMALLER_OR_EQUAL",
+  "CPP_OP_SHIFT_LEFT", 
+  "CPP_OP_SMALLER", 
+  "CPP_OP_SHIFT_LEFT_ASSIGNMENT",
+  "CPP_OP_BIGGER_OR_EQUAL",
+  "CPP_OP_SHIFT_RIGHT_ASSIGNMENT",
+  "CPP_OP_SHIFT_RIGHT",
+  "CPP_OP_BIGGER",
+  "CPP_OP_AND_ASSIGNMENT",
+  "CPP_OP_LOGICAL_AND",
+  "CPP_OP_BITWISE_AND",
+  "CPP_OP_OR_ASSIGNMENT",
+  "CPP_OP_LOGICAL_OR",
+  "CPP_OP_BITWISE_OR",
+  "CPP_OP_XOR_ASSIGNMENT",
+  "CPP_OP_BITWISE_XOR",
+  "CPP_OP_COMPLEMENT",
+  "CPP_OP_COLON",
+  "CPP_OP_SCOPE",
+  "CPP_OP_PRODUCT_ASSIGNMENT",
+  "CPP_OP_QUOTIENT_ASSIGNMENT",
+  "CPP_OP_POINTER_DEREFERNCE",
+  "CPP_OP_MEMBER_ACCESS_DEREFERENCE",
+  "CPP_OP_ELLIPSIS"
 };
 
 static tKeyword g_KeyWords[] = {
-  {"__int64", KW_TYPE_INT64},
-  {"alignas", KW_11_ALIGNAS},
-  {"alignof", KW_11_ALIGNOF},
-  {"and", OP_LOGICAL_AND},
-  {"and_eq", OP_AND_ASSIGNMENT},
-  {"asm", KW_ASM},
-  {"auto", KW_AUTO},
-  {"bitand", OP_BITWISE_AND},
-  {"bitor", OP_BITWISE_OR},
-  {"bool", KW_TYPE_BOOL},
-  {"break", KW_BREAK},
-  {"case", KW_CASE},
-  {"catch", KW_CATCH},
-  {"char", KW_TYPE_CHAR},
-  {"char16_t", KW_11_CHAR16_T},
-  {"char32_t", KW_11_CHAR32_T},
-  {"class", KW_CLASS},
-  {"compl", OP_COMPLEMENT},
-  {"const", KW_TYPE_CONST},
-  {"constexpr", KW_11_CONSTEXPR},
-  {"const_cast", KW_CONST_CAST},
-  {"continue", KW_CONTINUE},
-  {"decltype", KW_11_DECLTYPE},
-  {"default", KW_DEFAULT},
-  {"delete", KW_DELETE},
-  {"do", KW_DO},
-  {"double", KW_TYPE_DOUBLE},
-  {"dynamic_cast", KW_DYNAMIC_CAST},
-  {"else", KW_ELSE},
-  {"enum", KW_ENUM},
-  {"extern", KW_EXTERN},
-  {"explicit", KW_EXPLICIT},
-  {"export", KW_EXPORT},
-  {"false", KW_FALSE},
-  {"final", KW_11_FINAL},
-  {"float", KW_TYPE_FLOAT},
-  {"for", KW_FOR},
-  {"friend", KW_FRIEND},
-  {"goto", KW_GOTO},
-  {"if", KW_IF},
-  {"inline", KW_INLINE},
-  {"int", KW_TYPE_INT},
-  {"long", KW_TYPE_LONG},
-  {"mutable", KW_MUTABLE},
-  {"namespace", KW_NAMESPACE}, 
-  {"new", KW_NEW},
-  {"noexcept", KW_11_NOEXCEPT},
-  {"not", OP_LOGICAL_NOT},
-  {"not_eq", OP_NOT_EQUAL},
-  {"nullptr", KW_11_NULLPTR},
-  {"operator", KW_OPERATOR},
-  {"or", OP_LOGICAL_OR},
-  {"or_eq", OP_OR_ASSIGNMENT},
-  {"override", KW_11_OVERRIDE},
-  {"private", KW_PRIVATE},
-  {"protected", KW_PROTECTED},
-  {"public", KW_PUBLIC},
-  {"register", KW_REGISTER},
-  {"reinterpret_cast", KW_REINTERPRET_CAST},
-  {"return", KW_RETURN},
-  {"short", KW_TYPE_SHORT},
-  {"signed", KW_TYPE_SIGNED},
-  {"sizeof", KW_SIZEOF},
-  {"static", KW_STATIC},
-  {"static_assert", KW_11_STATIC_ASSERT},
-  {"static_cast", KW_STATIC_CAST},
-  {"struct", KW_STRUCT},
-  {"switch", KW_SWITCH},
-  {"template", KW_TEMPLATE},
-  {"this", KW_THIS},
-  {"thread_local", KW_11_THREAD_LOCAL},
-  {"throw", KW_THROW},
-  {"true", KW_TRUE},
-  {"try", KW_TRY},
-  {"typedef", KW_TYPEDEF},
-  {"typeid", KW_TYPEID},
-  {"typename", KW_TYPENAME},
-  {"union", KW_UNION},
-  {"unsigned", KW_TYPE_UNSIGNED},
-  {"using", KW_USING},
-  {"virtual", KW_VIRTUAL},
-  {"void", KW_TYPE_VOID}, 
-  {"volatile", KW_VOLATILE}, 
-  {"wchar_t", KW_TYPE_WCHAR_T},
-  {"while", KW_WHILE},
-  {"xor", OP_BITWISE_XOR},
-  {"xor_eq", OP_XOR_ASSIGNMENT},
-  {"unknown", KW_UNKNOWN}
+  {"__int64", CPP_KW_TYPE_INT64},
+  {"alignas", CPP_KW_11_ALIGNAS},
+  {"alignof", CPP_KW_11_ALIGNOF},
+  {"and", CPP_OP_LOGICAL_AND},
+  {"and_eq", CPP_OP_AND_ASSIGNMENT},
+  {"asm", CPP_KW_ASM},
+  {"auto", CPP_KW_AUTO},
+  {"bitand", CPP_OP_BITWISE_AND},
+  {"bitor", CPP_OP_BITWISE_OR},
+  {"bool", CPP_KW_TYPE_BOOL},
+  {"break", CPP_KW_BREAK},
+  {"case", CPP_KW_CASE},
+  {"catch", CPP_KW_CATCH},
+  {"char", CPP_KW_TYPE_CHAR},
+  {"char16_t", CPP_KW_11_CHAR16_T},
+  {"char32_t", CPP_KW_11_CHAR32_T},
+  {"class", CPP_KW_CLASS},
+  {"compl", CPP_OP_COMPLEMENT},
+  {"const", CPP_KW_TYPE_CONST},
+  {"constexpr", CPP_KW_11_CONSTEXPR},
+  {"const_cast", CPP_KW_CONST_CAST},
+  {"continue", CPP_KW_CONTINUE},
+  {"decltype", CPP_KW_11_DECLTYPE},
+  {"default", CPP_KW_DEFAULT},
+  {"delete", CPP_KW_DELETE},
+  {"do", CPP_KW_DO},
+  {"double", CPP_KW_TYPE_DOUBLE},
+  {"dynamic_cast", CPP_KW_DYNAMIC_CAST},
+  {"else", CPP_KW_ELSE},
+  {"enum", CPP_KW_ENUM},
+  {"extern", CPP_KW_EXTERN},
+  {"explicit", CPP_KW_EXPLICIT},
+  {"export", CPP_KW_EXPORT},
+  {"false", CPP_KW_FALSE},
+  {"final", CPP_KW_11_FINAL},
+  {"float", CPP_KW_TYPE_FLOAT},
+  {"for", CPP_KW_FOR},
+  {"friend", CPP_KW_FRIEND},
+  {"goto", CPP_KW_GOTO},
+  {"if", CPP_KW_IF},
+  {"inline", CPP_KW_INLINE},
+  {"int", CPP_KW_TYPE_INT},
+  {"long", CPP_KW_TYPE_LONG},
+  {"mutable", CPP_KW_MUTABLE},
+  {"namespace", CPP_KW_NAMESPACE}, 
+  {"new", CPP_KW_NEW},
+  {"noexcept", CPP_KW_11_NOEXCEPT},
+  {"not", CPP_OP_LOGICAL_NOT},
+  {"not_eq", CPP_OP_NOT_EQUAL},
+  {"nullptr", CPP_KW_11_NULLPTR},
+  {"operator", CPP_KW_OPERATOR},
+  {"or", CPP_OP_LOGICAL_OR},
+  {"or_eq", CPP_OP_OR_ASSIGNMENT},
+  {"override", CPP_KW_11_OVERRIDE},
+  {"private", CPP_KW_PRIVATE},
+  {"protected", CPP_KW_PROTECTED},
+  {"public", CPP_KW_PUBLIC},
+  {"register", CPP_KW_REGISTER},
+  {"reinterpret_cast", CPP_KW_REINTERPRET_CAST},
+  {"return", CPP_KW_RETURN},
+  {"short", CPP_KW_TYPE_SHORT},
+  {"signed", CPP_KW_TYPE_SIGNED},
+  {"sizeof", CPP_KW_SIZEOF},
+  {"static", CPP_KW_STATIC},
+  {"static_assert", CPP_KW_11_STATIC_ASSERT},
+  {"static_cast", CPP_KW_STATIC_CAST},
+  {"struct", CPP_KW_STRUCT},
+  {"switch", CPP_KW_SWITCH},
+  {"template", CPP_KW_TEMPLATE},
+  {"this", CPP_KW_THIS},
+  {"thread_local", CPP_KW_11_THREAD_LOCAL},
+  {"throw", CPP_KW_THROW},
+  {"true", CPP_KW_TRUE},
+  {"try", CPP_KW_TRY},
+  {"typedef", CPP_KW_TYPEDEF},
+  {"typeid", CPP_KW_TYPEID},
+  {"typename", CPP_KW_TYPENAME},
+  {"union", CPP_KW_UNION},
+  {"unsigned", CPP_KW_TYPE_UNSIGNED},
+  {"using", CPP_KW_USING},
+  {"virtual", CPP_KW_VIRTUAL},
+  {"void", CPP_KW_TYPE_VOID}, 
+  {"volatile", CPP_KW_VOLATILE}, 
+  {"wchar_t", CPP_KW_TYPE_WCHAR_T},
+  {"while", CPP_KW_WHILE},
+  {"xor", CPP_OP_BITWISE_XOR},
+  {"xor_eq", CPP_OP_XOR_ASSIGNMENT},
+  {"unknown", CPP_KW_UNKNOWN}
 };
 
 static tKeyword g_Operators[] = {
-  {".", OP_MEMBER_ACCESS},
-  {",", OP_LIST},
-  {";", OP_COMMAND_END},
-  {"?", OP_CONDITIONAL},
-  {"(", OP_BRACKET_OPEN},
-  {")", OP_BRACKET_CLOSE},
-  {"[", OP_INDEX_OPEN},
-  {"]", OP_INDEX_CLOSE},
-  {"*", OP_ASTERISK},
-  {"++", OP_INCREMENT},
-  {"/", OP_DIVIDE},
-  {"+=", OP_SUM_ASSIGNMENT},
-  {"+", OP_ADDITION},
-  {"--", OP_DECREMENT}, 
-  {"-=", OP_DIFFERENCE_ASSIGNMENT},
-  {"-", OP_SUBTRACTION},
-  {"->", OP_POINTER},
-  {"%=", OP_REMAINDER_ASSIGNMENT},
-  {"%", OP_MODULUS},
-  {"==", OP_EQUAL},
-  {"=", OP_ASSIGNMENT},
-  {"!=", OP_NOT_EQUAL},
-  {"!", OP_LOGICAL_NOT},
-  {"<=", OP_SMALLER_OR_EQUAL},
-  {"<<", OP_SHIFT_LEFT},
-  {"<", OP_SMALLER}, 
-  {"<<=", OP_SHIFT_LEFT_ASSIGNMENT},
-  {">=", OP_BIGGER_OR_EQUAL},
-  {">>=", OP_SHIFT_RIGHT_ASSIGNMENT},
-  {">>", OP_SHIFT_RIGHT},
-  {">", OP_BIGGER},
-  {"&=", OP_AND_ASSIGNMENT},
-  {"&&", OP_LOGICAL_AND},
-  {"&", OP_BITWISE_AND},
-  {"|=", OP_OR_ASSIGNMENT},
-  {"||", OP_LOGICAL_OR},
-  {"|", OP_BITWISE_OR},
-  {"^=", OP_XOR_ASSIGNMENT},
-  {"^", OP_BITWISE_XOR},
-  {"~", OP_COMPLEMENT},
-  {":", OP_COLON},
-  {"::", OP_SCOPE},
-  {"*=", OP_PRODUCT_ASSIGNMENT},
-  {"/=", OP_QUOTIENT_ASSIGNMENT},
-  {"->*", OP_POINTER_DEREFERNCE},
-  {".*", OP_MEMBER_ACCESS_DEREFERENCE},
-  {"...", OP_ELLIPSIS},
-  {"unknown", OP_UNKNOWN}
+  {".", CPP_OP_MEMBER_ACCESS},
+  {",", CPP_OP_LIST},
+  {";", CPP_OP_COMMAND_END},
+  {"?", CPP_OP_CONDITIONAL},
+  {"(", CPP_OP_BRACKET_OPEN},
+  {")", CPP_OP_BRACKET_CLOSE},
+  {"[", CPP_OP_INDEX_OPEN},
+  {"]", CPP_OP_INDEX_CLOSE},
+  {"*", CPP_OP_ASTERISK},
+  {"++", CPP_OP_INCREMENT},
+  {"/", CPP_OP_DIVIDE},
+  {"+=", CPP_OP_SUM_ASSIGNMENT},
+  {"+", CPP_OP_ADDITION},
+  {"--", CPP_OP_DECREMENT}, 
+  {"-=", CPP_OP_DIFFERENCE_ASSIGNMENT},
+  {"-", CPP_OP_SUBTRACTION},
+  {"->", CPP_OP_POINTER},
+  {"%=", CPP_OP_REMAINDER_ASSIGNMENT},
+  {"%", CPP_OP_MODULUS},
+  {"==", CPP_OP_EQUAL},
+  {"=", CPP_OP_ASSIGNMENT},
+  {"!=", CPP_OP_NOT_EQUAL},
+  {"!", CPP_OP_LOGICAL_NOT},
+  {"<=", CPP_OP_SMALLER_OR_EQUAL},
+  {"<<", CPP_OP_SHIFT_LEFT},
+  {"<", CPP_OP_SMALLER}, 
+  {"<<=", CPP_OP_SHIFT_LEFT_ASSIGNMENT},
+  {">=", CPP_OP_BIGGER_OR_EQUAL},
+  {">>=", CPP_OP_SHIFT_RIGHT_ASSIGNMENT},
+  {">>", CPP_OP_SHIFT_RIGHT},
+  {">", CPP_OP_BIGGER},
+  {"&=", CPP_OP_AND_ASSIGNMENT},
+  {"&&", CPP_OP_LOGICAL_AND},
+  {"&", CPP_OP_BITWISE_AND},
+  {"|=", CPP_OP_OR_ASSIGNMENT},
+  {"||", CPP_OP_LOGICAL_OR},
+  {"|", CPP_OP_BITWISE_OR},
+  {"^=", CPP_OP_XOR_ASSIGNMENT},
+  {"^", CPP_OP_BITWISE_XOR},
+  {"~", CPP_OP_COMPLEMENT},
+  {":", CPP_OP_COLON},
+  {"::", CPP_OP_SCOPE},
+  {"*=", CPP_OP_PRODUCT_ASSIGNMENT},
+  {"/=", CPP_OP_QUOTIENT_ASSIGNMENT},
+  {"->*", CPP_OP_POINTER_DEREFERNCE},
+  {".*", CPP_OP_MEMBER_ACCESS_DEREFERENCE},
+  {"...", CPP_OP_ELLIPSIS},
+  {"unknown", CPP_OP_UNKNOWN}
 };
 
 // cCPPTokenizer
@@ -202,8 +202,8 @@ cCPPTokenizer::cCPPTokenizer()
 , m_bMultiLineString(false)
 , m_bConcatPreProc(false)
 {
-  AddKeywords(g_KeyWords, KW_UNKNOWN);
-  AddOperators(g_Operators, OP_UNKNOWN);
+  AddKeywords(g_KeyWords, CPP_KW_UNKNOWN);
+  AddOperators(g_Operators, CPP_OP_UNKNOWN);
 }
 
 cCPPTokenizer::~cCPPTokenizer()
@@ -391,22 +391,22 @@ const char* cCPPTokenizer::ParseLabel(const char* strLine)
   strBuffer[iLen] = '\0';
 
   int kw = IsKeyword(strBuffer);
-  if (kw != KW_UNKNOWN)
+  if (kw != CPP_KW_UNKNOWN)
   {
     // filter keywords which are operators (alternative operators)
     switch (kw)
     {
-      case OP_LOGICAL_AND:
-      case OP_AND_ASSIGNMENT:
-      case OP_BITWISE_AND:
-      case OP_BITWISE_OR:
-      case OP_COMPLEMENT:
-      case OP_LOGICAL_NOT:
-      case OP_NOT_EQUAL:
-      case OP_LOGICAL_OR:
-      case OP_OR_ASSIGNMENT:
-      case OP_BITWISE_XOR:
-      case OP_XOR_ASSIGNMENT:
+      case CPP_OP_LOGICAL_AND:
+      case CPP_OP_AND_ASSIGNMENT:
+      case CPP_OP_BITWISE_AND:
+      case CPP_OP_BITWISE_OR:
+      case CPP_OP_COMPLEMENT:
+      case CPP_OP_LOGICAL_NOT:
+      case CPP_OP_NOT_EQUAL:
+      case CPP_OP_LOGICAL_OR:
+      case CPP_OP_OR_ASSIGNMENT:
+      case CPP_OP_BITWISE_XOR:
+      case CPP_OP_XOR_ASSIGNMENT:
         PushToken(TOKEN_OPERATOR, kw);
         break;
       default:
@@ -609,11 +609,11 @@ bool cCPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkip
         case '.': 
           switch(*strLine)
           {
-            case '*': PushToken(TOKEN_OPERATOR, OP_MEMBER_ACCESS_DEREFERENCE); strLine++; break;
+            case '*': PushToken(TOKEN_OPERATOR, CPP_OP_MEMBER_ACCESS_DEREFERENCE); strLine++; break;
             case '.':
               if (strLine[1] == '.')
               {
-                PushToken(TOKEN_OPERATOR, OP_ELLIPSIS); 
+                PushToken(TOKEN_OPERATOR, CPP_OP_ELLIPSIS); 
                 strLine += 2;
               }
               break;
@@ -623,12 +623,12 @@ bool cCPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkip
               if (strLine == NULL)
                 return false;
               break;
-            default: PushToken(TOKEN_OPERATOR, OP_MEMBER_ACCESS); break;
+            default: PushToken(TOKEN_OPERATOR, CPP_OP_MEMBER_ACCESS); break;
           }
           break;
 
-        case ',': PushToken(TOKEN_OPERATOR, OP_LIST); break;
-        case ';': PushToken(TOKEN_OPERATOR, OP_COMMAND_END); break;
+        case ',': PushToken(TOKEN_OPERATOR, CPP_OP_LIST); break;
+        case ';': PushToken(TOKEN_OPERATOR, CPP_OP_COMMAND_END); break;
         case '?': 
           switch(*strLine)
           {
@@ -638,11 +638,11 @@ bool cCPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkip
               {
                 case '<': PushToken(TOKEN_BLOCK_BEGIN); strLine++; break;
                 case '>': PushToken(TOKEN_BLOCK_END); strLine++; break;
-                case '(': PushToken(TOKEN_OPERATOR, OP_INDEX_OPEN); strLine++; break;
-                case ')': PushToken(TOKEN_OPERATOR, OP_INDEX_CLOSE); strLine++; break;
-                case '\'': PushToken(TOKEN_OPERATOR, OP_BITWISE_XOR); strLine++; break;
-                case '!':  PushToken(TOKEN_OPERATOR, OP_BITWISE_OR); strLine++; break;
-                case '-': PushToken(TOKEN_OPERATOR, OP_COMPLEMENT); strLine++; break;
+                case '(': PushToken(TOKEN_OPERATOR, CPP_OP_INDEX_OPEN); strLine++; break;
+                case ')': PushToken(TOKEN_OPERATOR, CPP_OP_INDEX_CLOSE); strLine++; break;
+                case '\'': PushToken(TOKEN_OPERATOR, CPP_OP_BITWISE_XOR); strLine++; break;
+                case '!':  PushToken(TOKEN_OPERATOR, CPP_OP_BITWISE_OR); strLine++; break;
+                case '-': PushToken(TOKEN_OPERATOR, CPP_OP_COMPLEMENT); strLine++; break;
                 case '=': 
                   strLine++; 
                   strLine = HandlePreProc(++strLine); 
@@ -652,146 +652,146 @@ bool cCPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkip
                 default: GetTokenHandler()->HandleError("unexpected character follows ?? (trigraph)", GetLine()); break;
               }
               break;
-            default: PushToken(TOKEN_OPERATOR, OP_CONDITIONAL); break;
+            default: PushToken(TOKEN_OPERATOR, CPP_OP_CONDITIONAL); break;
           }
           break;
-        case '(': PushToken(TOKEN_OPERATOR, OP_BRACKET_OPEN); break;
-        case ')': PushToken(TOKEN_OPERATOR, OP_BRACKET_CLOSE); break;
-        case '[': PushToken(TOKEN_OPERATOR, OP_INDEX_OPEN); break;
-        case ']': PushToken(TOKEN_OPERATOR, OP_INDEX_CLOSE); break;
-        case '~': PushToken(TOKEN_OPERATOR, OP_COMPLEMENT); break;
+        case '(': PushToken(TOKEN_OPERATOR, CPP_OP_BRACKET_OPEN); break;
+        case ')': PushToken(TOKEN_OPERATOR, CPP_OP_BRACKET_CLOSE); break;
+        case '[': PushToken(TOKEN_OPERATOR, CPP_OP_INDEX_OPEN); break;
+        case ']': PushToken(TOKEN_OPERATOR, CPP_OP_INDEX_CLOSE); break;
+        case '~': PushToken(TOKEN_OPERATOR, CPP_OP_COMPLEMENT); break;
         case '*': 
           switch(*strLine)
           {
-            case '=': PushToken(TOKEN_OPERATOR, OP_PRODUCT_ASSIGNMENT); strLine++; break;
-            default: PushToken(TOKEN_OPERATOR, OP_ASTERISK); break;
+            case '=': PushToken(TOKEN_OPERATOR, CPP_OP_PRODUCT_ASSIGNMENT); strLine++; break;
+            default: PushToken(TOKEN_OPERATOR, CPP_OP_ASTERISK); break;
           }
           break;
           
         case '+': //+, ++, += 
           switch(*strLine)
           {
-            case '+': PushToken(TOKEN_OPERATOR, OP_INCREMENT); strLine++; break;
-            case '=': PushToken(TOKEN_OPERATOR, OP_SUM_ASSIGNMENT); strLine++; break;
-            default: PushToken(TOKEN_OPERATOR, OP_ADDITION); break;
+            case '+': PushToken(TOKEN_OPERATOR, CPP_OP_INCREMENT); strLine++; break;
+            case '=': PushToken(TOKEN_OPERATOR, CPP_OP_SUM_ASSIGNMENT); strLine++; break;
+            default: PushToken(TOKEN_OPERATOR, CPP_OP_ADDITION); break;
           }
           break;
 
         case '-': //-, --, -=, ->
           switch(*strLine)
           {
-            case '-': PushToken(TOKEN_OPERATOR, OP_DECREMENT); strLine++; break;
-            case '=': PushToken(TOKEN_OPERATOR, OP_DIFFERENCE_ASSIGNMENT); strLine++; break;
+            case '-': PushToken(TOKEN_OPERATOR, CPP_OP_DECREMENT); strLine++; break;
+            case '=': PushToken(TOKEN_OPERATOR, CPP_OP_DIFFERENCE_ASSIGNMENT); strLine++; break;
             case '>': 
             {
               strLine++; 
               switch(*strLine)
               {
-                case '*': PushToken(TOKEN_OPERATOR, OP_POINTER_DEREFERNCE); strLine++; break;
-                default: PushToken(TOKEN_OPERATOR, OP_POINTER); break;
+                case '*': PushToken(TOKEN_OPERATOR, CPP_OP_POINTER_DEREFERNCE); strLine++; break;
+                default: PushToken(TOKEN_OPERATOR, CPP_OP_POINTER); break;
               }
             }
             break;
-            default: PushToken(TOKEN_OPERATOR, OP_SUBTRACTION); break;
+            default: PushToken(TOKEN_OPERATOR, CPP_OP_SUBTRACTION); break;
           }
           break;
 
         case '%': //%, %=
           switch(*strLine)
           {
-            case '=': PushToken(TOKEN_OPERATOR, OP_REMAINDER_ASSIGNMENT); strLine++; break;
+            case '=': PushToken(TOKEN_OPERATOR, CPP_OP_REMAINDER_ASSIGNMENT); strLine++; break;
             case '>': PushToken(TOKEN_BLOCK_END); strLine++; break;
             case ':':           
               strLine = HandlePreProc(++strLine); 
               if (strLine == NULL)
                 return true;
               break;
-            default: PushToken(TOKEN_OPERATOR, OP_MODULUS); break;
+            default: PushToken(TOKEN_OPERATOR, CPP_OP_MODULUS); break;
           }
           break;
 
         case '=': //=, ==
           switch(*strLine)
           {
-            case '=': PushToken(TOKEN_OPERATOR, OP_EQUAL); strLine++; break;
-            default: PushToken(TOKEN_OPERATOR, OP_ASSIGNMENT); break;
+            case '=': PushToken(TOKEN_OPERATOR, CPP_OP_EQUAL); strLine++; break;
+            default: PushToken(TOKEN_OPERATOR, CPP_OP_ASSIGNMENT); break;
           }
           break;
 
         case '!': //!, !=
           switch(*strLine)
           {
-            case '=': PushToken(TOKEN_OPERATOR, OP_NOT_EQUAL); strLine++; break;
-            default: PushToken(TOKEN_OPERATOR, OP_LOGICAL_NOT); break;
+            case '=': PushToken(TOKEN_OPERATOR, CPP_OP_NOT_EQUAL); strLine++; break;
+            default: PushToken(TOKEN_OPERATOR, CPP_OP_LOGICAL_NOT); break;
           }
           break;
 
         case '<': //<, <=, <<, <<=
           switch(*strLine)
           {
-            case '=': PushToken(TOKEN_OPERATOR, OP_SMALLER_OR_EQUAL); strLine++; break;
+            case '=': PushToken(TOKEN_OPERATOR, CPP_OP_SMALLER_OR_EQUAL); strLine++; break;
             case '%': PushToken(TOKEN_BLOCK_BEGIN); strLine++; break;
-            case ':': PushToken(TOKEN_OPERATOR, OP_INDEX_OPEN); strLine++; break;
+            case ':': PushToken(TOKEN_OPERATOR, CPP_OP_INDEX_OPEN); strLine++; break;
             case '<': 
               strLine++;
               switch(*strLine)
               {
-                case '=': PushToken(TOKEN_OPERATOR, OP_SHIFT_LEFT_ASSIGNMENT); strLine++; break;
-                default: PushToken(TOKEN_OPERATOR, OP_SHIFT_LEFT); break;
+                case '=': PushToken(TOKEN_OPERATOR, CPP_OP_SHIFT_LEFT_ASSIGNMENT); strLine++; break;
+                default: PushToken(TOKEN_OPERATOR, CPP_OP_SHIFT_LEFT); break;
               }
               break;
-            default: PushToken(TOKEN_OPERATOR, OP_SMALLER); break;
+            default: PushToken(TOKEN_OPERATOR, CPP_OP_SMALLER); break;
           }
           break;
 
         case '>': //>, >=, >>, >>=
           switch(*strLine)
           {
-            case '=': PushToken(TOKEN_OPERATOR, OP_BIGGER_OR_EQUAL); strLine++; break;
+            case '=': PushToken(TOKEN_OPERATOR, CPP_OP_BIGGER_OR_EQUAL); strLine++; break;
             case '>': 
               strLine++;
               switch(*strLine)
               {
-                case '=': PushToken(TOKEN_OPERATOR, OP_SHIFT_RIGHT_ASSIGNMENT); strLine++; break;
-                default: PushToken(TOKEN_OPERATOR, OP_SHIFT_RIGHT); break;
+                case '=': PushToken(TOKEN_OPERATOR, CPP_OP_SHIFT_RIGHT_ASSIGNMENT); strLine++; break;
+                default: PushToken(TOKEN_OPERATOR, CPP_OP_SHIFT_RIGHT); break;
               }
               break;
-            default: PushToken(TOKEN_OPERATOR, OP_BIGGER); break;
+            default: PushToken(TOKEN_OPERATOR, CPP_OP_BIGGER); break;
           }
           break;
 
         case '&': //&, &&, &=
           switch(*strLine)
           {
-            case '=': PushToken(TOKEN_OPERATOR, OP_AND_ASSIGNMENT); strLine++; break;
-            case '&': PushToken(TOKEN_OPERATOR, OP_LOGICAL_AND); strLine++; break;
-            default: PushToken(TOKEN_OPERATOR, OP_BITWISE_AND); break;
+            case '=': PushToken(TOKEN_OPERATOR, CPP_OP_AND_ASSIGNMENT); strLine++; break;
+            case '&': PushToken(TOKEN_OPERATOR, CPP_OP_LOGICAL_AND); strLine++; break;
+            default: PushToken(TOKEN_OPERATOR, CPP_OP_BITWISE_AND); break;
           }
           break;
 
         case '|': //|, ||, |=
           switch(*strLine)
           {
-            case '=': PushToken(TOKEN_OPERATOR, OP_OR_ASSIGNMENT); strLine++; break;
-            case '|': PushToken(TOKEN_OPERATOR, OP_LOGICAL_OR); strLine++; break;
-            default: PushToken(TOKEN_OPERATOR, OP_BITWISE_OR); break;
+            case '=': PushToken(TOKEN_OPERATOR, CPP_OP_OR_ASSIGNMENT); strLine++; break;
+            case '|': PushToken(TOKEN_OPERATOR, CPP_OP_LOGICAL_OR); strLine++; break;
+            default: PushToken(TOKEN_OPERATOR, CPP_OP_BITWISE_OR); break;
           }
           break;
 
         case '^': //^, ^=
           switch(*strLine)
           {
-            case '=': PushToken(TOKEN_OPERATOR, OP_XOR_ASSIGNMENT); strLine++; break;
-            default: PushToken(TOKEN_OPERATOR, OP_BITWISE_XOR); break;
+            case '=': PushToken(TOKEN_OPERATOR, CPP_OP_XOR_ASSIGNMENT); strLine++; break;
+            default: PushToken(TOKEN_OPERATOR, CPP_OP_BITWISE_XOR); break;
           }
           break;
 
         case ':': //:, ::
           switch(*strLine)
           {
-            case ':': PushToken(TOKEN_OPERATOR, OP_SCOPE); strLine++; break;
-            case '>': PushToken(TOKEN_OPERATOR, OP_INDEX_CLOSE); strLine++; break;
-            default: PushToken(TOKEN_OPERATOR, OP_COLON); break;
+            case ':': PushToken(TOKEN_OPERATOR, CPP_OP_SCOPE); strLine++; break;
+            case '>': PushToken(TOKEN_OPERATOR, CPP_OP_INDEX_CLOSE); strLine++; break;
+            default: PushToken(TOKEN_OPERATOR, CPP_OP_COLON); break;
           }
           break;
 
@@ -833,11 +833,11 @@ bool cCPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkip
           return true;
 
         case '=':
-          PushToken(TOKEN_OPERATOR, OP_QUOTIENT_ASSIGNMENT);
+          PushToken(TOKEN_OPERATOR, CPP_OP_QUOTIENT_ASSIGNMENT);
           break;
 
         default:
-          PushToken(TOKEN_OPERATOR, OP_DIVIDE);
+          PushToken(TOKEN_OPERATOR, CPP_OP_DIVIDE);
           strLine--; // current char is not used, process this again
           break;
       }

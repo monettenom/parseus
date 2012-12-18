@@ -39,8 +39,8 @@ void cTestPasTokenHandler::HandleToken(tToken& oToken)
   {
     switch(oToken.m_Token)
     {
-    case TOKEN_KEYWORD:
-    case TOKEN_OPERATOR:
+      case TOKEN_KEYWORD:
+      case TOKEN_OPERATOR:
       {
         if (oToken.m_Type != GetTestEntry()->m_pTokenTypeList[GetTokenCount()])
         {
@@ -49,16 +49,16 @@ void cTestPasTokenHandler::HandleToken(tToken& oToken)
       }
       break;
 
-    case TOKEN_PREPROC:
-    case TOKEN_WHITESPACE:
-    case TOKEN_LITERAL:
-    case TOKEN_LABEL:
-    case TOKEN_COMMENT:
-    case TOKEN_LINECOMMENT:
-    case TOKEN_STRING:
-    case TOKEN_CHAR:
-    case TOKEN_NUMBER:
-    case TOKEN_MULTILINE_STRING:
+      case TOKEN_PREPROC:
+      case TOKEN_WHITESPACE:
+      case TOKEN_LITERAL:
+      case TOKEN_LABEL:
+      case TOKEN_COMMENT:
+      case TOKEN_LINECOMMENT:
+      case TOKEN_STRING:
+      case TOKEN_CHAR:
+      case TOKEN_NUMBER:
+      case TOKEN_MULTILINE_STRING:
       {
         if (strcmp(oToken.m_strName, GetTestEntry()->m_pNameList[GetTokenCount()]) != 0)
         {
@@ -69,10 +69,9 @@ void cTestPasTokenHandler::HandleToken(tToken& oToken)
       }
       break;
 
-    case TOKEN_BLOCK_BEGIN:
-    case TOKEN_BLOCK_END:
-      break;
-
+      case TOKEN_BLOCK_BEGIN:
+      case TOKEN_BLOCK_END:
+        break;
     }
   }
   IncTokenCount();

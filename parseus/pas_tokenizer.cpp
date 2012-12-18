@@ -266,6 +266,135 @@ const char* cPasTokenizer::HandleString(const char* strLine)
   return strLine + iLen;
 }
 
+const char* cPasTokenizer::ParseLabel(const char* strLine)
+{
+  static char strBuffer[256];
+  char c;
+  const char* strCrsr = strLine+1;
+
+  while(c = *strCrsr++)
+  {
+    if(!isalpha(c) && !isdigit(c) && c != '_')
+      break;
+  }
+
+  int iLen = strCrsr - strLine - 1;
+  strncpy_s<256>(strBuffer, strLine, iLen);
+  strBuffer[iLen] = '\0';
+
+  int kw = IsKeyword(strlwr(strBuffer));
+  if (kw != PAS_KW_UNKNOWN)
+  {
+    PushToken(TOKEN_KEYWORD, kw);
+  }
+  else
+  {
+    PushToken(TOKEN_LABEL, strLine, iLen);
+  }
+  return strCrsr-1;
+}
+
+const char* cPasTokenizer::ParseLiteral(const char* strLine)
+{
+  const char* strCrsr = strLine;
+  int pos = 0;
+  bool bContinue = true;
+  bool bExponent = false;
+  bool bFloating = false;
+  bool bExpectSign = false;
+  bool bHex = false;
+
+  while(bContinue && *strCrsr)
+  {
+    char c = *strCrsr++;
+    switch(c)
+    {
+    case '0': case '1': case '2': case '3': case '4':
+    case '5': case '6': case '7': case '8': case '9':
+      break;
+    case 'x': case 'X':
+      if (pos != 1) // x only at position 1
+      {
+        bContinue = false;
+        bFloating = true; // no . in hex numbers
+      }
+      else
+      {
+        if (*strLine != '0')
+          bContinue = false;
+        bHex = true;
+      }
+      break;
+    case 'e':
+    case 'E':
+      if (!bHex && !bExponent)
+      {
+        bExponent = true;
+        bFloating = true; // no . after e
+        bExpectSign = true;
+      }
+      else
+      {
+        if (!bHex)
+          bContinue = false;
+      }
+      break;
+    case 'a': case 'b': case 'c': case 'd': case 'f':
+    case 'A': case 'B': case 'C': case 'D': case 'F':
+      if (!bHex)
+        bContinue = false;
+      break;
+    case '.':
+      if (!bFloating)
+        bFloating = true;
+      else
+        bContinue = false;
+      break;
+    case '-':
+    case '+':
+      if (bExpectSign)
+        bExpectSign = false;
+      else
+        bContinue = false;
+      break;
+    default:
+      strCrsr--;
+      bContinue = false;
+      break;
+    }
+
+    pos++;
+  }
+
+  switch(*strCrsr)
+  {
+  case 'F': case 'f':
+    strCrsr++;
+    break;
+  case 'L': case 'l':
+  case 'U': case 'u':
+    strCrsr++;
+    switch (*strCrsr)
+    {
+    case 'l':
+    case 'L':
+      strCrsr++;
+      switch (*strCrsr) // c++11: ll & ull
+      {
+      case 'l':
+      case 'L':
+        strCrsr++;
+        break;
+      }
+      break;
+    }
+    break;
+  }
+
+  PushToken(TOKEN_LITERAL, strLine, strCrsr - strLine);
+  return strCrsr;
+}
+
 bool cPasTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkipComments)
 {
   if (!GetTokenHandler())
@@ -292,6 +421,25 @@ bool cPasTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkip
       case ' ':
       case '\t':
         strLine = HandleWhiteSpace(strLine, bSkipWhiteSpaces);
+        break;
+
+      default:
+        if (isalpha(c) || c == '_')
+        {
+          strLine = ParseLabel(strLine-1);
+        }
+        else if (isdigit(c))
+        {
+          strLine = ParseLiteral(strLine-1);
+        }
+        else
+        {
+          std::stringstream strLog;
+          strLog << "unknown character " << c;
+          GetTokenHandler()->HandleError(strLog.str().c_str(), GetLine());
+        }
+        if (strLine == NULL)
+          return false;
         break;
     }
   }

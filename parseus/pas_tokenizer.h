@@ -47,7 +47,7 @@ enum ePASTokenType
   PAS_KW_TYPE_INTEGER,
   PAS_KW_TYPE_LONGBOOL,
   PAS_KW_TYPE_LONGINT,
-  PAS_KW_TYPE_LONGWORD,  
+  PAS_KW_TYPE_LONGWORD,
   PAS_KW_TYPE_OLEVARIANT,
   PAS_KW_TYPE_POINTER,
   PAS_KW_TYPE_RAWBYTESTRING,
@@ -60,7 +60,7 @@ enum ePASTokenType
   PAS_KW_TYPE_SMALLINT,
   PAS_KW_TYPE_STRING,
   PAS_KW_TYPE_UINT64,
-  PAS_KW_TYPE_UNICODESTRING,  
+  PAS_KW_TYPE_UNICODESTRING,
   PAS_KW_TYPE_VARIANT,
   PAS_KW_TYPE_WIDECHAR,
   PAS_KW_TYPE_WIDESTRING,
@@ -197,10 +197,13 @@ public:
   ~cPasTokenizer();
 
   bool Parse(const char* strLine, bool bSkipWhiteSpaces = false, bool bSkipComments = false);
-
+  
 protected:
   const char* HandleWhiteSpace(const char* strLine, bool bSkipWhiteSpaces);
   const char* HandleString(const char* strLine);
+
+  const char* ParseLiteral(const char* strLine);
+  const char* ParseLabel(const char* strLine);
 
 private:
   bool m_bBlockComment;
