@@ -20,12 +20,13 @@ static const char* g_OperatorString[PAS_OP_MAX] = {
   "OP_LIST",
   "OP_COMMAND_SEPARATOR",
   "OP_RANGE",
-  "OP_COLON",
+  "OP_ISTYPE",
   "OP_BRACKET_OPEN",
   "OP_BRACKET_CLOSE",
   "OP_INDEX_OPEN",
   "OP_INDEX_CLOSE",
-  "OP_AMPERSAND"
+  "OP_AMPERSAND",
+  "OP_CHAR_CODE"
 };
 
 static tKeyword g_KeyWords[] = {
@@ -165,7 +166,6 @@ static tKeyword g_KeyWords[] = {
   {"stdcall", PAS_KW_STDCALL},
   {"stored", PAS_KW_STORED},
   {"strict", PAS_KW_STRICT},
-  {"string", PAS_KW_STRING},
   {"then", PAS_KW_THEN},
   {"threadvar", PAS_KW_THREADVAR},
   {"to", PAS_KW_TO},
@@ -206,7 +206,7 @@ static tKeyword g_Operators[] = {
   {",", PAS_OP_LIST},
   {";", PAS_OP_COMMAND_SEPARATOR},
   {"..", PAS_OP_RANGE},
-  {":", PAS_OP_COLON},
+  {":", PAS_OP_ISTYPE},
   {"(", PAS_OP_BRACKET_OPEN},
   {")", PAS_OP_BRACKET_CLOSE},
   {"[", PAS_OP_INDEX_OPEN},
@@ -285,7 +285,15 @@ const char* cPasTokenizer::ParseLabel(const char* strLine)
   int kw = IsKeyword(strlwr(strBuffer));
   if (kw != PAS_KW_UNKNOWN)
   {
-    PushToken(TOKEN_KEYWORD, kw);
+    // filter special keywords
+    switch (kw)
+    {
+    case PAS_KW_BEGIN: PushToken(TOKEN_BLOCK_BEGIN); break;
+    case PAS_KW_END: PushToken(TOKEN_BLOCK_END); break;
+    default:
+      PushToken(TOKEN_KEYWORD, kw);
+      break;
+    }
   }
   else
   {
@@ -423,6 +431,57 @@ bool cPasTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkip
         strLine = HandleWhiteSpace(strLine, bSkipWhiteSpaces);
         break;
 
+      case '+': PushToken(TOKEN_OPERATOR, PAS_OP_ADDITION); break;
+      case '-': PushToken(TOKEN_OPERATOR, PAS_OP_SUBTRACTION); break;
+      case '*': PushToken(TOKEN_OPERATOR, PAS_OP_MULTIPLICATION); break;
+      case '/': PushToken(TOKEN_OPERATOR, PAS_OP_DIVISION); break;
+      case '=': PushToken(TOKEN_OPERATOR, PAS_OP_EQUAL); break;
+      case '>':
+        switch(*strLine)
+        {
+          case '=': PushToken(TOKEN_OPERATOR, PAS_OP_BIGGER_OR_EQUAL); strLine++; break;
+          default: PushToken(TOKEN_OPERATOR, PAS_OP_BIGGER); break;
+        };
+        break;
+      case '<':
+        switch(*strLine)
+        {
+          case '=': PushToken(TOKEN_OPERATOR, PAS_OP_SMALLER_OR_EQUAL); strLine++; break;
+          case '>': PushToken(TOKEN_OPERATOR, PAS_OP_NOT_EQUAL); strLine++; break;
+          default: PushToken(TOKEN_OPERATOR, PAS_OP_SMALLER); break;
+        };
+        break;
+      case ':':
+        switch(*strLine)
+        {
+          case '=': PushToken(TOKEN_OPERATOR, PAS_OP_ASSIGNMENT); strLine++; break;
+          default: PushToken(TOKEN_OPERATOR, PAS_OP_ISTYPE); break;
+        };
+        break;
+      case '^': PushToken(TOKEN_OPERATOR, PAS_OP_DEREFERENCE); break;
+      case '@': PushToken(TOKEN_OPERATOR, PAS_OP_ADDRESS); break;
+      case ',': PushToken(TOKEN_OPERATOR, PAS_OP_LIST); break;
+      case ';': PushToken(TOKEN_OPERATOR, PAS_OP_COMMAND_SEPARATOR); break;
+      case '.': 
+        switch(*strLine)
+        {
+          case '.': PushToken(TOKEN_OPERATOR, PAS_OP_RANGE); strLine++; break;
+          case ')': PushToken(TOKEN_OPERATOR, PAS_OP_INDEX_CLOSE); strLine++; break;
+          default: PushToken(TOKEN_OPERATOR, PAS_OP_MEMBER_ACCESS); break;
+        }
+        break;
+      case '(':
+        switch(*strLine)
+        {
+        case '.': PushToken(TOKEN_OPERATOR, PAS_OP_INDEX_OPEN); strLine++; break;
+          case '*': /*HandleComment*/ break;
+            default: PushToken(TOKEN_OPERATOR, PAS_OP_BRACKET_OPEN); break;
+        }
+        break;
+      case ')': PushToken(TOKEN_OPERATOR, PAS_OP_BRACKET_CLOSE); break;
+      case '[': PushToken(TOKEN_OPERATOR, PAS_OP_INDEX_OPEN); break;
+      case ']': PushToken(TOKEN_OPERATOR, PAS_OP_INDEX_CLOSE); break;
+      case '#': PushToken(TOKEN_OPERATOR, PAS_OP_CHAR_CODE); break;
       default:
         if (isalpha(c) || c == '_')
         {

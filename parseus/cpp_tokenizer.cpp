@@ -660,7 +660,7 @@ bool cCPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkip
         case '[': PushToken(TOKEN_OPERATOR, CPP_OP_INDEX_OPEN); break;
         case ']': PushToken(TOKEN_OPERATOR, CPP_OP_INDEX_CLOSE); break;
         case '~': PushToken(TOKEN_OPERATOR, CPP_OP_COMPLEMENT); break;
-        case '*': 
+        case '*':
           switch(*strLine)
           {
             case '=': PushToken(TOKEN_OPERATOR, CPP_OP_PRODUCT_ASSIGNMENT); strLine++; break;
@@ -668,7 +668,7 @@ bool cCPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkip
           }
           break;
           
-        case '+': //+, ++, += 
+        case '+': //+, ++, +=
           switch(*strLine)
           {
             case '+': PushToken(TOKEN_OPERATOR, CPP_OP_INCREMENT); strLine++; break;
@@ -682,9 +682,9 @@ bool cCPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkip
           {
             case '-': PushToken(TOKEN_OPERATOR, CPP_OP_DECREMENT); strLine++; break;
             case '=': PushToken(TOKEN_OPERATOR, CPP_OP_DIFFERENCE_ASSIGNMENT); strLine++; break;
-            case '>': 
+            case '>':
             {
-              strLine++; 
+              strLine++;
               switch(*strLine)
               {
                 case '*': PushToken(TOKEN_OPERATOR, CPP_OP_POINTER_DEREFERNCE); strLine++; break;
@@ -701,8 +701,8 @@ bool cCPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkip
           {
             case '=': PushToken(TOKEN_OPERATOR, CPP_OP_REMAINDER_ASSIGNMENT); strLine++; break;
             case '>': PushToken(TOKEN_BLOCK_END); strLine++; break;
-            case ':':           
-              strLine = HandlePreProc(++strLine); 
+            case ':':
+              strLine = HandlePreProc(++strLine);
               if (strLine == NULL)
                 return true;
               break;

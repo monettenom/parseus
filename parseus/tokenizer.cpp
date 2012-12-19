@@ -198,7 +198,7 @@ int cTokenizer::IsKeyword(const char* strLabel)
 
 const char* cTokenizer::GetTokenString(int nToken)
 {
-  if (nToken < TOKEN_MAX)
+  if (nToken >= 0 && nToken < TOKEN_MAX)
   {
     return g_TokenString[nToken];
   }
