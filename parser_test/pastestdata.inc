@@ -93,7 +93,7 @@ tTestData sPasTestData[] =
   },
   // operators
   {
-    {"+ - * / := = <> < <= > >= : ^ @ , ; . .. ()[] #",
+    {"+ - * / := = <> < <= > >= : ^ @ & , ; . .. ()[]",
      NULL},
     23,
     true,
@@ -105,18 +105,81 @@ tTestData sPasTestData[] =
      -1},
     {PAS_OP_ADDITION, PAS_OP_SUBTRACTION, PAS_OP_MULTIPLICATION, PAS_OP_DIVISION, PAS_OP_ASSIGNMENT, PAS_OP_EQUAL, 
      PAS_OP_NOT_EQUAL, PAS_OP_SMALLER, PAS_OP_SMALLER_OR_EQUAL, PAS_OP_BIGGER, PAS_OP_BIGGER_OR_EQUAL, PAS_OP_ISTYPE,
-     PAS_OP_DEREFERENCE, PAS_OP_ADDRESS, PAS_OP_LIST, PAS_OP_COMMAND_SEPARATOR, PAS_OP_MEMBER_ACCESS, PAS_OP_RANGE,
-     PAS_OP_BRACKET_OPEN, PAS_OP_BRACKET_CLOSE, PAS_OP_INDEX_OPEN, PAS_OP_INDEX_CLOSE, PAS_OP_CHAR_CODE}
+     PAS_OP_DEREFERENCE, PAS_OP_ADDRESS, PAS_OP_AMPERSAND, PAS_OP_LIST, PAS_OP_COMMAND_SEPARATOR, PAS_OP_MEMBER_ACCESS, 
+     PAS_OP_RANGE, PAS_OP_BRACKET_OPEN, PAS_OP_BRACKET_CLOSE, PAS_OP_INDEX_OPEN, PAS_OP_INDEX_CLOSE}
   },
   // alternative operators
   {
-    {"(. .)", // (* *)",
+    {"(. .)", // (* *),
      NULL},
     2,
     true,
     {""},
     {TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, -1},
     {PAS_OP_INDEX_OPEN, PAS_OP_INDEX_CLOSE}
+  },
+  // Comments
+  {
+    {"//comment",
+     "// comment //",
+     "{block comment}",
+     "//{block comment}",
+     "{block comment",
+     "two lines}",
+     "{block comment",
+     "three",
+     "lines}",
+     "{block comment} //line comment",
+     "{} //", "{", "}",
+     "(*alternative comment*)",
+     NULL},
+    12,
+    true,
+    {"comment", " comment //", "block comment", "{block comment}", "block comment\ntwo lines",
+     "block comment\nthree\nlines", "block comment", "line comment", "", "", "\n",
+     "alternative comment"},
+    {TOKEN_LINECOMMENT, TOKEN_LINECOMMENT, TOKEN_COMMENT, TOKEN_LINECOMMENT, TOKEN_COMMENT, TOKEN_COMMENT,
+     TOKEN_COMMENT, TOKEN_LINECOMMENT, TOKEN_COMMENT, TOKEN_LINECOMMENT, TOKEN_COMMENT, TOKEN_COMMENT},
+    {PAS_OP_UNKNOWN, PAS_OP_UNKNOWN, PAS_OP_UNKNOWN, PAS_OP_UNKNOWN, PAS_OP_UNKNOWN, PAS_OP_UNKNOWN, 
+     PAS_OP_UNKNOWN, PAS_OP_UNKNOWN, PAS_OP_UNKNOWN, PAS_OP_UNKNOWN, PAS_OP_UNKNOWN, PAS_OP_UNKNOWN}
+  },
+  // numeric literals
+  {
+    {"1 $a $12ab34cd -100 $1$2",
+     NULL},
+    7,
+    true,
+    {"1", "$a", "$12ab34cd", "", "100", "$1", "$2"},
+    {TOKEN_LITERAL, TOKEN_LITERAL, TOKEN_LITERAL, TOKEN_OPERATOR, TOKEN_LITERAL, TOKEN_LITERAL, TOKEN_LITERAL, -1},
+    {PAS_OP_UNKNOWN, PAS_OP_UNKNOWN, PAS_OP_UNKNOWN, PAS_OP_SUBTRACTION, PAS_OP_UNKNOWN, PAS_OP_UNKNOWN, PAS_OP_UNKNOWN}
+  },
+  // floating point numbers
+  {
+    {"1.23456e-65 .1E4f 58. 4e2 1.6e-19 6.02e23f 3.14159", NULL}, 
+    7,
+    true,
+    {"1.23456e-65", ".1E4f", "58.", "4e2", "1.6e-19", "6.02e23f", "3.14159"},
+    {TOKEN_LITERAL, TOKEN_LITERAL, TOKEN_LITERAL, TOKEN_LITERAL, TOKEN_LITERAL, TOKEN_LITERAL, TOKEN_LITERAL},
+    {PAS_OP_UNKNOWN, PAS_OP_UNKNOWN, PAS_OP_UNKNOWN, PAS_OP_UNKNOWN, PAS_OP_UNKNOWN, PAS_OP_UNKNOWN, PAS_OP_UNKNOWN}
+  },
+  // string literals
+  {
+    {"'test' '''' 'a''b' '''a'''",
+     NULL},
+    4,
+    true,
+    {"'test'", "''''", "'a''b'", "'''a'''"},
+    {TOKEN_STRING, TOKEN_STRING, TOKEN_STRING, TOKEN_STRING, -1},
+    {PAS_OP_UNKNOWN, PAS_OP_UNKNOWN, PAS_OP_UNKNOWN, PAS_OP_UNKNOWN}
+  },
+  // char codes
+  {
+    {"#123 #$ff #1#2", NULL},
+    4,
+    true,
+    {"#123", "#$ff", "#1", "#2"},
+    {TOKEN_CHAR, TOKEN_CHAR, TOKEN_CHAR, TOKEN_CHAR, -1},
+    {PAS_OP_UNKNOWN, PAS_OP_UNKNOWN, PAS_OP_UNKNOWN, PAS_OP_UNKNOWN}
   },
   // stopping entry
   {

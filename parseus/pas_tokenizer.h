@@ -28,7 +28,6 @@ enum ePASTokenType
   PAS_OP_INDEX_OPEN,
   PAS_OP_INDEX_CLOSE,
   PAS_OP_AMPERSAND,
-  PAS_OP_CHAR_CODE,
   PAS_OP_MAX,
 
   PAS_KW_UNKNOWN,
@@ -200,9 +199,11 @@ public:
   
 protected:
   const char* HandleWhiteSpace(const char* strLine, bool bSkipWhiteSpaces);
+  const char* HandleBlockComment(const char* strLine, bool bSkipComments);
+  const char* AppendBlockComment(const char* strLine, bool bSkipComments);
   const char* HandleString(const char* strLine);
 
-  const char* ParseLiteral(const char* strLine);
+  const char* ParseLiteral(const char* strLine, int nToken);
   const char* ParseLabel(const char* strLine);
 
 private:

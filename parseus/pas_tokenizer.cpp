@@ -25,8 +25,7 @@ static const char* g_OperatorString[PAS_OP_MAX] = {
   "OP_BRACKET_CLOSE",
   "OP_INDEX_OPEN",
   "OP_INDEX_CLOSE",
-  "OP_AMPERSAND",
-  "OP_CHAR_CODE"
+  "OP_AMPERSAND"
 };
 
 static tKeyword g_KeyWords[] = {
@@ -245,25 +244,34 @@ const char* cPasTokenizer::HandleWhiteSpace(const char* strLine, bool bSkipWhite
 
 const char* cPasTokenizer::HandleString(const char* strLine)
 {
-  std::stringstream strError;
+  static char strBuffer[256];
   const char* strEnd = NULL;
   const char* strCrsr = strLine;
+  strBuffer[0] = '\0';
 
-  if (*strLine == 'l' || *strLine == 'L')
-    strCrsr++;
-
-  strEnd = strchr(strCrsr+1, '\'');
-  if (strEnd == NULL)
+  while (true)
   {
-    strError << "ERROR: Missing end of string character " << *strLine << std::endl;
-    GetTokenHandler()->HandleError(strError.str().c_str(), GetLine());
-    return NULL;
-  }
-  strCrsr = strEnd;
-
-  int iLen = strEnd - strLine + 1;
-  PushToken(TOKEN_STRING, strLine, iLen);
-  return strLine + iLen;
+    strEnd = strchr(strCrsr+1, '\'');
+    if (strEnd == NULL)
+    {
+      std::stringstream strError;
+      strError << "ERROR: Missing end of string character " << *strLine << std::endl;
+      GetTokenHandler()->HandleError(strError.str().c_str(), GetLine());
+      return NULL;
+    }
+    strncat(strBuffer, strCrsr, strEnd-strCrsr+1);
+    if (*(strEnd+1) == '\'')
+    {
+      strEnd++;
+    }
+    else
+    {
+      break;
+    }
+    strCrsr = strEnd;
+  };
+  PushToken(TOKEN_STRING, strBuffer, 0);
+  return strEnd+1;
 }
 
 const char* cPasTokenizer::ParseLabel(const char* strLine)
@@ -302,7 +310,7 @@ const char* cPasTokenizer::ParseLabel(const char* strLine)
   return strCrsr-1;
 }
 
-const char* cPasTokenizer::ParseLiteral(const char* strLine)
+const char* cPasTokenizer::ParseLiteral(const char* strLine, int nToken)
 {
   const char* strCrsr = strLine;
   int pos = 0;
@@ -320,17 +328,27 @@ const char* cPasTokenizer::ParseLiteral(const char* strLine)
     case '0': case '1': case '2': case '3': case '4':
     case '5': case '6': case '7': case '8': case '9':
       break;
-    case 'x': case 'X':
-      if (pos != 1) // x only at position 1
+    case '$':
+      if ((pos == 0) || ((pos == 1) && (*strLine == '#'))) // $ only at position 0 or position 1 if first char was #
       {
-        bContinue = false;
-        bFloating = true; // no . in hex numbers
+        bHex = true;
       }
       else
       {
-        if (*strLine != '0')
-          bContinue = false;
-        bHex = true;
+        strCrsr--;
+        bContinue = false;
+        bFloating = true; // no . in hex numbers
+      }
+      break;
+    case '#':
+      if (pos == 0) // $ only at position 0
+      {
+        bFloating = true; // no . in char codes
+      }
+      else
+      {
+        strCrsr--;
+        bContinue = false;
       }
       break;
     case 'e':
@@ -374,33 +392,63 @@ const char* cPasTokenizer::ParseLiteral(const char* strLine)
     pos++;
   }
 
-  switch(*strCrsr)
+  PushToken(nToken, strLine, strCrsr - strLine);
+  return strCrsr;
+}
+
+const char* cPasTokenizer::HandleBlockComment(const char* strLine, bool bSkipComments)
+{
+  tToken token;
+  int nOffset = 1;
+  const char* strEnd = strchr(strLine, '}');
+  const char* strEnd2 = strstr(strLine, "*)");
+  if (((strEnd == NULL && strEnd2 != NULL)) || ((strEnd2 != NULL) && (strEnd2 < strEnd)))
   {
-  case 'F': case 'f':
-    strCrsr++;
-    break;
-  case 'L': case 'l':
-  case 'U': case 'u':
-    strCrsr++;
-    switch (*strCrsr)
-    {
-    case 'l':
-    case 'L':
-      strCrsr++;
-      switch (*strCrsr) // c++11: ll & ull
-      {
-      case 'l':
-      case 'L':
-        strCrsr++;
-        break;
-      }
-      break;
-    }
-    break;
+    strLine++;
+    strEnd = strEnd2;
+    nOffset = 2;
   }
 
-  PushToken(TOKEN_LITERAL, strLine, strCrsr - strLine);
-  return strCrsr;
+  if (strEnd == NULL)
+  {
+    m_strBuffer = strLine;
+    m_bBlockComment = true;
+    return NULL;
+  }
+  else if(strLine == strEnd)
+  {
+    if (!bSkipComments)
+      PushToken(TOKEN_COMMENT, "", 0);
+    return strEnd + nOffset;
+  }
+  else
+  {
+    if (!bSkipComments)
+      PushToken(TOKEN_COMMENT, strLine, strEnd - strLine);
+    m_bBlockComment = false;
+    m_strBuffer.clear();
+    return strEnd + nOffset;
+  }
+}
+
+const char* cPasTokenizer::AppendBlockComment(const char* strLine, bool bSkipComments)
+{
+  m_strBuffer.append("\n");
+
+  const char* strEnd = strchr(strLine, '}');
+  if (strEnd == NULL)
+  {
+    m_strBuffer.append(strLine);
+    return NULL;
+  }
+
+  m_strBuffer.append(strLine, strEnd - strLine);
+  if (!bSkipComments)
+    PushToken(TOKEN_COMMENT, m_strBuffer.c_str());
+  m_bBlockComment = false;
+  m_strBuffer.clear();
+
+  return strEnd + 1;
 }
 
 bool cPasTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkipComments)
@@ -411,7 +459,11 @@ bool cPasTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkip
   IncLine();
   LogLine(strLine);
 
-  if (GetLine() > 1)
+  if (m_bBlockComment)
+  {
+    strLine = AppendBlockComment(strLine, bSkipComments);
+  }
+  else if (GetLine() > 1)
   {
     if (!bSkipWhiteSpaces)
       PushToken(TOKEN_NEWLINE);
@@ -430,11 +482,24 @@ bool cPasTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkip
       case '\t':
         strLine = HandleWhiteSpace(strLine, bSkipWhiteSpaces);
         break;
-
+      case '{': 
+        strLine = HandleBlockComment(strLine, bSkipComments);
+        if (strLine == NULL)
+        {
+          return true;
+        }
+        break;
       case '+': PushToken(TOKEN_OPERATOR, PAS_OP_ADDITION); break;
       case '-': PushToken(TOKEN_OPERATOR, PAS_OP_SUBTRACTION); break;
       case '*': PushToken(TOKEN_OPERATOR, PAS_OP_MULTIPLICATION); break;
-      case '/': PushToken(TOKEN_OPERATOR, PAS_OP_DIVISION); break;
+      case '/': 
+        switch(*strLine)
+        {
+          case '/': PushToken(TOKEN_LINECOMMENT, strLine+1);
+            return true;
+          default: PushToken(TOKEN_OPERATOR, PAS_OP_DIVISION); break;
+        }
+        break;
       case '=': PushToken(TOKEN_OPERATOR, PAS_OP_EQUAL); break;
       case '>':
         switch(*strLine)
@@ -460,28 +525,57 @@ bool cPasTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkip
         break;
       case '^': PushToken(TOKEN_OPERATOR, PAS_OP_DEREFERENCE); break;
       case '@': PushToken(TOKEN_OPERATOR, PAS_OP_ADDRESS); break;
+      case '&': PushToken(TOKEN_OPERATOR, PAS_OP_AMPERSAND); break;
       case ',': PushToken(TOKEN_OPERATOR, PAS_OP_LIST); break;
       case ';': PushToken(TOKEN_OPERATOR, PAS_OP_COMMAND_SEPARATOR); break;
+      case '#': 
+        strLine = ParseLiteral(strLine-1, TOKEN_CHAR);
+        if (strLine == NULL)
+          return false;
+        break;
+      case '$':
+        strLine = ParseLiteral(strLine-1, TOKEN_LITERAL);
+        if (strLine == NULL)
+          return false;
+        break;
       case '.': 
         switch(*strLine)
         {
+          case '$':
+          case '0': case '1': case '2': case '3': case '4':
+          case '5': case '6': case '7': case '8': case '9':
+            strLine = ParseLiteral(strLine-1, TOKEN_LITERAL);
+            if (strLine == NULL)
+              return false;
+            break;
           case '.': PushToken(TOKEN_OPERATOR, PAS_OP_RANGE); strLine++; break;
           case ')': PushToken(TOKEN_OPERATOR, PAS_OP_INDEX_CLOSE); strLine++; break;
           default: PushToken(TOKEN_OPERATOR, PAS_OP_MEMBER_ACCESS); break;
         }
         break;
+      case '\'':
+        strLine = HandleString(strLine-1);
+        if (strLine == NULL)
+          return true;
+        break;
       case '(':
         switch(*strLine)
         {
-        case '.': PushToken(TOKEN_OPERATOR, PAS_OP_INDEX_OPEN); strLine++; break;
-          case '*': /*HandleComment*/ break;
-            default: PushToken(TOKEN_OPERATOR, PAS_OP_BRACKET_OPEN); break;
+          case '.': PushToken(TOKEN_OPERATOR, PAS_OP_INDEX_OPEN); strLine++; break;
+          case '*':
+            strLine = HandleBlockComment(strLine, bSkipComments);
+            if (strLine == NULL)
+            {
+              return true;
+            }
+            break;
+          default: PushToken(TOKEN_OPERATOR, PAS_OP_BRACKET_OPEN); break;
         }
         break;
       case ')': PushToken(TOKEN_OPERATOR, PAS_OP_BRACKET_CLOSE); break;
       case '[': PushToken(TOKEN_OPERATOR, PAS_OP_INDEX_OPEN); break;
       case ']': PushToken(TOKEN_OPERATOR, PAS_OP_INDEX_CLOSE); break;
-      case '#': PushToken(TOKEN_OPERATOR, PAS_OP_CHAR_CODE); break;
+
       default:
         if (isalpha(c) || c == '_')
         {
@@ -489,7 +583,7 @@ bool cPasTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkip
         }
         else if (isdigit(c))
         {
-          strLine = ParseLiteral(strLine-1);
+          strLine = ParseLiteral(strLine-1, TOKEN_LITERAL);
         }
         else
         {

@@ -43,7 +43,14 @@ bool cTestTokenHandler::Test(tTestData* pTestData)
   {
     m_pTokenizer->Parse(pTestData->m_strCode[i]); 
   }
-  return m_bResult && pTestData->m_nExpectedTokens == m_nTokenCount;
+  if (pTestData->m_nExpectedTokens != m_nTokenCount)
+  {
+    std::stringstream strLog;
+    strLog << "Expected tokens: " << pTestData->m_nExpectedTokens << ", tokens found: " << m_nTokenCount;
+    LogEntry(strLog.str().c_str());
+    m_bResult = false;;
+  }
+  return m_bResult;
 }
 
 int cTestTokenHandler::RunTests()
