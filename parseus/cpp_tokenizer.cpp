@@ -226,6 +226,7 @@ const char* cCPPTokenizer::HandleWhiteSpace(const char* strLine, bool bSkipWhite
 const char* cCPPTokenizer::HandleBlockComment(const char* strLine, bool bSkipComments)
 {
   tToken token;
+  strLine += 2;
   const char* strEnd = strstr(strLine, "*/");
   if (strEnd == NULL)
   {
@@ -233,10 +234,16 @@ const char* cCPPTokenizer::HandleBlockComment(const char* strLine, bool bSkipCom
     m_bBlockComment = true;
     return NULL;
   }
+  else if(strLine == strEnd)
+  {
+    if (!bSkipComments)
+      PushToken(TOKEN_COMMENT, "", 0);
+    return strEnd + 2;
+  }
   else
   {
     if (!bSkipComments)
-      PushToken(TOKEN_COMMENT, strLine, strEnd - strLine + 2);
+      PushToken(TOKEN_COMMENT, strLine, strEnd - strLine);
     m_bBlockComment = false;
     m_strBuffer.clear();
     return strEnd + 2;
@@ -254,7 +261,7 @@ const char* cCPPTokenizer::AppendBlockComment(const char* strLine, bool bSkipCom
     return NULL;
   }
 
-  m_strBuffer.append(strLine, strEnd - strLine + 2);
+  m_strBuffer.append(strLine, strEnd - strLine);
   if (!bSkipComments)
     PushToken(TOKEN_COMMENT, m_strBuffer.c_str());
   m_bBlockComment = false;
@@ -829,7 +836,7 @@ bool cCPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkip
 
         case '/':
           if (!bSkipComments)
-            PushToken(TOKEN_LINECOMMENT, strLine-2);
+            PushToken(TOKEN_LINECOMMENT, strLine);
           return true;
 
         case '=':

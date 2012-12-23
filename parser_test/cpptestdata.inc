@@ -186,6 +186,29 @@ tTestData sCPPTestData[] =
     {TOKEN_PREPROC, TOKEN_PREPROC, TOKEN_PREPROC},
     {CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN}
   },
+  // Comments
+  {
+    {"//comment",
+     "// comment //",
+     "/*block comment*/",
+     "///*block comment*/",
+     "/*block comment",
+     "two lines*/",
+     "/*block comment",
+     "three",
+     "lines*/",
+     "/*block comment*/ //line comment",
+     "/**/ //", "/*", "*/",
+     NULL},
+    11,
+    true,
+    {"comment", " comment //", "block comment", "/*block comment*/", "block comment\ntwo lines",
+     "block comment\nthree\nlines", "block comment", "line comment", "", "", "\n"},
+    {TOKEN_LINECOMMENT, TOKEN_LINECOMMENT, TOKEN_COMMENT, TOKEN_LINECOMMENT, TOKEN_COMMENT, TOKEN_COMMENT,
+     TOKEN_COMMENT, TOKEN_LINECOMMENT, TOKEN_COMMENT, TOKEN_LINECOMMENT, TOKEN_COMMENT},
+    {CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, 
+     CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN}
+  },
   // digraphs
   {
     {"<% %> <: :> %:define x y", NULL}, 

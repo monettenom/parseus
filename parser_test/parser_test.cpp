@@ -4,11 +4,21 @@
 
 int main(int argc, char* argv[])
 {
-  //cTestCPPTokenHandler tester;
-  cTestPasTokenHandler tester;
-  int nFailed = tester.RunTests(); 
-  int nTests = tester.GetTestCount();
-  std::cout << nFailed << " of " << nTests << " failed!" << std::endl;
+  int nFailed = 0;
+  int nTests = 0;
+  {
+    cTestCPPTokenHandler tester;
+    nFailed += tester.RunTests(); 
+    nTests += tester.GetTestCount();
+  }
+
+  {
+    cTestPasTokenHandler tester;
+    nFailed += tester.RunTests(); 
+    nTests += tester.GetTestCount();
+  }
+
+  std::cout << nFailed << " of " << nTests << " tests failed!" << std::endl;
 
   return 0;
 }
