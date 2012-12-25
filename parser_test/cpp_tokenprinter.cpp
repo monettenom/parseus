@@ -50,7 +50,6 @@ void cCPPTokenPrinter::HandleToken(tToken& oToken)
     case TOKEN_STRING:
     case TOKEN_MULTILINE_STRING:
     case TOKEN_CHAR:
-    case TOKEN_NUMBER:
       m_fOut << oToken.m_strName;
       break;
     case TOKEN_NEWLINE:

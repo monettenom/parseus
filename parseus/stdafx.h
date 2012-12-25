@@ -3,7 +3,8 @@
 // are changed infrequently
 //
 
-#pragma once
+#ifndef STDAFX_H
+#define STDAFX_H
 
 #include <iostream>
 #include <vector>
@@ -14,3 +15,5 @@
 
 #include "stringmem.h"
 #include "tokenizer.h"
+
+#endif //STDAFX_H

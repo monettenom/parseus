@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TESTTOKENHANDLER_H
+#define TESTTOKENHANDLER_H
 
 #include "tokenizer.h"
 
@@ -42,3 +43,5 @@ private:
   int m_nTokenCount;
   bool m_bResult;
 };
+
+#endif //TESTTOKENHANDLER_H

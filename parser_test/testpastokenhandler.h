@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TESTPASTOKENHANDLER_H
+#define TESTPASTOKENHANDLER_H
 
 #include "testtokenhandler.h"
 
@@ -14,3 +15,5 @@ protected:
 private:
   cPasTokenizer m_Tokenizer;
 };
+
+#endif //TESTPASTOKENHANDLER_H

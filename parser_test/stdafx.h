@@ -3,7 +3,8 @@
 // are changed infrequently
 //
 
-#pragma once
+#ifndef STDAFX_H
+#define STDAFX_H
 
 #include <stdio.h>
 #include <tchar.h>
@@ -17,4 +18,4 @@
 #include "parseus.h"
 #include "testtokenhandler.h"
 
-
+#endif //STDAFX_H

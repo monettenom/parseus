@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TESTCPPTOKENHANDLER_H
+#define TESTCPPTOKENHANDLER_H
 
 #include "testtokenhandler.h"
 
@@ -14,3 +15,5 @@ protected:
 private:
   cCPPTokenizer m_Tokenizer;
 };
+
+#endif //TESTCPPTOKENHANDLER_H

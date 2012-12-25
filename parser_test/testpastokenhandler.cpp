@@ -57,7 +57,6 @@ void cTestPasTokenHandler::HandleToken(tToken& oToken)
       case TOKEN_LINECOMMENT:
       case TOKEN_STRING:
       case TOKEN_CHAR:
-      case TOKEN_NUMBER:
       case TOKEN_MULTILINE_STRING:
       {
         if (strcmp(oToken.m_strName, GetTestEntry()->m_pNameList[GetTokenCount()]) != 0)

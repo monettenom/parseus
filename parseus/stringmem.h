@@ -1,4 +1,14 @@
-#pragma once
+/*
+   Author: Rolf Neumann
+     File: stringmem.h
+     Date: 24.12.2012
+  License: see license.txt
+  Purpose: Fast memory manager which just pre-allocates memory
+           and returns it bit by bit.
+*/
+
+#ifndef STRINGMEM_H
+#define STRINGMEM_H
 
 class cStringMem
 {
@@ -14,3 +24,5 @@ private:
     int m_nCrsr;
     int m_nSize;
 };
+
+#endif //STRINGMEM_H

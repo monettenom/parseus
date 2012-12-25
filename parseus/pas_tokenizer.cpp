@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <algorithm>
 #include "pas_tokenizer.h"
 
 static const char* g_OperatorString[PAS_OP_MAX] = {
@@ -183,6 +184,8 @@ static tKeyword g_KeyWords[] = {
   {"write", PAS_KW_WRITE},
   {"writeonly", PAS_KW_WRITEONLY},
   {"xor", PAS_KW_XOR},
+  {"true", PAS_KW_TRUE},
+  {"false", PAS_KW_FALSE},
   {"unkown", PAS_KW_UNKNOWN}
 };
 
@@ -218,8 +221,6 @@ static tKeyword g_Operators[] = {
 cPasTokenizer::cPasTokenizer()
 : cTokenizer()
 , m_bBlockComment(false)
-, m_bMultiLineString(false)
-, m_bConcatPreProc(false)
 {
   AddKeywords(g_KeyWords, PAS_KW_UNKNOWN);
   AddOperators(g_Operators, PAS_OP_UNKNOWN);
@@ -229,17 +230,59 @@ cPasTokenizer::~cPasTokenizer()
 {
 }
 
-const char* cPasTokenizer::HandleWhiteSpace(const char* strLine, bool bSkipWhiteSpaces)
+const char* cPasTokenizer::HandleBlockComment(const char* strLine, bool bSkipComments)
 {
-  const char* strCrsr = strLine-1;
-  char c = *strLine;
-  while(c && (c == ' ' || c == '\t'))
+  tToken token;
+  int nOffset = 1;
+  const char* strEnd = strchr(strLine, '}');
+  const char* strEnd2 = strstr(strLine, "*)");
+  if (((strEnd == NULL && strEnd2 != NULL)) || ((strEnd2 != NULL) && (strEnd2 < strEnd)))
   {
-    c = *strLine++;
+    strLine++;
+    strEnd = strEnd2;
+    nOffset = 2;
   }
-  if (!bSkipWhiteSpaces)
-    PushToken(TOKEN_WHITESPACE, strCrsr, strLine - strCrsr);
-  return strLine;
+
+  if (strEnd == NULL)
+  {
+    m_strBuffer = strLine;
+    m_bBlockComment = true;
+    return NULL;
+  }
+  else if(strLine == strEnd)
+  {
+    if (!bSkipComments)
+      PushToken(TOKEN_COMMENT, "", 0);
+    return strEnd + nOffset;
+  }
+  else
+  {
+    if (!bSkipComments)
+      PushToken(TOKEN_COMMENT, strLine, strEnd - strLine);
+    m_bBlockComment = false;
+    m_strBuffer.clear();
+    return strEnd + nOffset;
+  }
+}
+
+const char* cPasTokenizer::AppendBlockComment(const char* strLine, bool bSkipComments)
+{
+  m_strBuffer.append("\n");
+
+  const char* strEnd = strchr(strLine, '}');
+  if (strEnd == NULL)
+  {
+    m_strBuffer.append(strLine);
+    return NULL;
+  }
+
+  m_strBuffer.append(strLine, strEnd - strLine);
+  if (!bSkipComments)
+    PushToken(TOKEN_COMMENT, m_strBuffer.c_str());
+  m_bBlockComment = false;
+  m_strBuffer.clear();
+
+  return strEnd + 1;
 }
 
 const char* cPasTokenizer::HandleString(const char* strLine)
@@ -274,40 +317,27 @@ const char* cPasTokenizer::HandleString(const char* strLine)
   return strEnd+1;
 }
 
-const char* cPasTokenizer::ParseLabel(const char* strLine)
+int cPasTokenizer::IsKeyword(const char* strLabel)
 {
-  static char strBuffer[256];
-  char c;
-  const char* strCrsr = strLine+1;
+  std::string strBuffer(strLabel);
+  std::transform(strBuffer.begin(), strBuffer.end(), strBuffer.begin(), ::tolower);
+  return cTokenizer::IsKeyword(strBuffer.c_str());
+}
 
-  while(c = *strCrsr++)
+void cPasTokenizer::PushKeyword(int nKeyword)
+{
+  switch (nKeyword)
   {
-    if(!isalpha(c) && !isdigit(c) && c != '_')
+    case PAS_KW_BEGIN:
+      PushToken(TOKEN_BLOCK_BEGIN);
       break;
-  }
-
-  int iLen = strCrsr - strLine - 1;
-  strncpy_s<256>(strBuffer, strLine, iLen);
-  strBuffer[iLen] = '\0';
-
-  int kw = IsKeyword(strlwr(strBuffer));
-  if (kw != PAS_KW_UNKNOWN)
-  {
-    // filter special keywords
-    switch (kw)
-    {
-    case PAS_KW_BEGIN: PushToken(TOKEN_BLOCK_BEGIN); break;
-    case PAS_KW_END: PushToken(TOKEN_BLOCK_END); break;
+    case PAS_KW_END:
+      PushToken(TOKEN_BLOCK_END);
+      break;
     default:
-      PushToken(TOKEN_KEYWORD, kw);
+      cTokenizer::PushKeyword(nKeyword);
       break;
-    }
   }
-  else
-  {
-    PushToken(TOKEN_LABEL, strLine, iLen);
-  }
-  return strCrsr-1;
 }
 
 const char* cPasTokenizer::ParseLiteral(const char* strLine, int nToken)
@@ -394,61 +424,6 @@ const char* cPasTokenizer::ParseLiteral(const char* strLine, int nToken)
 
   PushToken(nToken, strLine, strCrsr - strLine);
   return strCrsr;
-}
-
-const char* cPasTokenizer::HandleBlockComment(const char* strLine, bool bSkipComments)
-{
-  tToken token;
-  int nOffset = 1;
-  const char* strEnd = strchr(strLine, '}');
-  const char* strEnd2 = strstr(strLine, "*)");
-  if (((strEnd == NULL && strEnd2 != NULL)) || ((strEnd2 != NULL) && (strEnd2 < strEnd)))
-  {
-    strLine++;
-    strEnd = strEnd2;
-    nOffset = 2;
-  }
-
-  if (strEnd == NULL)
-  {
-    m_strBuffer = strLine;
-    m_bBlockComment = true;
-    return NULL;
-  }
-  else if(strLine == strEnd)
-  {
-    if (!bSkipComments)
-      PushToken(TOKEN_COMMENT, "", 0);
-    return strEnd + nOffset;
-  }
-  else
-  {
-    if (!bSkipComments)
-      PushToken(TOKEN_COMMENT, strLine, strEnd - strLine);
-    m_bBlockComment = false;
-    m_strBuffer.clear();
-    return strEnd + nOffset;
-  }
-}
-
-const char* cPasTokenizer::AppendBlockComment(const char* strLine, bool bSkipComments)
-{
-  m_strBuffer.append("\n");
-
-  const char* strEnd = strchr(strLine, '}');
-  if (strEnd == NULL)
-  {
-    m_strBuffer.append(strLine);
-    return NULL;
-  }
-
-  m_strBuffer.append(strLine, strEnd - strLine);
-  if (!bSkipComments)
-    PushToken(TOKEN_COMMENT, m_strBuffer.c_str());
-  m_bBlockComment = false;
-  m_strBuffer.clear();
-
-  return strEnd + 1;
 }
 
 bool cPasTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkipComments)

@@ -12,7 +12,6 @@ const char* g_TokenString[TOKEN_MAX] = {
   "TOKEN_STRING",
   "TOKEN_MULTILINE_STRING",
   "TOKEN_CHAR",
-  "TOKEN_NUMBER",
   "TOKEN_OPERATOR",
   "TOKEN_BLOCK_BEGIN",
   "TOKEN_BLOCK_END",
@@ -31,7 +30,6 @@ void tToken::SetStringMem(cStringMem* pStringMem)
 tToken::tToken()
 : m_Token(TOKEN_UNKNOWN)
 , m_strName(NULL)
-, m_bNameSet(false)
 {
 }
 
@@ -39,7 +37,6 @@ tToken::tToken(const tToken& token)
 {
   m_Token = token.m_Token;
   m_strName = token.m_strName;
-  m_bNameSet = token.m_bNameSet;
 }
 
 tToken::~tToken()
@@ -54,7 +51,6 @@ void tToken::SetName(const char* strName, int iLen)
     return;
   strncpy_s(m_strName, iLen+1, strName, iLen);
   m_strName[iLen] = '\0';
-  m_bNameSet = true;
 }
 
 void tToken::SetName(const char* strName)
@@ -64,14 +60,12 @@ void tToken::SetName(const char* strName)
   if (!m_strName)
     return;
   strcpy_s(m_strName, iLen, strName);
-  m_bNameSet = true;
 };
 
 tToken& tToken::operator=(const tToken& token)
 {
   m_Token = token.m_Token;
   m_strName = token.m_strName;
-  m_bNameSet = token.m_bNameSet;
   return *this;
 }
 
@@ -162,6 +156,19 @@ void cTokenizer::PushToken(int nTokenType, const char* strName, int iLen)
   PushToken(token);
 }
 
+const char* cTokenizer::HandleWhiteSpace(const char* strLine, bool bSkipWhiteSpaces)
+{
+  const char* strCrsr = strLine-1;
+  char c = *strLine;
+  while(c && (c == ' ' || c == '\t'))
+  {
+    c = *strLine++;
+  }
+  if (!bSkipWhiteSpaces)
+    PushToken(TOKEN_WHITESPACE, strCrsr, strLine - strCrsr);
+  return strLine;
+}
+
 void cTokenizer::AddKeywords(tKeyword* pKeywords, int nUnknown)
 {
   m_nUnkownKeyword = nUnknown;
@@ -194,6 +201,38 @@ int cTokenizer::IsKeyword(const char* strLabel)
     return it->second;
   }
   return m_nUnkownKeyword;
+}
+
+void cTokenizer::PushKeyword(int nKeyword)
+{
+  PushToken(TOKEN_KEYWORD, nKeyword);
+}
+
+
+const char* cTokenizer::ParseLabel(const char* strLine)
+{
+  std::string strBuffer;
+  const char* strCrsr = strLine+1;
+
+  while(char c = *strCrsr++)
+  {
+    if(!isalpha(c) && !isdigit(c) && c != '_')
+      break;
+  }
+
+  int iLen = strCrsr - strLine - 1;
+  strBuffer.assign(strLine, iLen);
+
+  int kw = IsKeyword(strBuffer.c_str());
+  if (kw != m_nUnkownKeyword)
+  {
+    PushKeyword(kw);
+  }
+  else
+  {
+    PushToken(TOKEN_LABEL, strLine, iLen);
+  }
+  return strCrsr-1;
 }
 
 const char* cTokenizer::GetTokenString(int nToken)

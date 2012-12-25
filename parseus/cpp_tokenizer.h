@@ -1,4 +1,13 @@
-#pragma once
+/*
+   Author: Rolf Neumann
+     File: cpp_tokenizer.h
+     Date: 24.12.2012
+  License: see license.txt
+  Purpose: Tokenizer for CPP files
+*/
+
+#ifndef CPP_TOKENIZER_H
+#define CPP_TOKENIZER_H
 
 #include "tokenizer.h"
 
@@ -144,15 +153,14 @@ public:
   bool Parse(const char* strLine, bool bSkipWhiteSpaces = false, bool bSkipComments = false);
 
 protected:
-  const char* HandleWhiteSpace(const char* strLine, bool bSkipWhiteSpaces);
   const char* HandleBlockComment(const char* strLine, bool bSkipComments = false);
   const char* HandleString(const char* strLine, char cDelimiter, int token);
   const char* HandlePreProc(const char* strLine);
   const char* AppendPreProc(const char* strLine);
   const char* AppendBlockComment(const char* strLine, bool bSkipComments = false);
   const char* AppendString(const char* strLine);
-  const char* ParseLabel(const char* strLine);
   const char* ParseLiteral(const char* strLine);
+  void PushKeyword(int nKeyword);
 
 private:
   bool m_bBlockComment;
@@ -162,3 +170,4 @@ private:
   std::string m_strBuffer;
 };
 
+#endif //CPP_TOKENIZER_H

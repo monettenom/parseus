@@ -1,4 +1,13 @@
-#pragma once
+/*
+   Author: Rolf Neumann
+     File: pas_tokenizer.h
+     Date: 24.12.2012
+  License: see license.txt
+  Purpose: Tokenizer for Pascal and Delphi files
+*/
+
+#ifndef PAS_TOKENIZER_H
+#define PAS_TOKENIZER_H
 
 #include "tokenizer.h"
 
@@ -198,19 +207,19 @@ public:
   bool Parse(const char* strLine, bool bSkipWhiteSpaces = false, bool bSkipComments = false);
   
 protected:
-  const char* HandleWhiteSpace(const char* strLine, bool bSkipWhiteSpaces);
   const char* HandleBlockComment(const char* strLine, bool bSkipComments);
   const char* AppendBlockComment(const char* strLine, bool bSkipComments);
   const char* HandleString(const char* strLine);
 
   const char* ParseLiteral(const char* strLine, int nToken);
-  const char* ParseLabel(const char* strLine);
+
+  int IsKeyword(const char* strLabel);
+  void PushKeyword(int nKeyword);
 
 private:
   bool m_bBlockComment;
-  bool m_bMultiLineString;
-  bool m_bConcatPreProc;
 
   std::string m_strBuffer;
 };
 
+#endif //PAS_TOKENIZER_H

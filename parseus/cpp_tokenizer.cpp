@@ -210,19 +210,6 @@ cCPPTokenizer::~cCPPTokenizer()
 {
 }
 
-const char* cCPPTokenizer::HandleWhiteSpace(const char* strLine, bool bSkipWhiteSpaces)
-{
-  const char* strCrsr = strLine-1;
-  char c = *strLine;
-  while(c && (c == ' ' || c == '\t'))
-  {
-    c = *strLine++;
-  }
-  if (!bSkipWhiteSpaces)
-    PushToken(TOKEN_WHITESPACE, strCrsr, strLine - strCrsr);
-  return strLine;
-}
-
 const char* cCPPTokenizer::HandleBlockComment(const char* strLine, bool bSkipComments)
 {
   tToken token;
@@ -381,51 +368,27 @@ const char* cCPPTokenizer::AppendString(const char* strLine)
   return strEnd + 1;
 }
 
-const char* cCPPTokenizer::ParseLabel(const char* strLine)
+void cCPPTokenizer::PushKeyword(int nKeyword)
 {
-  static char strBuffer[256];
-  char c;
-  const char* strCrsr = strLine+1;
-
-  while(c = *strCrsr++)
+  switch (nKeyword)
   {
-    if(!isalpha(c) && !isdigit(c) && c != '_')
+    case CPP_OP_LOGICAL_AND:
+    case CPP_OP_AND_ASSIGNMENT:
+    case CPP_OP_BITWISE_AND:
+    case CPP_OP_BITWISE_OR:
+    case CPP_OP_COMPLEMENT:
+    case CPP_OP_LOGICAL_NOT:
+    case CPP_OP_NOT_EQUAL:
+    case CPP_OP_LOGICAL_OR:
+    case CPP_OP_OR_ASSIGNMENT:
+    case CPP_OP_BITWISE_XOR:
+    case CPP_OP_XOR_ASSIGNMENT:
+      PushToken(TOKEN_OPERATOR, nKeyword);
+      break;
+    default:
+      cTokenizer::PushKeyword(nKeyword);
       break;
   }
-
-  int iLen = strCrsr - strLine - 1;
-  strncpy_s<256>(strBuffer, strLine, iLen);
-  strBuffer[iLen] = '\0';
-
-  int kw = IsKeyword(strBuffer);
-  if (kw != CPP_KW_UNKNOWN)
-  {
-    // filter keywords which are operators (alternative operators)
-    switch (kw)
-    {
-      case CPP_OP_LOGICAL_AND:
-      case CPP_OP_AND_ASSIGNMENT:
-      case CPP_OP_BITWISE_AND:
-      case CPP_OP_BITWISE_OR:
-      case CPP_OP_COMPLEMENT:
-      case CPP_OP_LOGICAL_NOT:
-      case CPP_OP_NOT_EQUAL:
-      case CPP_OP_LOGICAL_OR:
-      case CPP_OP_OR_ASSIGNMENT:
-      case CPP_OP_BITWISE_XOR:
-      case CPP_OP_XOR_ASSIGNMENT:
-        PushToken(TOKEN_OPERATOR, kw);
-        break;
-      default:
-        PushToken(TOKEN_KEYWORD, kw);
-        break;
-    }    
-  }
-  else
-  {
-    PushToken(TOKEN_LABEL, strLine, iLen);
-  }
-  return strCrsr-1;
 }
 
 const char* cCPPTokenizer::ParseLiteral(const char* strLine)
