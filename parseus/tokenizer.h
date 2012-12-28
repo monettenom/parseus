@@ -25,10 +25,10 @@ enum eToken
   TOKEN_STRING,           // 8
   TOKEN_MULTILINE_STRING, // 9
   TOKEN_CHAR,             // 10
-  TOKEN_OPERATOR,         // 12
-  TOKEN_BLOCK_BEGIN,      // 13
-  TOKEN_BLOCK_END,        // 14
-  TOKEN_KEYWORD,          // 15
+  TOKEN_OPERATOR,         // 11
+  TOKEN_BLOCK_BEGIN,      // 12
+  TOKEN_BLOCK_END,        // 13
+  TOKEN_KEYWORD,          // 14
   TOKEN_MAX
 };
 

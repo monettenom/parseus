@@ -16,11 +16,16 @@ add_executable(parser_test
   testtokenhandler.cpp
 
   cpptestdata.inc
-  pastestdata.inc
   testcpptokenhandler.cpp
   testcpptokenhandler.h
+
+  pastestdata.inc
   testpastokenhandler.cpp
   testpastokenhandler.h
+
+  phptestdata.inc
+  testphptokenhandler.cpp
+  testphptokenhandler.h
 )
 
 target_link_libraries (parser_test parseus) 

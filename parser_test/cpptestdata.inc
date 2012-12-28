@@ -153,13 +153,16 @@ tTestData sCPPTestData[] =
      "\"multiwrap 1st line\\",
      "second line\\",
      "third line\"",
+     "\"\"",
      NULL}, 
-    6,
+    7,
     true,
     {"\"test\"", "\"two\nlines\"", "L\"wide chars\"", "\"multi\\\nline\"", "\"digraph-""?""?""/""\ntest\"",
-     "\"multiwrap 1st line\\\nsecond line\\\nthird line\""},
-    {TOKEN_STRING, TOKEN_STRING, TOKEN_STRING, TOKEN_MULTILINE_STRING, TOKEN_MULTILINE_STRING, TOKEN_MULTILINE_STRING},
-    {CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN}
+     "\"multiwrap 1st line\\\nsecond line\\\nthird line\"", "\"\""},
+    {TOKEN_STRING, TOKEN_STRING, TOKEN_STRING, TOKEN_MULTILINE_STRING, TOKEN_MULTILINE_STRING, 
+     TOKEN_MULTILINE_STRING, TOKEN_STRING},    
+    {CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, 
+     CPP_OP_UNKNOWN}
   },
   // character literals
   {

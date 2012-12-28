@@ -14,5 +14,7 @@ add_library(parseus
   cpp_tokenizer.cpp
   pas_tokenizer.h
   pas_tokenizer.cpp
+  php_tokenizer.h
+  php_tokenizer.cpp
 )
 

@@ -13,5 +13,6 @@
 #include "tokenizer.h"
 #include "cpp_tokenizer.h"
 #include "pas_tokenizer.h"
+#include "php_tokenizer.h"
 
 #endif //PARSEUS_H

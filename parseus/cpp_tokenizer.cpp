@@ -387,7 +387,7 @@ void cCPPTokenizer::PushKeyword(int nKeyword)
       break;
     default:
       cTokenizer::PushKeyword(nKeyword);
-      break;
+      break;  
   }
 }
 
