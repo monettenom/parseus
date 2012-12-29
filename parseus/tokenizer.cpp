@@ -158,15 +158,15 @@ void cTokenizer::PushToken(int nTokenType, const char* strName, int iLen)
 
 const char* cTokenizer::HandleWhiteSpace(const char* strLine, bool bSkipWhiteSpaces)
 {
-  const char* strCrsr = strLine-1;
-  char c = *strLine;
+  const char* strCrsr = strLine;
+  char c = *strCrsr;
   while(c && (c == ' ' || c == '\t'))
   {
-    c = *strLine++;
+    c = *(++strCrsr);
   }
   if (!bSkipWhiteSpaces)
-    PushToken(TOKEN_WHITESPACE, strCrsr, strLine - strCrsr);
-  return strLine;
+    PushToken(TOKEN_WHITESPACE, strLine, strCrsr - strLine);
+  return strCrsr;
 }
 
 void cTokenizer::AddKeywords(tKeyword* pKeywords, int nUnknown)
@@ -207,7 +207,6 @@ void cTokenizer::PushKeyword(int nKeyword)
 {
   PushToken(TOKEN_KEYWORD, nKeyword);
 }
-
 
 const char* cTokenizer::ParseLabel(const char* strLine)
 {

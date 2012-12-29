@@ -161,6 +161,24 @@ tTestData sPhpTestData[] =
     {PHP_OP_UNKNOWN, PHP_OP_UNKNOWN, PHP_OP_UNKNOWN, PHP_OP_UNKNOWN, PHP_OP_UNKNOWN, PHP_OP_UNKNOWN, 
      PHP_OP_UNKNOWN, PHP_OP_UNKNOWN, PHP_OP_UNKNOWN, PHP_OP_UNKNOWN, PHP_OP_UNKNOWN, PHP_OP_UNKNOWN}
   },
+  // heredoc
+  {
+    {"$a = <<< HTEXT",
+     "Das ist ein langer Text,",
+     "der über mehrere Zeilen geht.",
+     "HTEXT",
+     "<<<HTEXT",
+     "HTEXT",
+     NULL},
+    9,
+    true,
+    {"", "a", "", "", "HTEXT", "Das ist ein langer Text,\nder über mehrere Zeilen geht.\n",
+     "", "HTEXT", ""},
+    {TOKEN_OPERATOR, TOKEN_LABEL, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_LABEL, TOKEN_MULTILINE_STRING,
+     TOKEN_OPERATOR, TOKEN_LABEL, TOKEN_MULTILINE_STRING, -1},
+    {PHP_OP_VARIABLE, PHP_OP_UNKNOWN, PHP_OP_ASSIGNMENT, PHP_OP_HEREDOC, PHP_OP_UNKNOWN, PHP_OP_UNKNOWN,
+     PHP_OP_HEREDOC, PHP_OP_UNKNOWN, PHP_OP_UNKNOWN}
+  },
   // stopping entry
   {
     {NULL}, -1, false, {""}, {-1}, {-1}

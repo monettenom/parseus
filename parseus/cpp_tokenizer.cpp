@@ -532,7 +532,7 @@ bool cCPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkip
     {
       case ' ':
       case '\t':
-        strLine = HandleWhiteSpace(strLine, bSkipWhiteSpaces);
+        strLine = HandleWhiteSpace(strLine-1, bSkipWhiteSpaces);
         break;
 
       case '/':

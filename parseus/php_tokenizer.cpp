@@ -52,6 +52,7 @@ static const char* g_OperatorString[PHP_OP_MAX] = {
   "OP_BACKTICK",
   "OP_STRING_CONCATENATION",
   "OP_VARIABLE",
+  "OP_HEREDOC",
   "OP_MAX"
 };
 
@@ -187,6 +188,7 @@ static tKeyword g_Operators[] = {
   {"->*", PHP_OP_POINTER},
   {"=>", PHP_OP_ASSOCIATION},
   {"$", PHP_OP_VARIABLE},
+  {"<<<", PHP_OP_HEREDOC}
 };
 
 // cPHPTokenizer
@@ -194,7 +196,7 @@ static tKeyword g_Operators[] = {
 cPHPTokenizer::cPHPTokenizer()
 : cTokenizer()
 , m_bBlockComment(false)
-, m_bMultiLineString(false)
+, m_bHereDocMode(false)
 {
   AddKeywords(g_KeyWords, PHP_KW_UNKNOWN);
   AddOperators(g_Operators, PHP_OP_UNKNOWN);
@@ -260,42 +262,17 @@ const char* cPHPTokenizer::HandleString(const char* strLine, char cDelimiter, in
   if (*strLine == 'b')
     strCrsr++;
 
-  do 
-  { 
-    strEnd = strchr(strCrsr+1, cDelimiter);
-    if (strEnd == NULL)
-    {
-      int iLen = strlen(strLine)-1;
-      if (nToken == TOKEN_STRING)
-      {
-        switch (strLine[iLen])
-        {
-        case '\\':
-          m_strBuffer.assign(strLine, iLen+1);
-          m_bMultiLineString = true;
-          return strLine + iLen + 1;
-        case '/':
-          if (strncmp(strLine + iLen-2, "?""?""/", 3) == 0)
-          {
-            m_strBuffer.assign(strLine, iLen+1);
-            m_bMultiLineString = true;
-            return strLine + iLen + 1;
-          }
-          break;
-        default: // continue
-          break;
-        }
-      }
-      strError << "ERROR: Missing end of string character " << *strLine << std::endl;
-      GetTokenHandler()->HandleError(strError.str().c_str(), GetLine());
-      return NULL;
-    }
-    strCrsr = strEnd;
-  } while((*(strEnd-1) == '\\') && (*(strEnd-2) != '\\'));
+  strEnd = strchr(strCrsr+1, cDelimiter);
+  if (strEnd == NULL)
+  {
+    strError << "ERROR: Missing end of string character " << *strLine << std::endl;
+    GetTokenHandler()->HandleError(strError.str().c_str(), GetLine());
+    return NULL;
+  }
+  strCrsr = strEnd;
 
   int iLen = strEnd - strLine + 1;
   PushToken(nToken, strLine, iLen);
-  m_bMultiLineString = false;
   return strLine + iLen;
 }
 
@@ -392,6 +369,43 @@ const char* cPHPTokenizer::ParseLiteral(const char* strLine)
   return strCrsr;
 }
 
+const char* cPHPTokenizer::HandleHereDoc(const char* strLine, bool bSkipWhiteSpaces)
+{
+  PushToken(TOKEN_OPERATOR, PHP_OP_HEREDOC);
+  strLine = HandleWhiteSpace(strLine, bSkipWhiteSpaces);
+  if (!strLine) 
+    return NULL;
+
+  const char* strCrsr = strLine+1;
+  while(char c = *strCrsr++)
+  {
+    if(!isalpha(c) && !isdigit(c) && c != '_')
+      break;
+  }
+  int iLen = strCrsr - strLine - 1;
+  PushToken(TOKEN_LABEL, strLine, iLen);
+  m_strHereDocLabel.assign(strLine, iLen);
+  HandleWhiteSpace(strLine, bSkipWhiteSpaces);
+  m_bHereDocMode = true;
+  m_strBuffer.clear();
+  return NULL;
+}
+
+const char* cPHPTokenizer::AppendHereDoc(const char* strLine)
+{
+  if(strncmp(strLine, m_strHereDocLabel.c_str(), m_strHereDocLabel.length()) == 0)
+  {
+    PushToken(TOKEN_MULTILINE_STRING, m_strBuffer.c_str());
+    m_bHereDocMode = false;
+  }
+  else
+  {
+    m_strBuffer.append(strLine);
+    m_strBuffer.append("\n");
+  }
+  return NULL;
+}
+
 bool cPHPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkipComments)
 {
   if (!GetTokenHandler())
@@ -404,7 +418,12 @@ bool cPHPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkip
   {
     strLine = AppendBlockComment(strLine, bSkipComments);
   }
-  else if (GetLine() > 1)
+  else if (m_bHereDocMode)
+  {
+    AppendHereDoc(strLine);
+    return true;
+  }
+  if (GetLine() > 1)
   {
     if (!bSkipWhiteSpaces)
       PushToken(TOKEN_NEWLINE);
@@ -421,7 +440,7 @@ bool cPHPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkip
     {
       case ' ':
       case '\t':
-        strLine = HandleWhiteSpace(strLine, bSkipWhiteSpaces);
+        strLine = HandleWhiteSpace(strLine-1, bSkipWhiteSpaces);
         break;
       case '{': PushToken(TOKEN_BLOCK_BEGIN); break;
       case '}': PushToken(TOKEN_BLOCK_END); break;
@@ -528,6 +547,11 @@ bool cPHPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkip
             switch(*strLine)
             {
               case '=': PushToken(TOKEN_OPERATOR, PHP_OP_SHIFT_LEFT_ASSIGNMENT); strLine++; break;
+              case '<': 
+                strLine = HandleHereDoc(strLine+1, bSkipWhiteSpaces);
+                if (strLine == NULL)
+                  return true;
+                break;
               default: PushToken(TOKEN_OPERATOR, PHP_OP_SHIFT_LEFT); break;
             }
             break;

@@ -65,6 +65,7 @@ enum ePHPTokenType
   PHP_OP_POINTER,
   PHP_OP_ASSOCIATION,
   PHP_OP_VARIABLE,
+  PHP_OP_HEREDOC,
   PHP_OP_MAX,
 
   PHP_KW_UNKNOWN,
@@ -157,9 +158,11 @@ public:
 
 protected:
   const char* HandleBlockComment(const char* strLine, bool bSkipComments = false);
-  const char* HandleString(const char* strLine, char cDelimiter, int nToken);
-  const char* AppendPreProc(const char* strLine);
   const char* AppendBlockComment(const char* strLine, bool bSkipComments = false);
+  const char* HandleString(const char* strLine, char cDelimiter, int nToken);
+  const char* HandleHereDoc(const char* strLine, bool bSkipWhiteSpaces);
+  const char* AppendHereDoc(const char* strLine);
+  const char* AppendPreProc(const char* strLine);
   const char* AppendString(const char* strLine);
   const char* ParseLiteral(const char* strLine);
   void PushKeyword(int nKeyword);
@@ -167,9 +170,10 @@ protected:
 
 private:
   bool m_bBlockComment;
-  bool m_bMultiLineString;
+  bool m_bHereDocMode;
 
   std::string m_strBuffer;
+  std::string m_strHereDocLabel;
 };
 
 #endif //PHP_TOKENIZER_H
