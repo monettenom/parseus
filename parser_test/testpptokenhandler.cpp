@@ -76,6 +76,7 @@ void cTestPPTokenHandler::HandleToken(tToken& oToken)
       case TOKEN_COMMENT:
       case TOKEN_LINECOMMENT:
       case TOKEN_STRING:
+      case TOKEN_TEXT:
       case TOKEN_MULTILINE_STRING:
       {
         if (strcmp(oToken.m_strName, GetTestEntry()->m_pNameList[GetTokenCount()]) != 0)

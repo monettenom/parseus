@@ -56,12 +56,8 @@ static tKeyword g_KeyWords[] = {
   {"__int64", CPP_KW_TYPE_INT64},
   {"alignas", CPP_KW_11_ALIGNAS},
   {"alignof", CPP_KW_11_ALIGNOF},
-  {"and", CPP_OP_LOGICAL_AND},
-  {"and_eq", CPP_OP_AND_ASSIGNMENT},
   {"asm", CPP_KW_ASM},
   {"auto", CPP_KW_AUTO},
-  {"bitand", CPP_OP_BITWISE_AND},
-  {"bitor", CPP_OP_BITWISE_OR},
   {"bool", CPP_KW_TYPE_BOOL},
   {"break", CPP_KW_BREAK},
   {"case", CPP_KW_CASE},
@@ -70,7 +66,6 @@ static tKeyword g_KeyWords[] = {
   {"char16_t", CPP_KW_11_CHAR16_T},
   {"char32_t", CPP_KW_11_CHAR32_T},
   {"class", CPP_KW_CLASS},
-  {"compl", CPP_OP_COMPLEMENT},
   {"const", CPP_KW_TYPE_CONST},
   {"constexpr", CPP_KW_11_CONSTEXPR},
   {"const_cast", CPP_KW_CONST_CAST},
@@ -100,12 +95,8 @@ static tKeyword g_KeyWords[] = {
   {"namespace", CPP_KW_NAMESPACE}, 
   {"new", CPP_KW_NEW},
   {"noexcept", CPP_KW_11_NOEXCEPT},
-  {"not", CPP_OP_LOGICAL_NOT},
-  {"not_eq", CPP_OP_NOT_EQUAL},
   {"nullptr", CPP_KW_11_NULLPTR},
   {"operator", CPP_KW_OPERATOR},
-  {"or", CPP_OP_LOGICAL_OR},
-  {"or_eq", CPP_OP_OR_ASSIGNMENT},
   {"override", CPP_KW_11_OVERRIDE},
   {"private", CPP_KW_PRIVATE},
   {"protected", CPP_KW_PROTECTED},
@@ -138,8 +129,6 @@ static tKeyword g_KeyWords[] = {
   {"volatile", CPP_KW_VOLATILE}, 
   {"wchar_t", CPP_KW_TYPE_WCHAR_T},
   {"while", CPP_KW_WHILE},
-  {"xor", CPP_OP_BITWISE_XOR},
-  {"xor_eq", CPP_OP_XOR_ASSIGNMENT},
   {"unknown", CPP_KW_UNKNOWN}
 };
 
@@ -265,11 +254,6 @@ const char* cCPPTokenizer::HandlePreProc(const char* strLine)
     m_strBuffer = strLine;
     m_bConcatPreProc = true;
   }
-  else if ((iLen >= 3) && (strcmp(strLine + iLen-3, "?""?""/") == 0)) // trigraphs will also be handled inside strings
-  {
-    m_strBuffer = strLine;
-    m_bConcatPreProc = true;
-  }
   else
   {
     PushToken(TOKEN_PREPROC, strLine);
@@ -285,10 +269,6 @@ const char* cCPPTokenizer::AppendPreProc(const char* strLine)
   m_strBuffer.append(strLine);
 
   if (strLine[iLen-1] == '\\')
-  {
-    m_bConcatPreProc = true;
-  }
-  else if ((iLen >= 3) && (strcmp(strLine + iLen-3, "?""?""/") == 0)) // trigraphs will also be handled inside strings
   {
     m_bConcatPreProc = true;
   }
@@ -324,14 +304,6 @@ const char* cCPPTokenizer::HandleString(const char* strLine, char cDelimiter, in
             m_strBuffer.assign(strLine, iLen+1);
             m_bMultiLineString = true;
             return strLine + iLen + 1;
-          case '/':
-            if (strncmp(strLine + iLen-2, "?""?""/", 3) == 0)
-            {
-              m_strBuffer.assign(strLine, iLen+1);
-              m_bMultiLineString = true;
-              return strLine + iLen + 1;
-            }
-            break;
           default: // continue
             break;
         }
@@ -374,29 +346,6 @@ const char* cCPPTokenizer::AppendString(const char* strLine)
   m_strBuffer.clear();
 
   return strEnd + 1;
-}
-
-void cCPPTokenizer::PushKeyword(int nKeyword)
-{
-  switch (nKeyword)
-  {
-    case CPP_OP_LOGICAL_AND:
-    case CPP_OP_AND_ASSIGNMENT:
-    case CPP_OP_BITWISE_AND:
-    case CPP_OP_BITWISE_OR:
-    case CPP_OP_COMPLEMENT:
-    case CPP_OP_LOGICAL_NOT:
-    case CPP_OP_NOT_EQUAL:
-    case CPP_OP_LOGICAL_OR:
-    case CPP_OP_OR_ASSIGNMENT:
-    case CPP_OP_BITWISE_XOR:
-    case CPP_OP_XOR_ASSIGNMENT:
-      PushToken(TOKEN_OPERATOR, nKeyword);
-      break;
-    default:
-      cTokenizer::PushKeyword(nKeyword);
-      break;  
-  }
 }
 
 const char* cCPPTokenizer::ParseLiteral(const char* strLine)
@@ -564,233 +513,200 @@ bool cCPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkip
           return true;
         break;
 
-        case '\"':
-          strLine = HandleString(strLine-1, '\"', TOKEN_STRING);
-          if (strLine == NULL)
-            return true;
-          break;
+      case '\"':
+        strLine = HandleString(strLine-1, '\"', TOKEN_STRING);
+        if (strLine == NULL)
+          return true;
+        break;
 
-        case '\'':
-          strLine = HandleString(strLine-1, '\'', TOKEN_CHAR);
-          if (strLine == NULL)
-            return true;
-          break;
+      case '\'':
+        strLine = HandleString(strLine-1, '\'', TOKEN_CHAR);
+        if (strLine == NULL)
+          return true;
+        break;
 
-        case '#': 
-          strLine = HandlePreProc(strLine); 
-          if (strLine == NULL)
-            return true;
-          break;
-        case '{': PushToken(TOKEN_BLOCK_BEGIN); break;
-        case '}': PushToken(TOKEN_BLOCK_END); break;
+      case '#': 
+        strLine = HandlePreProc(strLine); 
+        if (strLine == NULL)
+          return true;
+        break;
+      case '{': PushToken(TOKEN_BLOCK_BEGIN); break;
+      case '}': PushToken(TOKEN_BLOCK_END); break;
 
-        case '.': 
-          switch(*strLine)
-          {
-            case '*': PushToken(TOKEN_OPERATOR, CPP_OP_MEMBER_ACCESS_DEREFERENCE); strLine++; break;
-            case '.':
-              if (strLine[1] == '.')
-              {
-                PushToken(TOKEN_OPERATOR, CPP_OP_ELLIPSIS); 
-                strLine += 2;
-              }
-              break;
-            case '0': case '1': case '2': case '3': case '4':
-            case '5': case '6': case '7': case '8': case '9':
-              strLine = ParseLiteral(strLine-1);
-              if (strLine == NULL)
-                return false;
-              break;
-            default: PushToken(TOKEN_OPERATOR, CPP_OP_MEMBER_ACCESS); break;
-          }
-          break;
-
-        case ',': PushToken(TOKEN_OPERATOR, CPP_OP_LIST); break;
-        case ';': PushToken(TOKEN_OPERATOR, CPP_OP_COMMAND_END); break;
-        case '?': 
-          switch(*strLine)
-          {
-            case '?':
-              strLine++;
-              switch(*strLine)
-              {
-                case '<': PushToken(TOKEN_BLOCK_BEGIN); strLine++; break;
-                case '>': PushToken(TOKEN_BLOCK_END); strLine++; break;
-                case '(': PushToken(TOKEN_OPERATOR, CPP_OP_INDEX_OPEN); strLine++; break;
-                case ')': PushToken(TOKEN_OPERATOR, CPP_OP_INDEX_CLOSE); strLine++; break;
-                case '\'': PushToken(TOKEN_OPERATOR, CPP_OP_BITWISE_XOR); strLine++; break;
-                case '!':  PushToken(TOKEN_OPERATOR, CPP_OP_BITWISE_OR); strLine++; break;
-                case '-': PushToken(TOKEN_OPERATOR, CPP_OP_COMPLEMENT); strLine++; break;
-                case '=': 
-                  strLine++; 
-                  strLine = HandlePreProc(++strLine); 
-                  if (strLine == NULL)
-                    return true;
-                  break;
-                default: GetTokenHandler()->HandleError("unexpected character follows ?? (trigraph)", GetLine()); break;
-              }
-              break;
-            default: PushToken(TOKEN_OPERATOR, CPP_OP_CONDITIONAL); break;
-          }
-          break;
-        case '(': PushToken(TOKEN_OPERATOR, CPP_OP_BRACKET_OPEN); break;
-        case ')': PushToken(TOKEN_OPERATOR, CPP_OP_BRACKET_CLOSE); break;
-        case '[': PushToken(TOKEN_OPERATOR, CPP_OP_INDEX_OPEN); break;
-        case ']': PushToken(TOKEN_OPERATOR, CPP_OP_INDEX_CLOSE); break;
-        case '~': PushToken(TOKEN_OPERATOR, CPP_OP_COMPLEMENT); break;
-        case '*':
-          switch(*strLine)
-          {
-            case '=': PushToken(TOKEN_OPERATOR, CPP_OP_PRODUCT_ASSIGNMENT); strLine++; break;
-            default: PushToken(TOKEN_OPERATOR, CPP_OP_ASTERISK); break;
-          }
-          break;
-          
-        case '+': //+, ++, +=
-          switch(*strLine)
-          {
-            case '+': PushToken(TOKEN_OPERATOR, CPP_OP_INCREMENT); strLine++; break;
-            case '=': PushToken(TOKEN_OPERATOR, CPP_OP_SUM_ASSIGNMENT); strLine++; break;
-            default: PushToken(TOKEN_OPERATOR, CPP_OP_ADDITION); break;
-          }
-          break;
-
-        case '-': //-, --, -=, ->
-          switch(*strLine)
-          {
-            case '-': PushToken(TOKEN_OPERATOR, CPP_OP_DECREMENT); strLine++; break;
-            case '=': PushToken(TOKEN_OPERATOR, CPP_OP_DIFFERENCE_ASSIGNMENT); strLine++; break;
-            case '>':
+      case '.': 
+        switch(*strLine)
+        {
+          case '*': PushToken(TOKEN_OPERATOR, CPP_OP_MEMBER_ACCESS_DEREFERENCE); strLine++; break;
+          case '.':
+            if (strLine[1] == '.')
             {
-              strLine++;
-              switch(*strLine)
-              {
-                case '*': PushToken(TOKEN_OPERATOR, CPP_OP_POINTER_DEREFERNCE); strLine++; break;
-                default: PushToken(TOKEN_OPERATOR, CPP_OP_POINTER); break;
-              }
+              PushToken(TOKEN_OPERATOR, CPP_OP_ELLIPSIS); 
+              strLine += 2;
             }
             break;
-            default: PushToken(TOKEN_OPERATOR, CPP_OP_SUBTRACTION); break;
-          }
-          break;
-
-        case '%': //%, %=
-          switch(*strLine)
-          {
-            case '=': PushToken(TOKEN_OPERATOR, CPP_OP_REMAINDER_ASSIGNMENT); strLine++; break;
-            case '>': PushToken(TOKEN_BLOCK_END); strLine++; break;
-            case ':':
-              strLine = HandlePreProc(++strLine);
-              if (strLine == NULL)
-                return true;
-              break;
-            default: PushToken(TOKEN_OPERATOR, CPP_OP_MODULUS); break;
-          }
-          break;
-
-        case '=': //=, ==
-          switch(*strLine)
-          {
-            case '=': PushToken(TOKEN_OPERATOR, CPP_OP_EQUAL); strLine++; break;
-            default: PushToken(TOKEN_OPERATOR, CPP_OP_ASSIGNMENT); break;
-          }
-          break;
-
-        case '!': //!, !=
-          switch(*strLine)
-          {
-            case '=': PushToken(TOKEN_OPERATOR, CPP_OP_NOT_EQUAL); strLine++; break;
-            default: PushToken(TOKEN_OPERATOR, CPP_OP_LOGICAL_NOT); break;
-          }
-          break;
-
-        case '<': //<, <=, <<, <<=
-          switch(*strLine)
-          {
-            case '=': PushToken(TOKEN_OPERATOR, CPP_OP_SMALLER_OR_EQUAL); strLine++; break;
-            case '%': PushToken(TOKEN_BLOCK_BEGIN); strLine++; break;
-            case ':': PushToken(TOKEN_OPERATOR, CPP_OP_INDEX_OPEN); strLine++; break;
-            case '<': 
-              strLine++;
-              switch(*strLine)
-              {
-                case '=': PushToken(TOKEN_OPERATOR, CPP_OP_SHIFT_LEFT_ASSIGNMENT); strLine++; break;
-                default: PushToken(TOKEN_OPERATOR, CPP_OP_SHIFT_LEFT); break;
-              }
-              break;
-            default: PushToken(TOKEN_OPERATOR, CPP_OP_SMALLER); break;
-          }
-          break;
-
-        case '>': //>, >=, >>, >>=
-          switch(*strLine)
-          {
-            case '=': PushToken(TOKEN_OPERATOR, CPP_OP_BIGGER_OR_EQUAL); strLine++; break;
-            case '>': 
-              strLine++;
-              switch(*strLine)
-              {
-                case '=': PushToken(TOKEN_OPERATOR, CPP_OP_SHIFT_RIGHT_ASSIGNMENT); strLine++; break;
-                default: PushToken(TOKEN_OPERATOR, CPP_OP_SHIFT_RIGHT); break;
-              }
-              break;
-            default: PushToken(TOKEN_OPERATOR, CPP_OP_BIGGER); break;
-          }
-          break;
-
-        case '&': //&, &&, &=
-          switch(*strLine)
-          {
-            case '=': PushToken(TOKEN_OPERATOR, CPP_OP_AND_ASSIGNMENT); strLine++; break;
-            case '&': PushToken(TOKEN_OPERATOR, CPP_OP_LOGICAL_AND); strLine++; break;
-            default: PushToken(TOKEN_OPERATOR, CPP_OP_BITWISE_AND); break;
-          }
-          break;
-
-        case '|': //|, ||, |=
-          switch(*strLine)
-          {
-            case '=': PushToken(TOKEN_OPERATOR, CPP_OP_OR_ASSIGNMENT); strLine++; break;
-            case '|': PushToken(TOKEN_OPERATOR, CPP_OP_LOGICAL_OR); strLine++; break;
-            default: PushToken(TOKEN_OPERATOR, CPP_OP_BITWISE_OR); break;
-          }
-          break;
-
-        case '^': //^, ^=
-          switch(*strLine)
-          {
-            case '=': PushToken(TOKEN_OPERATOR, CPP_OP_XOR_ASSIGNMENT); strLine++; break;
-            default: PushToken(TOKEN_OPERATOR, CPP_OP_BITWISE_XOR); break;
-          }
-          break;
-
-        case ':': //:, ::
-          switch(*strLine)
-          {
-            case ':': PushToken(TOKEN_OPERATOR, CPP_OP_SCOPE); strLine++; break;
-            case '>': PushToken(TOKEN_OPERATOR, CPP_OP_INDEX_CLOSE); strLine++; break;
-            default: PushToken(TOKEN_OPERATOR, CPP_OP_COLON); break;
-          }
-          break;
-
-        default:
-          if (isalpha(c) || c == '_')
-          {
-            strLine = ParseLabel(strLine-1);
-          }
-          else if (isdigit(c))
-          {
+          case '0': case '1': case '2': case '3': case '4':
+          case '5': case '6': case '7': case '8': case '9':
             strLine = ParseLiteral(strLine-1);
-          }
-          else
+            if (strLine == NULL)
+              return false;
+            break;
+          default: PushToken(TOKEN_OPERATOR, CPP_OP_MEMBER_ACCESS); break;
+        }
+        break;
+
+      case ',': PushToken(TOKEN_OPERATOR, CPP_OP_LIST); break;
+      case ';': PushToken(TOKEN_OPERATOR, CPP_OP_COMMAND_END); break;
+      case '(': PushToken(TOKEN_OPERATOR, CPP_OP_BRACKET_OPEN); break;
+      case ')': PushToken(TOKEN_OPERATOR, CPP_OP_BRACKET_CLOSE); break;
+      case '[': PushToken(TOKEN_OPERATOR, CPP_OP_INDEX_OPEN); break;
+      case ']': PushToken(TOKEN_OPERATOR, CPP_OP_INDEX_CLOSE); break;
+      case '~': PushToken(TOKEN_OPERATOR, CPP_OP_COMPLEMENT); break;
+      case '*':
+        switch(*strLine)
+        {
+          case '=': PushToken(TOKEN_OPERATOR, CPP_OP_PRODUCT_ASSIGNMENT); strLine++; break;
+          default: PushToken(TOKEN_OPERATOR, CPP_OP_ASTERISK); break;
+        }
+        break;
+        
+      case '+': //+, ++, +=
+        switch(*strLine)
+        {
+          case '+': PushToken(TOKEN_OPERATOR, CPP_OP_INCREMENT); strLine++; break;
+          case '=': PushToken(TOKEN_OPERATOR, CPP_OP_SUM_ASSIGNMENT); strLine++; break;
+          default: PushToken(TOKEN_OPERATOR, CPP_OP_ADDITION); break;
+        }
+        break;
+
+      case '-': //-, --, -=, ->
+        switch(*strLine)
+        {
+          case '-': PushToken(TOKEN_OPERATOR, CPP_OP_DECREMENT); strLine++; break;
+          case '=': PushToken(TOKEN_OPERATOR, CPP_OP_DIFFERENCE_ASSIGNMENT); strLine++; break;
+          case '>':
           {
-            std::stringstream strLog;
-            strLog << "unknown character " << c;
-            GetTokenHandler()->HandleError(strLog.str().c_str(), GetLine());
+            strLine++;
+            switch(*strLine)
+            {
+              case '*': PushToken(TOKEN_OPERATOR, CPP_OP_POINTER_DEREFERNCE); strLine++; break;
+              default: PushToken(TOKEN_OPERATOR, CPP_OP_POINTER); break;
+            }
           }
-          if (strLine == NULL)
-            return false;
           break;
+          default: PushToken(TOKEN_OPERATOR, CPP_OP_SUBTRACTION); break;
+        }
+        break;
+
+      case '%': //%, %=
+        switch(*strLine)
+        {
+          case '=': PushToken(TOKEN_OPERATOR, CPP_OP_REMAINDER_ASSIGNMENT); strLine++; break;
+          default: PushToken(TOKEN_OPERATOR, CPP_OP_MODULUS); break;
+        }
+        break;
+
+      case '=': //=, ==
+        switch(*strLine)
+        {
+          case '=': PushToken(TOKEN_OPERATOR, CPP_OP_EQUAL); strLine++; break;
+          default: PushToken(TOKEN_OPERATOR, CPP_OP_ASSIGNMENT); break;
+        }
+        break;
+
+      case '!': //!, !=
+        switch(*strLine)
+        {
+          case '=': PushToken(TOKEN_OPERATOR, CPP_OP_NOT_EQUAL); strLine++; break;
+          default: PushToken(TOKEN_OPERATOR, CPP_OP_LOGICAL_NOT); break;
+        }
+        break;
+
+      case '?': PushToken(TOKEN_OPERATOR, CPP_OP_CONDITIONAL); break;
+
+      case '<': //<, <=, <<, <<=
+        switch(*strLine)
+        {
+          case '=': PushToken(TOKEN_OPERATOR, CPP_OP_SMALLER_OR_EQUAL); strLine++; break;
+          case '<': 
+            strLine++;
+            switch(*strLine)
+            {
+              case '=': PushToken(TOKEN_OPERATOR, CPP_OP_SHIFT_LEFT_ASSIGNMENT); strLine++; break;
+              default: PushToken(TOKEN_OPERATOR, CPP_OP_SHIFT_LEFT); break;
+            }
+            break;
+          default: PushToken(TOKEN_OPERATOR, CPP_OP_SMALLER); break;
+        }
+        break;
+
+      case '>': //>, >=, >>, >>=
+        switch(*strLine)
+        {
+          case '=': PushToken(TOKEN_OPERATOR, CPP_OP_BIGGER_OR_EQUAL); strLine++; break;
+          case '>': 
+            strLine++;
+            switch(*strLine)
+            {
+              case '=': PushToken(TOKEN_OPERATOR, CPP_OP_SHIFT_RIGHT_ASSIGNMENT); strLine++; break;
+              default: PushToken(TOKEN_OPERATOR, CPP_OP_SHIFT_RIGHT); break;
+            }
+            break;
+          default: PushToken(TOKEN_OPERATOR, CPP_OP_BIGGER); break;
+        }
+        break;
+
+      case '&': //&, &&, &=
+        switch(*strLine)
+        {
+          case '=': PushToken(TOKEN_OPERATOR, CPP_OP_AND_ASSIGNMENT); strLine++; break;
+          case '&': PushToken(TOKEN_OPERATOR, CPP_OP_LOGICAL_AND); strLine++; break;
+          default: PushToken(TOKEN_OPERATOR, CPP_OP_BITWISE_AND); break;
+        }
+        break;
+
+      case '|': //|, ||, |=
+        switch(*strLine)
+        {
+          case '=': PushToken(TOKEN_OPERATOR, CPP_OP_OR_ASSIGNMENT); strLine++; break;
+          case '|': PushToken(TOKEN_OPERATOR, CPP_OP_LOGICAL_OR); strLine++; break;
+          default: PushToken(TOKEN_OPERATOR, CPP_OP_BITWISE_OR); break;
+        }
+        break;
+
+      case '^': //^, ^=
+        switch(*strLine)
+        {
+          case '=': PushToken(TOKEN_OPERATOR, CPP_OP_XOR_ASSIGNMENT); strLine++; break;
+          default: PushToken(TOKEN_OPERATOR, CPP_OP_BITWISE_XOR); break;
+        }
+        break;
+
+      case ':': //:, ::
+        switch(*strLine)
+        {
+          case ':': PushToken(TOKEN_OPERATOR, CPP_OP_SCOPE); strLine++; break;
+          default: PushToken(TOKEN_OPERATOR, CPP_OP_COLON); break;
+        }
+        break;
+
+      default:
+        if (isalpha(c) || c == '_')
+        {
+          strLine = ParseLabel(strLine-1);
+        }
+        else if (isdigit(c))
+        {
+          strLine = ParseLiteral(strLine-1);
+        }
+        else
+        {
+          std::stringstream strLog;
+          strLog << "unknown character " << c;
+          GetTokenHandler()->HandleError(strLog.str().c_str(), GetLine());
+        }
+        if (strLine == NULL)
+          return false;
+        break;
     }
 
     if (bSlashFound)

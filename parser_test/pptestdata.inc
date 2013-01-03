@@ -268,6 +268,26 @@ tTestData sPPTestData[] =
     {PP_OP_PREPROC, PP_KW_ERROR, PP_OP_UNKNOWN, PP_OP_PREPROC_END,
      PP_OP_PREPROC, PP_KW_WARNING, PP_OP_UNKNOWN, PP_OP_PREPROC_END}
   },
+  // digraphs
+  {
+    {"<% %> <: :> %:", NULL},
+    5,
+    true,
+    {"{", "}", "[", "]", "#"},
+    {TOKEN_CHAR, TOKEN_CHAR, TOKEN_CHAR, TOKEN_CHAR, TOKEN_CHAR, -1},
+    {PP_OP_UNKNOWN, PP_OP_UNKNOWN, PP_OP_UNKNOWN, PP_OP_UNKNOWN, PP_OP_UNKNOWN}
+  },
+  // trigraphs
+  {
+    {"??""<"" ??"">"" ??""("" ??"")"" ??""'"" ??""!"" ??""-"" ??""="" ??""/ ?? ?", NULL},
+    11,
+    true,
+    {"{", "}", "[", "]", "^", "|", "~", "#", "\\", "??", "?"},
+    {TOKEN_CHAR, TOKEN_CHAR, TOKEN_CHAR, TOKEN_CHAR, TOKEN_CHAR, TOKEN_CHAR, TOKEN_CHAR,
+     TOKEN_CHAR, TOKEN_CHAR, TOKEN_TEXT, TOKEN_CHAR, -1},
+    {PP_OP_UNKNOWN, PP_OP_UNKNOWN, PP_OP_UNKNOWN, PP_OP_UNKNOWN, PP_OP_UNKNOWN,
+     PP_OP_UNKNOWN, PP_OP_UNKNOWN, PP_OP_UNKNOWN, PP_OP_UNKNOWN, PP_OP_UNKNOWN, PP_OP_UNKNOWN}
+  },
   // empty line
   {
     {"", NULL}, 0, false, {""}, {-1}, {-1}

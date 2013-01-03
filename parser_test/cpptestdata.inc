@@ -103,17 +103,6 @@ tTestData sCPPTestData[] =
     {TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_BLOCK_BEGIN, TOKEN_BLOCK_END},
     {CPP_OP_CONDITIONAL, CPP_OP_COLON, CPP_OP_ELLIPSIS, CPP_OP_LIST, CPP_OP_BRACKET_OPEN, CPP_OP_BRACKET_CLOSE, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN}
   },
-  // alternative operators
-  {
-    {"and and_eq bitand bitor compl not not_eq or or_eq xor xor_eq", NULL}, 
-    11,
-    true,
-    {""},
-    {TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR,
-     TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR},
-    {CPP_OP_LOGICAL_AND, CPP_OP_AND_ASSIGNMENT, CPP_OP_BITWISE_AND, CPP_OP_BITWISE_OR, CPP_OP_COMPLEMENT, CPP_OP_LOGICAL_NOT,
-     CPP_OP_NOT_EQUAL, CPP_OP_LOGICAL_OR, CPP_OP_OR_ASSIGNMENT, CPP_OP_BITWISE_XOR, CPP_OP_XOR_ASSIGNMENT}
-  },
   // integer literals with type suffix
   {
     {"1 2l 3u 4ul 5ll 6ull 2L 3U 4UL 5LL 6ULL", NULL}, 
@@ -145,23 +134,21 @@ tTestData sCPPTestData[] =
   },
   // string literals
   {
-    {"\"test\" \"two\nlines\" L\"wide chars\"", 
+    {"\"test\" \"two\nlines\" L\"wide chars\"",
      "\"multi\\",
      "line\"",
-     "\"digraph-""?""?""/",
-     "test\"",
      "\"multiwrap 1st line\\",
      "second line\\",
      "third line\"",
      "\"\"",
-     NULL}, 
-    7,
+     NULL},
+    6,
     true,
-    {"\"test\"", "\"two\nlines\"", "L\"wide chars\"", "\"multi\\\nline\"", "\"digraph-""?""?""/""\ntest\"",
+    {"\"test\"", "\"two\nlines\"", "L\"wide chars\"", "\"multi\\\nline\"",
      "\"multiwrap 1st line\\\nsecond line\\\nthird line\"", "\"\""},
-    {TOKEN_STRING, TOKEN_STRING, TOKEN_STRING, TOKEN_MULTILINE_STRING, TOKEN_MULTILINE_STRING, 
-     TOKEN_MULTILINE_STRING, TOKEN_STRING},    
-    {CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, 
+    {TOKEN_STRING, TOKEN_STRING, TOKEN_STRING, TOKEN_MULTILINE_STRING,
+     TOKEN_MULTILINE_STRING, TOKEN_STRING},
+    {CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN,
      CPP_OP_UNKNOWN}
   },
   // character literals
@@ -179,13 +166,13 @@ tTestData sCPPTestData[] =
      "#define wrap(x) 1st line \\",
      "second line",
      "#define multiwrap(x) 1st line \\",
-     "second line ""?""?""/",
+     "second line \\",
      "third line",
       NULL}, 
     3,
     true,
     {"define xyz(a) fc(a)", "define wrap(x) 1st line \\\nsecond line",
-     "define multiwrap(x) 1st line \\\nsecond line ""?""?""/""\nthird line"},
+     "define multiwrap(x) 1st line \\\nsecond line \\\nthird line"},
     {TOKEN_PREPROC, TOKEN_PREPROC, TOKEN_PREPROC},
     {CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN}
   },
@@ -211,27 +198,6 @@ tTestData sCPPTestData[] =
      TOKEN_COMMENT, TOKEN_LINECOMMENT, TOKEN_COMMENT, TOKEN_LINECOMMENT, TOKEN_COMMENT},
     {CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, 
      CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN}
-  },
-  // digraphs
-  {
-    {"<% %> <: :> %:define x y", NULL}, 
-    5,
-    true,
-    {"", "", "", "", "define x y"},
-    {TOKEN_BLOCK_BEGIN, TOKEN_BLOCK_END, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_PREPROC},
-    {CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_INDEX_OPEN, CPP_OP_INDEX_CLOSE, CPP_OP_UNKNOWN}
-  },
-  // trigraphs
-  {
-    {"??< ??> ??( ??) ??' ??! ??- ??=", // '??/' is equivalent to \ and is tested with macros and strings
-      NULL},
-    8,
-    true,
-    {"", "", "", "", "", "", "", ""},
-    {TOKEN_BLOCK_BEGIN, TOKEN_BLOCK_END, TOKEN_OPERATOR, TOKEN_OPERATOR, 
-     TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_PREPROC},
-    {CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_INDEX_OPEN, CPP_OP_INDEX_CLOSE, 
-     CPP_OP_BITWISE_XOR, CPP_OP_BITWISE_OR, CPP_OP_COMPLEMENT, CPP_OP_UNKNOWN}
   },
   // empty line
   {

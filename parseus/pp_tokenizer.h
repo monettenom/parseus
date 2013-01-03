@@ -3,7 +3,7 @@
      File: pp_tokenizer.h
      Date: 02.01.2012
   License: see license.txt
-  Purpose: Preprocessor
+  Purpose: Preprocessor tokenizer
 */
 
 #ifndef PPTOKENIZER_H

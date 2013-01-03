@@ -457,7 +457,7 @@ bool cPasTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkip
       case '\t':
         strLine = HandleWhiteSpace(strLine-1, bSkipWhiteSpaces);
         break;
-      case '{': 
+      case '{':
         strLine = HandleBlockComment(strLine, bSkipComments);
         if (strLine == NULL)
         {
