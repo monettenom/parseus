@@ -16,6 +16,7 @@ const char* g_TokenString[TOKEN_MAX] = {
   "TOKEN_BLOCK_BEGIN",
   "TOKEN_BLOCK_END",
   "TOKEN_KEYWORD",
+  "TOKEN_TEXT"
 };
 
 // tToken
@@ -153,6 +154,14 @@ void cTokenizer::PushToken(int nTokenType, const char* strName, int iLen)
   {
     token.SetName(strName, iLen);
   }
+  PushToken(token);
+}
+
+void cTokenizer::PushToken(int nTokenType, char cChar)
+{
+  tToken token;
+  token.m_Token = nTokenType;
+  token.m_cChar = cChar;
   PushToken(token);
 }
 

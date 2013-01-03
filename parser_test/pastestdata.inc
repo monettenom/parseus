@@ -181,6 +181,10 @@ tTestData sPasTestData[] =
     {TOKEN_CHAR, TOKEN_CHAR, TOKEN_CHAR, TOKEN_CHAR, -1},
     {PAS_OP_UNKNOWN, PAS_OP_UNKNOWN, PAS_OP_UNKNOWN, PAS_OP_UNKNOWN}
   },
+  // empty line
+  {
+    {"", NULL}, 0, false, {""}, {-1}, {-1}
+  },
   // stopping entry
   {
     {NULL}, -1, false, {""}, {-1}, {-1}

@@ -2,13 +2,15 @@
 #include "testcpptokenhandler.h"
 #include "testpastokenhandler.h"
 #include "testphptokenhandler.h"
+#include "testpptokenhandler.h"
 
 int main(int argc, char* argv[])
 {
   int nFailed = 0;
   int nTests = 0;
+
   {
-    cTestPhpTokenHandler tester;
+    cTestPPTokenHandler tester;
     nFailed += tester.RunTests(); 
     nTests += tester.GetTestCount();
   }
@@ -21,6 +23,12 @@ int main(int argc, char* argv[])
 
   {
     cTestPasTokenHandler tester;
+    nFailed += tester.RunTests(); 
+    nTests += tester.GetTestCount();
+  }
+
+  {
+    cTestPhpTokenHandler tester;
     nFailed += tester.RunTests(); 
     nTests += tester.GetTestCount();
   }

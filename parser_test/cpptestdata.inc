@@ -233,6 +233,10 @@ tTestData sCPPTestData[] =
     {CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_INDEX_OPEN, CPP_OP_INDEX_CLOSE, 
      CPP_OP_BITWISE_XOR, CPP_OP_BITWISE_OR, CPP_OP_COMPLEMENT, CPP_OP_UNKNOWN}
   },
+  // empty line
+  {
+    {"", NULL}, 0, false, {""}, {-1}, {-1}
+  },
   // stopping entry
   {
     {NULL}, -1, false, {""}, {-1}, {-1}

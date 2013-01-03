@@ -356,7 +356,15 @@ const char* cCPPTokenizer::AppendString(const char* strLine)
   const char* strEnd = strstr(strLine, "\"");
   if (strEnd == NULL)
   {
-    m_strBuffer.append(strLine);
+    int nLen = strlen(strLine);
+    if (strLine[nLen-1] == '\\')
+    {
+      m_strBuffer.append(strLine);
+    }
+    else
+    {
+      GetTokenHandler()->HandleError("Newline in constant", GetLine());
+    }
     return NULL;
   }
 

@@ -376,15 +376,28 @@ const char* cPHPTokenizer::HandleHereDoc(const char* strLine, bool bSkipWhiteSpa
   if (!strLine) 
     return NULL;
 
-  const char* strCrsr = strLine+1;
-  while(char c = *strCrsr++)
+  const char* strCrsr = strLine;
+  if (*strCrsr == '\'')
   {
-    if(!isalpha(c) && !isdigit(c) && c != '_')
-      break;
+    strCrsr = strchr(strCrsr+1, '\'');
+    if (strCrsr == NULL)
+      return NULL;
+    int iLen = strCrsr - strLine - 1;
+    PushToken(TOKEN_LABEL, strLine, iLen+2);
+    m_strHereDocLabel.assign(strLine+1, iLen);
   }
-  int iLen = strCrsr - strLine - 1;
-  PushToken(TOKEN_LABEL, strLine, iLen);
-  m_strHereDocLabel.assign(strLine, iLen);
+  else
+  {
+    while(char c = *strCrsr++)
+    {
+      if(!isalpha(c) && !isdigit(c) && c != '_')
+        break;
+    }
+    int iLen = strCrsr - strLine - 1;
+    PushToken(TOKEN_LABEL, strLine, iLen);
+    m_strHereDocLabel.assign(strLine, iLen);
+  }
+
   HandleWhiteSpace(strLine, bSkipWhiteSpaces);
   m_bHereDocMode = true;
   m_strBuffer.clear();
@@ -397,6 +410,7 @@ const char* cPHPTokenizer::AppendHereDoc(const char* strLine)
   {
     PushToken(TOKEN_MULTILINE_STRING, m_strBuffer.c_str());
     m_bHereDocMode = false;
+    return strLine + m_strHereDocLabel.length();
   }
   else
   {
@@ -420,8 +434,9 @@ bool cPHPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkip
   }
   else if (m_bHereDocMode)
   {
-    AppendHereDoc(strLine);
-    return true;
+    strLine = AppendHereDoc(strLine);
+    if (strLine == NULL)
+      return true;
   }
   if (GetLine() > 1)
   {

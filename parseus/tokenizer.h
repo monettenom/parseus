@@ -29,6 +29,7 @@ enum eToken
   TOKEN_BLOCK_BEGIN,      // 12
   TOKEN_BLOCK_END,        // 13
   TOKEN_KEYWORD,          // 14
+  TOKEN_TEXT,             // 15
   TOKEN_MAX
 };
 
@@ -37,6 +38,8 @@ struct tKeyword
   const char* m_strKeyword;
   int m_Type;
 };
+
+typedef std::map<std::string, int> tKeywordMap;
 
 class cStringMem;
 
@@ -164,6 +167,7 @@ protected:
   void PushToken(int nToken);
   void PushToken(tToken& token);
   void PushToken(int nTokenType, int opType);
+  void PushToken(int nTokenType, char cChar);
   
   // if iLen == 0 then the whole string will be taken.
   void PushToken(int nTokenType, const char* strName, int iLen = 0);
@@ -181,8 +185,7 @@ protected:
   // was passed to AddKeywords (xx_KW_UNKNOWN)
   virtual int IsKeyword(const char* strLabel);
 
-private:
-  typedef std::map<std::string, int> tKeywordMap;
+private:  
   tKeywordMap m_Keywords;
   tKeywordMap m_Operators;
 
