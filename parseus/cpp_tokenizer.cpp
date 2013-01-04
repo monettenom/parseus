@@ -188,6 +188,7 @@ static tKeyword g_Operators[] = {
 cCPPTokenizer::cCPPTokenizer()
 : cTokenizer()
 , m_bBlockComment(false)
+, m_bLineComment(false)
 , m_bMultiLineString(false)
 , m_bConcatPreProc(false)
 {
@@ -449,6 +450,38 @@ const char* cCPPTokenizer::ParseLiteral(const char* strLine)
   return strCrsr;
 }
 
+const char* cCPPTokenizer::HandleLineComment(const char* strLine, bool bSkipComments)
+{
+  int iLen = strlen(strLine);
+  if (strLine[iLen-1] != '\\')
+  {
+    if (!m_bLineComment)
+    {
+      if (!bSkipComments)
+        PushToken(TOKEN_LINECOMMENT, strLine);
+    }
+    else
+    {
+      m_strBuffer.append(strLine);
+      if (!bSkipComments)
+        PushToken(TOKEN_LINECOMMENT, m_strBuffer.c_str());
+      m_strBuffer.clear();
+      m_bLineComment = false;
+    }
+  }
+  else
+  {
+    if (!m_bLineComment)
+    {
+      m_strBuffer.clear();
+    }
+    m_strBuffer.append(strLine);
+    m_strBuffer.append("\n");
+    m_bLineComment = true;
+  }
+  return NULL;
+}
+
 bool cCPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkipComments)
 {
   bool bSlashFound = false;
@@ -463,6 +496,11 @@ bool cCPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkip
   if (m_bBlockComment)
   {
     strLine = AppendBlockComment(strLine, bSkipComments);
+  }
+  else if (m_bLineComment)
+  {
+    HandleLineComment(strLine, bSkipComments);
+    return true;
   }
   else if (m_bMultiLineString)
   {
@@ -722,8 +760,7 @@ bool cCPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkip
           break;
 
         case '/':
-          if (!bSkipComments)
-            PushToken(TOKEN_LINECOMMENT, strLine);
+          HandleLineComment(strLine, bSkipComments);
           return true;
 
         case '=':

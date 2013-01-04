@@ -1,30 +1,27 @@
 #include "stdafx.h"
 
-cStringMem::cStringMem(int nSize)
+cStringMemBlock::cStringMemBlock(int nSize, cStringMemBlock* pNext)
 : m_nSize(nSize) 
 , m_nCrsr(0)
 , m_pBlock(NULL)
+, m_pNext(pNext)
 {
   m_pBlock = new char[nSize];
   memset(m_pBlock, 0, nSize);
 }
 
-cStringMem::~cStringMem()
+cStringMemBlock::~cStringMemBlock()
 {
-  delete[] m_pBlock;
+  delete m_pNext;
+  m_pNext = NULL;
+  delete m_pBlock;
   m_pBlock = NULL;
 }
 
-void cStringMem::Reset()
-{
-  m_nCrsr = 0;
-}
-
-char* cStringMem::Alloc(int nSize)
+char* cStringMemBlock::Alloc(int nSize)
 {
   if (m_nCrsr + nSize > m_nSize)
   {
-    std::cerr << "Out of String Buffer Memory!" << std::endl;
     return NULL;
   }
 
@@ -33,3 +30,31 @@ char* cStringMem::Alloc(int nSize)
   return pResult;
 }
 
+cStringMem::cStringMem()
+: m_pBlock(NULL)
+{
+  m_pBlock = new cStringMemBlock(STRINGMEMBLOCK_SIZE);
+}
+
+cStringMem::~cStringMem()
+{
+  delete m_pBlock;
+  m_pBlock = NULL;
+}
+
+void cStringMem::Reset()
+{
+  delete m_pBlock;
+  m_pBlock = new cStringMemBlock(STRINGMEMBLOCK_SIZE);
+}
+
+char* cStringMem::Alloc(int nSize)
+{
+  char* pResult = m_pBlock->Alloc(nSize);
+  if (pResult == NULL)
+  {
+    m_pBlock = new cStringMemBlock(STRINGMEMBLOCK_SIZE, m_pBlock);
+    pResult = m_pBlock->Alloc(nSize);
+  }
+  return pResult;
+}

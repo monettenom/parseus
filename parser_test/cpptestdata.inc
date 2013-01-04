@@ -180,6 +180,8 @@ tTestData sCPPTestData[] =
   {
     {"//comment",
      "// comment //",
+     "// wrapped line comment\\",
+     "second part of line comment",
      "/*block comment*/",
      "///*block comment*/",
      "/*block comment",
@@ -190,14 +192,15 @@ tTestData sCPPTestData[] =
      "/*block comment*/ //line comment",
      "/**/ //", "/*", "*/",
      NULL},
-    11,
+    12,
     true,
-    {"comment", " comment //", "block comment", "/*block comment*/", "block comment\ntwo lines",
-     "block comment\nthree\nlines", "block comment", "line comment", "", "", "\n"},
-    {TOKEN_LINECOMMENT, TOKEN_LINECOMMENT, TOKEN_COMMENT, TOKEN_LINECOMMENT, TOKEN_COMMENT, TOKEN_COMMENT,
-     TOKEN_COMMENT, TOKEN_LINECOMMENT, TOKEN_COMMENT, TOKEN_LINECOMMENT, TOKEN_COMMENT},
+    {"comment", " comment //", " wrapped line comment\\\nsecond part of line comment", "block comment", 
+    "/*block comment*/", "block comment\ntwo lines", "block comment\nthree\nlines", "block comment", 
+    "line comment", "", "", "\n"},
+    {TOKEN_LINECOMMENT, TOKEN_LINECOMMENT, TOKEN_LINECOMMENT, TOKEN_COMMENT, TOKEN_LINECOMMENT, TOKEN_COMMENT, 
+     TOKEN_COMMENT, TOKEN_COMMENT, TOKEN_LINECOMMENT, TOKEN_COMMENT, TOKEN_LINECOMMENT, TOKEN_COMMENT, -1},
     {CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, 
-     CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN}
+     CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN}
   },
   // empty line
   {

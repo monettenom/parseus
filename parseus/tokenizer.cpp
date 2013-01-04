@@ -78,7 +78,7 @@ cTokenizer::cTokenizer()
 , m_nUnkownKeyword(0)
 , m_nUnknownOperator(0)
 {
-  m_pStringMem = new cStringMem(1 << 18);
+  m_pStringMem = new cStringMem;
   tToken::SetStringMem(m_pStringMem);
 }
 

@@ -154,15 +154,17 @@ public:
 
 protected:
   const char* HandleBlockComment(const char* strLine, bool bSkipComments = false);
+  const char* AppendBlockComment(const char* strLine, bool bSkipComments = false);
+  const char* HandleLineComment(const char* strLine, bool bSkipComments = false);
   const char* HandleString(const char* strLine, char cDelimiter, int token);
+  const char* AppendString(const char* strLine);
   const char* HandlePreProc(const char* strLine);
   const char* AppendPreProc(const char* strLine);
-  const char* AppendBlockComment(const char* strLine, bool bSkipComments = false);
-  const char* AppendString(const char* strLine);
   const char* ParseLiteral(const char* strLine);
 
 private:
   bool m_bBlockComment;
+  bool m_bLineComment;
   bool m_bMultiLineString;
   bool m_bConcatPreProc;
 

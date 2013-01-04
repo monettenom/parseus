@@ -81,6 +81,7 @@ protected:
   const char* HandleWhiteSpace(const char* strLine, bool bSkipWhiteSpaces);
   const char* HandleBlockComment(const char* strLine);
   const char* AppendBlockComment(const char* strLine);
+  const char* HandleLineComment(const char* strLine);
   const char* HandleString(const char* strLine, char cDelimiter, int token);
   const char* AppendString(const char* strLine);
   const char* ParseLiteral(const char* strLine);
@@ -90,6 +91,7 @@ protected:
 
 private:
   bool m_bBlockComment;
+  bool m_bLineComment;
   bool m_bMultiLineString;
   bool m_bPreProcMode;
   bool m_bInclude;

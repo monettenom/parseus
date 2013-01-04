@@ -12,6 +12,10 @@ add_executable(parser_test
   cpp_tokenprinter.cpp
   stdafx.h
   stdafx.cpp
+
+  teststringmem.h
+  teststringmem.cpp
+
   testtokenhandler.h
   testtokenhandler.cpp
 

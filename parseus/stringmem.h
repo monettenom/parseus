@@ -10,19 +10,34 @@
 #ifndef STRINGMEM_H
 #define STRINGMEM_H
 
+const int STRINGMEMBLOCK_SIZE = 64 * 1024;
+
+class cStringMemBlock
+{
+public:
+  cStringMemBlock(int nSize = STRINGMEMBLOCK_SIZE, cStringMemBlock* pNext = NULL);
+  ~cStringMemBlock();
+
+  char* Alloc(int nSize);
+
+private:
+  char* m_pBlock;
+  int m_nCrsr;
+  int m_nSize;
+  cStringMemBlock* m_pNext;
+};
+
 class cStringMem
 {
 public:
-    cStringMem(int nSize = 64 * 1024);
-    ~cStringMem();
+  cStringMem();
+  ~cStringMem();
 
-    void Reset();
-    char* Alloc(int nSize);
+  void Reset();
+  char* Alloc(int nSize);
 
 private:
-    char* m_pBlock;
-    int m_nCrsr;
-    int m_nSize;
+  cStringMemBlock* m_pBlock;
 };
 
 #endif //STRINGMEM_H

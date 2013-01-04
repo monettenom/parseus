@@ -94,6 +94,7 @@ static tKeyword g_Operators[] = {
 cPPTokenizer::cPPTokenizer()
 : cTokenizer()
 , m_bBlockComment(false)
+, m_bLineComment(false)
 , m_bMultiLineString(false)
 , m_bPreProcMode(false)
 , m_bInclude(false)
@@ -204,6 +205,23 @@ const char* cPPTokenizer::AppendString(const char* strLine)
   m_strBuffer.clear();
 
   return strEnd + 1;
+}
+
+const char* cPPTokenizer::HandleLineComment(const char* strLine)
+{
+  int iLen = strlen(strLine);
+  if (strLine[iLen-1] != '\\')
+  {
+    if (m_bLineComment)
+    {
+      m_bLineComment = false;
+    }
+  }
+  else
+  {
+    m_bLineComment = true;
+  }
+  return NULL;
 }
 
 void cPPTokenizer::PushKeyword(int nKeyword)
@@ -383,6 +401,11 @@ bool cPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkipC
   {
     strLine = AppendBlockComment(strLine);
   }
+  else if (m_bLineComment)
+  {
+    HandleLineComment(strLine);
+    return true;
+  }
   else if (m_bMultiLineString)
   {
     strLine = AppendString(strLine);
@@ -507,6 +530,7 @@ bool cPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkipC
         {
           case '/':
             // line comments are removed
+            HandleLineComment(strLine);
             return PushPreProcEnd();
           case '*':
             strLine = HandleBlockComment(strLine-2);

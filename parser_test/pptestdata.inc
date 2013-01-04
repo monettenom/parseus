@@ -71,11 +71,20 @@ tTestData sPPTestData[] =
   // line comment 2
   {
     {"#define MAX 1024 // any comment", NULL},
-     5,
-     true,
-     {"", "", "MAX", "1024", ""},
-     {TOKEN_OPERATOR, TOKEN_KEYWORD, TOKEN_LABEL, TOKEN_LITERAL, TOKEN_OPERATOR},
-     {PP_OP_PREPROC, PP_KW_DEFINE, PP_OP_UNKNOWN, PP_OP_UNKNOWN, PP_OP_PREPROC_END}
+    5,
+    true,
+    {"", "", "MAX", "1024", ""},
+    {TOKEN_OPERATOR, TOKEN_KEYWORD, TOKEN_LABEL, TOKEN_LITERAL, TOKEN_OPERATOR},
+    {PP_OP_PREPROC, PP_KW_DEFINE, PP_OP_UNKNOWN, PP_OP_UNKNOWN, PP_OP_PREPROC_END}
+  },
+  // wrapped line comment
+  {
+    {"#define a 1 //wrap\\", "line", NULL},
+    5,
+    true,
+    {"", "", "a", "1", ""},
+    {TOKEN_OPERATOR, TOKEN_KEYWORD, TOKEN_LABEL, TOKEN_LITERAL, TOKEN_OPERATOR, -1},
+    {PP_OP_PREPROC, PP_KW_DEFINE, PP_OP_UNKNOWN, PP_OP_UNKNOWN, PP_OP_PREPROC_END}
   },
   // block comment within a line
   {
