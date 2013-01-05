@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "teststringmem.h"
 
+REGISTER_TEST(cTestStringMem);
+
 cTestStringMem::cTestStringMem()
 {
 }

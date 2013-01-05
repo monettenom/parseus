@@ -1,11 +1,11 @@
 #ifndef TESTSTRINGMEM_H
 #define TESTSTRINGMEM_H
 
-class cTestStringMem
+class cTestStringMem: public ITester
 {
 public:
   cTestStringMem();
-  ~cTestStringMem();
+  virtual ~cTestStringMem();
 
   int RunTests();
   int GetTestCount();

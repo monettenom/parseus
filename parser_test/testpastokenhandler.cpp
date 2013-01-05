@@ -4,6 +4,8 @@
 
 using namespace std;
 
+REGISTER_TEST(cTestPasTokenHandler);
+
 cTestPasTokenHandler::cTestPasTokenHandler()
 : cTestTokenHandler(&m_Tokenizer, sPasTestData)
 , m_Tokenizer()

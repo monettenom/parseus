@@ -4,6 +4,8 @@
 
 using namespace std;
 
+REGISTER_TEST(cTestPPTokenHandler);
+
 cTestPPTokenHandler::cTestPPTokenHandler()
 : cTestTokenHandler(&m_Tokenizer, sPPTestData)
 , m_Tokenizer()

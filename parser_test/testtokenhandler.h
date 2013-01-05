@@ -2,6 +2,7 @@
 #define TESTTOKENHANDLER_H
 
 #include "tokenizer.h"
+#include "testsuite.h"
 
 struct tTestData
 {
@@ -13,7 +14,7 @@ struct tTestData
   const int m_pTokenTypeList[128];
 };
 
-class cTestTokenHandler: public ITokenHandler
+class cTestTokenHandler: public ITokenHandler, public ITester
 {
 public:
   cTestTokenHandler(cTokenizer* pTokenizer, tTestData pTestData[]);

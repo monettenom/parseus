@@ -16,6 +16,7 @@
 #include <iostream>
 
 #include "parseus.h"
+#include "testsuite.h"
 #include "testtokenhandler.h"
 
 #endif //STDAFX_H

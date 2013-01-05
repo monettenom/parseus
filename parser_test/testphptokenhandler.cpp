@@ -4,6 +4,8 @@
 
 using namespace std;
 
+REGISTER_TEST(cTestPhpTokenHandler);
+
 cTestPhpTokenHandler::cTestPhpTokenHandler()
 : cTestTokenHandler(&m_Tokenizer, sPhpTestData)
 , m_Tokenizer()
