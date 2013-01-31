@@ -202,6 +202,15 @@ tTestData sCPPTestData[] =
     {CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, 
      CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN, CPP_OP_UNKNOWN}
   },
+  // expressions (bug: "1+1" results in "1+" "1"
+  {
+    {"1+1", NULL},
+    3,
+    true,
+    {"1", "", "1"},
+    {TOKEN_LITERAL, TOKEN_OPERATOR, TOKEN_LITERAL, -1},
+    {CPP_OP_UNKNOWN, CPP_OP_ADDITION, CPP_OP_UNKNOWN}
+  },  
   // empty line
   {
     {"", NULL}, 0, false, {""}, {-1}, {-1}

@@ -10,6 +10,7 @@
 #ifndef TOKENIZER_H
 #define TOKENIZER_H
 
+#include <vector>
 #include <map>
 
 enum eToken
@@ -103,16 +104,21 @@ struct tToken
   };
 
   tToken();
+  tToken(const char* strLabel);
   tToken(const tToken& token);
   ~tToken();
 
   void SetName(const char* strName);
   void SetName(const char* strName, int iLen);
   tToken& operator=(const tToken& token);
+  bool IsToken(eToken nToken) const;
+  bool IsToken(eToken nToken, int nType) const;
 
   static void SetStringMem(cStringMem* pStringMem);
   static cStringMem* s_pStringMem;
 };
+
+typedef std::vector<tToken> tTokenList;
 
 class ITokenizer
 {

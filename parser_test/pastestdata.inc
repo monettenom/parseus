@@ -155,10 +155,10 @@ tTestData sPasTestData[] =
   },
   // floating point numbers
   {
-    {"1.23456e-65 .1E4f 58. 4e2 1.6e-19 6.02e23f 3.14159", NULL}, 
+    {"1.23456e-65 .1E4 58. 4e2 1.6e-19 6.02e23 3.14159", NULL}, 
     7,
     true,
-    {"1.23456e-65", ".1E4f", "58.", "4e2", "1.6e-19", "6.02e23f", "3.14159"},
+    {"1.23456e-65", ".1E4", "58.", "4e2", "1.6e-19", "6.02e23", "3.14159"},
     {TOKEN_LITERAL, TOKEN_LITERAL, TOKEN_LITERAL, TOKEN_LITERAL, TOKEN_LITERAL, TOKEN_LITERAL, TOKEN_LITERAL},
     {PAS_OP_UNKNOWN, PAS_OP_UNKNOWN, PAS_OP_UNKNOWN, PAS_OP_UNKNOWN, PAS_OP_UNKNOWN, PAS_OP_UNKNOWN, PAS_OP_UNKNOWN}
   },
@@ -180,6 +180,15 @@ tTestData sPasTestData[] =
     {"#123", "#$ff", "#1", "#2"},
     {TOKEN_CHAR, TOKEN_CHAR, TOKEN_CHAR, TOKEN_CHAR, -1},
     {PAS_OP_UNKNOWN, PAS_OP_UNKNOWN, PAS_OP_UNKNOWN, PAS_OP_UNKNOWN}
+  },
+  // expressions (bug: "1+1" results in "1+" "1"
+  {
+    {"1+1", NULL},
+    3,
+    true,
+    {"1", "", "1"},
+    {TOKEN_LITERAL, TOKEN_OPERATOR, TOKEN_LITERAL, -1},
+    {PAS_OP_UNKNOWN, PAS_OP_ADDITION, PAS_OP_UNKNOWN}
   },
   // empty line
   {

@@ -388,30 +388,42 @@ const char* cPasTokenizer::ParseLiteral(const char* strLine, int nToken)
         bExponent = true;
         bFloating = true; // no . after e
         bExpectSign = true;
+        pos++;
+        continue;
       }
       else
       {
         if (!bHex)
+        {
+          strCrsr--;
           bContinue = false;
+        }
       }
       break;
     case 'a': case 'b': case 'c': case 'd': case 'f':
     case 'A': case 'B': case 'C': case 'D': case 'F':
       if (!bHex)
+      {
+        strCrsr--;
         bContinue = false;
+      }
       break;
     case '.':
       if (!bFloating)
         bFloating = true;
       else
+      {
+        strCrsr--;
         bContinue = false;
+      }
       break;
     case '-':
     case '+':
-      if (bExpectSign)
-        bExpectSign = false;
-      else
+      if (!bExpectSign)
+      {
+        strCrsr--;
         bContinue = false;
+      }
       break;
     default:
       strCrsr--;
@@ -419,6 +431,7 @@ const char* cPasTokenizer::ParseLiteral(const char* strLine, int nToken)
       break;
     }
 
+    bExpectSign = false;
     pos++;
   }
 

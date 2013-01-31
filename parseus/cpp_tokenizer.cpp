@@ -376,7 +376,10 @@ const char* cCPPTokenizer::ParseLiteral(const char* strLine)
         else
         {
           if (*strLine != '0')
+          {
+            strCrsr--;
             bContinue = false;
+          }
           bHex = true;
         }
         break;
@@ -387,17 +390,25 @@ const char* cCPPTokenizer::ParseLiteral(const char* strLine)
           bExponent = true;
           bFloating = true; // no . after e
           bExpectSign = true;
+          pos++; // avoid to get bExpectedSigh set to false on the end of the loop
+          continue;
         }
         else
         {
           if (!bHex)
+          {
+            strCrsr--;
             bContinue = false;
+          }
         }
         break;
       case 'a': case 'b': case 'c': case 'd': case 'f':
       case 'A': case 'B': case 'C': case 'D': case 'F':
         if (!bHex)
+        {
+          strCrsr--;
           bContinue = false;
+        }
         break;
       case '.':
         if (!bFloating)
@@ -407,17 +418,18 @@ const char* cCPPTokenizer::ParseLiteral(const char* strLine)
         break;
       case '-':
       case '+':
-        if (bExpectSign)
-          bExpectSign = false;
-        else
+        if (!bExpectSign)
+        {
+          strCrsr--;
           bContinue = false;
+        }
         break;
       default:
         strCrsr--;
         bContinue = false;
         break;
     }
-
+    bExpectSign = false;
     pos++;
   }
 

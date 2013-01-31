@@ -18,5 +18,13 @@ add_library(parseus
   php_tokenizer.cpp
   pp_tokenizer.h
   pp_tokenizer.cpp
+  preprocessormacro.h
+  preprocessormacro.cpp
+  macroresolver.h
+  macroresolver.cpp
+  ppexpression.h
+  ppexpression.cpp
+  preprocessor.h
+  preprocessor.cpp
 )
 

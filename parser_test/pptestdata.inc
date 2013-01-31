@@ -139,21 +139,22 @@ tTestData sPPTestData[] =
      {"int", " ", "a", "=", "1", ";",
       "int", " ", "define", "(", ")", ";"},
      {TOKEN_LABEL, TOKEN_WHITESPACE, TOKEN_LABEL, TOKEN_CHAR, TOKEN_LITERAL, TOKEN_CHAR,
-      TOKEN_LABEL, TOKEN_WHITESPACE, TOKEN_LABEL, TOKEN_CHAR, TOKEN_CHAR, TOKEN_CHAR, -1},
+      TOKEN_LABEL, TOKEN_WHITESPACE, TOKEN_LABEL, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_CHAR, -1},
      {PP_OP_UNKNOWN, PP_OP_UNKNOWN, PP_OP_UNKNOWN, PP_OP_UNKNOWN, PP_OP_UNKNOWN, PP_OP_UNKNOWN,
-      PP_OP_UNKNOWN, PP_OP_UNKNOWN, PP_OP_UNKNOWN, PP_OP_UNKNOWN, PP_OP_UNKNOWN, PP_OP_UNKNOWN}
+      PP_OP_UNKNOWN, PP_OP_UNKNOWN, PP_OP_UNKNOWN, PP_OP_BRACKET_OPEN, PP_OP_BRACKET_CLOSE, PP_OP_UNKNOWN}
   },
   // strings and multiline strings
   {
     {"\"test\"",
      "\"multi\\","line\"",
      "\"multi\\","line\\","string\"",
+     "'c'", "'\"'",
      NULL},
-     3,
+     5,
      true,
-     {"\"test\"", "\"multiline\"", "\"multilinestring\""},
-     {TOKEN_STRING, TOKEN_STRING, TOKEN_STRING},
-     {PP_OP_UNKNOWN, PP_OP_UNKNOWN, PP_OP_UNKNOWN}
+     {"\"test\"", "\"multiline\"", "\"multilinestring\"", "'c'", "'\"'"},
+     {TOKEN_STRING, TOKEN_STRING, TOKEN_STRING, TOKEN_STRING, TOKEN_STRING},
+     {PP_OP_UNKNOWN, PP_OP_UNKNOWN, PP_OP_UNKNOWN, PP_OP_UNKNOWN, PP_OP_UNKNOWN}
   },
   // include
   {
@@ -297,10 +298,19 @@ tTestData sPPTestData[] =
     {PP_OP_UNKNOWN, PP_OP_UNKNOWN, PP_OP_UNKNOWN, PP_OP_UNKNOWN, PP_OP_UNKNOWN,
      PP_OP_UNKNOWN, PP_OP_UNKNOWN, PP_OP_UNKNOWN, PP_OP_UNKNOWN, PP_OP_UNKNOWN, PP_OP_UNKNOWN}
   },
+  // expressions (bug: "1+1" results in "1+" "1"
+  {
+    {"#if 1+1", NULL},
+    6,
+    true,
+    {"", "", "1", "", "1", ""},
+    {TOKEN_OPERATOR, TOKEN_KEYWORD, TOKEN_LITERAL, TOKEN_OPERATOR, TOKEN_LITERAL, TOKEN_OPERATOR, -1},
+    {PP_OP_PREPROC, PP_KW_IF, PP_OP_UNKNOWN, PP_OP_ADDITION, PP_OP_UNKNOWN, PP_OP_PREPROC_END}
+  },
   // empty line
   {
     {"", NULL}, 0, false, {""}, {-1}, {-1}
-  },
+  },  
   // stopping entry
   {
     {NULL}, -1, false, {""}, {-1}, {-1}

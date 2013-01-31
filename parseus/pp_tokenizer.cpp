@@ -86,6 +86,8 @@ static tKeyword g_Operators[] = {
   {"<=", PP_OP_SMALLER_OR_EQUAL},
   {">", PP_OP_BIGGER},
   {">=", PP_OP_BIGGER_OR_EQUAL},
+  {"?", PP_OP_CONDITIONAL},
+  {":", PP_OP_CONDITIONAL_ELSE},
   {"unknown", PP_OP_UNKNOWN}
 };
 
@@ -248,6 +250,7 @@ bool cPPTokenizer::PushPreProcEnd()
   if (m_bPreProcMode)
   {
     m_bPreProcMode = false;
+    m_bInclude = false;
     PushToken(TOKEN_OPERATOR, PP_OP_PREPROC_END);
   }
   return true;
@@ -260,7 +263,7 @@ const char* cPPTokenizer::ParseLiteral(const char* strLine)
   bool bContinue = true;
   bool bExponent = false;
   bool bFloating = false;
-  bool bExpectSign = false;
+  bool bExpectSign = true;
   bool bHex = false;
 
   while(bContinue && *strCrsr)
@@ -280,7 +283,10 @@ const char* cPPTokenizer::ParseLiteral(const char* strLine)
         else
         {
           if (*strLine != '0')
+          {
+            strCrsr--;
             bContinue = false;
+          }
           bHex = true;
         }
         break;
@@ -291,30 +297,44 @@ const char* cPPTokenizer::ParseLiteral(const char* strLine)
           bExponent = true;
           bFloating = true; // no . after e
           bExpectSign = true;
+          pos++; // bExpectedSign is resetted at the end of the loop!
+          continue;
         }
         else
         {
           if (!bHex)
+          {
+            strCrsr--;
             bContinue = false;
+          }
         }
         break;
       case 'a': case 'b': case 'c': case 'd': case 'f':
       case 'A': case 'B': case 'C': case 'D': case 'F':
         if (!bHex)
+        {
+          strCrsr--;
           bContinue = false;
+        }
         break;
       case '.':
         if (!bFloating)
           bFloating = true;
         else
+        {
+          strCrsr--;
           bContinue = false;
+        }
         break;
       case '-':
       case '+':
         if (bExpectSign)
           bExpectSign = false;
         else
+        {
+          strCrsr--;
           bContinue = false;
+        }
         break;
       default:
         strCrsr--;
@@ -323,6 +343,7 @@ const char* cPPTokenizer::ParseLiteral(const char* strLine)
     }
 
     pos++;
+    bExpectSign = false;
   }
 
   switch(*strCrsr)
@@ -448,9 +469,11 @@ bool cPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkipC
         }
         break;
 
-      case ',': PushTokenIfPreProcMode(TOKEN_OPERATOR, PP_OP_COMMA, ","); break;
-      case '(': PushTokenIfPreProcMode(TOKEN_OPERATOR, PP_OP_BRACKET_OPEN, "("); break;
-      case ')': PushTokenIfPreProcMode(TOKEN_OPERATOR, PP_OP_BRACKET_CLOSE, ")"); break;
+      // ',', '(', ')' are needed to interpret parameter lists in macro calls
+
+      case ',': PushToken(TOKEN_OPERATOR, PP_OP_COMMA); break;
+      case '(': PushToken(TOKEN_OPERATOR, PP_OP_BRACKET_OPEN); break;
+      case ')': PushToken(TOKEN_OPERATOR, PP_OP_BRACKET_CLOSE); break;
       case '+': PushTokenIfPreProcMode(TOKEN_OPERATOR, PP_OP_ADDITION, "+"); break;
       case '-': PushTokenIfPreProcMode(TOKEN_OPERATOR, PP_OP_SUBTRACTION, "-"); break;
       case '*': PushTokenIfPreProcMode(TOKEN_OPERATOR, PP_OP_MULTIPLICATION, "*"); break;
@@ -486,14 +509,10 @@ bool cPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkipC
         }
         break;
       case '=': 
-        if (*strLine == '=')
+        switch(*strLine)
         {
-          PushTokenIfPreProcMode(TOKEN_OPERATOR, PP_OP_EQUAL, "==");
-          strLine++;
-        }
-        else
-        {
-          PushToken(TOKEN_CHAR, '=');
+          case '=': PushTokenIfPreProcMode(TOKEN_OPERATOR, PP_OP_EQUAL, "=="); strLine++; break;
+          default: PushToken(TOKEN_CHAR, '='); break;
         }
         break;
       case '.':
@@ -522,7 +541,7 @@ bool cPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkipC
         switch(*strLine)
         {
           case '>': PushToken(TOKEN_CHAR, ']'); strLine++; break;
-          default: PushToken(TOKEN_CHAR, ':'); break;
+          default: PushTokenIfPreProcMode(TOKEN_OPERATOR, PP_OP_CONDITIONAL_ELSE, ":"); break;
         }
         break;
       case '/':
@@ -541,7 +560,11 @@ bool cPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkipC
           default: PushTokenIfPreProcMode(TOKEN_OPERATOR, PP_OP_DIVISION, "/"); break;
         }
         break;
-
+        case '\'':
+          strLine = HandleString(strLine-1, '\'', TOKEN_STRING);
+          if (strLine == NULL)
+            return PushPreProcEnd();
+          break;
         case '\"':
           strLine = HandleString(strLine-1, '\"', TOKEN_STRING);
           if (strLine == NULL)
@@ -604,7 +627,7 @@ bool cPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkipC
               default: PushToken(TOKEN_TEXT, "??"); break;
             }
             break;
-          default: PushToken(TOKEN_CHAR, '?'); break;
+          default: PushTokenIfPreProcMode(TOKEN_OPERATOR, PP_OP_CONDITIONAL, "?"); break;
         }
         break;
 

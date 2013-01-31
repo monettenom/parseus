@@ -34,6 +34,12 @@ tToken::tToken()
 {
 }
 
+tToken::tToken(const char* strLabel)
+: m_Token(TOKEN_LABEL)
+{
+  SetName(strLabel);
+}
+
 tToken::tToken(const tToken& token)
 {
   m_Token = token.m_Token;
@@ -68,6 +74,16 @@ tToken& tToken::operator=(const tToken& token)
   m_Token = token.m_Token;
   m_strName = token.m_strName;
   return *this;
+}
+
+bool tToken::IsToken(eToken nToken) const
+{
+  return m_Token == nToken;
+}
+
+bool tToken::IsToken(eToken nToken, int nType) const
+{
+  return m_Token == nToken && m_Type == nType;
 }
 
 // cTokenizer
