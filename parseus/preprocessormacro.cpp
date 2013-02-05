@@ -39,24 +39,21 @@ tTokenList& cPreprocessorMacro::GetMacroText()
 
 bool cPreprocessorMacro::HandleToken(tToken& oToken)
 {
-  if (oToken.IsToken(TOKEN_WHITESPACE))
-  {
-    return true;
-  }
-
   switch(m_eState)
   {
     case eInit:
-      if (oToken.IsToken(TOKEN_LABEL))
+      switch (oToken.m_Token)
       {
-        m_strName = oToken.m_strName;
-        m_eState = eName;
-      }
-      else
-      {
-        // label expected
-        m_eState = eError;
-        return false;
+        case TOKEN_WHITESPACE:
+          break;
+        case TOKEN_LABEL:
+          m_strName = oToken.m_strName;
+          m_eState = eName;
+          break;
+        default:
+          // label expected
+          m_eState = eError;
+          return false;
       }
       break;
     case eName:
@@ -94,6 +91,8 @@ bool cPreprocessorMacro::HandleToken(tToken& oToken)
         case TOKEN_LABEL:
           m_vParamList.push_back(oToken);
           break;
+        case TOKEN_WHITESPACE:
+          break;
         default:
           // unexpected
           break;
@@ -104,7 +103,7 @@ bool cPreprocessorMacro::HandleToken(tToken& oToken)
       {
         m_eState = eReady;
       }
-      else
+      else if (!oToken.IsToken(TOKEN_WHITESPACE))
       {
         m_vMacroText.push_back(oToken);
       }

@@ -10,7 +10,7 @@ public:
   ~cTestPasTokenHandler();
 
 protected:
-  void HandleToken(tToken& oToken);
+  bool HandleToken(tToken& oToken);
 
 private:
   cPasTokenizer m_Tokenizer;

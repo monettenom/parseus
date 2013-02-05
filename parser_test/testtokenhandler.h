@@ -4,6 +4,8 @@
 #include "tokenizer.h"
 #include "testsuite.h"
 
+const int IGNORE_TOKEN_COUNT = -2;
+
 struct tTestData
 {
   const char* m_strCode[128];

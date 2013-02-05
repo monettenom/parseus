@@ -6,7 +6,7 @@ public:
     cCPPTokenPrinter();
     ~cCPPTokenPrinter();
 
-    void HandleToken(tToken& oToken);
+    bool HandleToken(tToken& oToken);
     void HandleError(const char* strError, int iLine);
     void LogEntry(const char* strLog);
     void Parse(const char* strInFile, const char* strOutFile);

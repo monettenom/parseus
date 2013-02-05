@@ -11,15 +11,15 @@ public:
   virtual cPreprocessorMacro* GetMacro(const char* strMacro) = 0;
 };
 
-class cPreprocessorExpression
+class cPreprocessorExpression: public ITokenHandler
 {
 public:
-  cPreprocessorExpression();
+  cPreprocessorExpression(IMacroMap* pMacroMap);
   ~cPreprocessorExpression();
 
   bool HandleToken(tToken& oToken);
   bool IsReady();
-  int Evaluate(IMacroMap* pMacroMap);
+  int Evaluate();
 
 protected:
   int GetLiteral();
@@ -39,6 +39,12 @@ protected:
   int GetConditionalExpression();
   int GetCommaExpression();
 
+  void ResolveMacro(tToken& oToken);
+
+  void HandleError(const char* strError, int iLine);
+  void LogEntry(const char* strLog);
+  int GetTokenCount();
+
 private:
   enum eMacroState
   {
@@ -52,6 +58,7 @@ private:
 
   tTokenList m_Expression;
   IMacroMap* m_pMacroMap;
+  cMacroResolver* m_pMacroResolver;
   tTokenList::const_iterator m_itCursor;
 };
 

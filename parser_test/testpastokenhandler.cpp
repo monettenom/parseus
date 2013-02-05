@@ -18,17 +18,17 @@ cTestPasTokenHandler::~cTestPasTokenHandler()
 
 }
 
-void cTestPasTokenHandler::HandleToken(tToken& oToken)
+bool cTestPasTokenHandler::HandleToken(tToken& oToken)
 {
   if (!GetResult())
-    return;
+    return false;
 
   // will be sent every new line if there was a line before
   if (oToken.m_Token == TOKEN_NEWLINE)
-    return;
+    return true;
 
   if (GetTestEntry()->m_bIgnoreWhitespace && oToken.m_Token == TOKEN_WHITESPACE)
-    return;
+    return true;
 
   if (oToken.m_Token != GetTestEntry()->m_pTokenList[GetTokenCount()])
   {
@@ -36,6 +36,7 @@ void cTestPasTokenHandler::HandleToken(tToken& oToken)
     strMessage << "Token mismatch! Expected: " << m_Tokenizer.GetTokenString(GetTestEntry()->m_pTokenList[GetTokenCount()]) << 
       " result: " << m_Tokenizer.GetTokenString(oToken.m_Token);
     HandleError(strMessage.str().c_str(), GetTokenCount());
+    return false;
   }
   else
   {
@@ -47,6 +48,7 @@ void cTestPasTokenHandler::HandleToken(tToken& oToken)
         if (oToken.m_Type != GetTestEntry()->m_pTokenTypeList[GetTokenCount()])
         {
           HandleError("keyword or operator expected", GetTokenCount());
+          return false;
         }
       }
       break;
@@ -66,6 +68,7 @@ void cTestPasTokenHandler::HandleToken(tToken& oToken)
           stringstream strMessage;
           strMessage << "expected: \"" << GetTestEntry()->m_pNameList[GetTokenCount()] << "\", result: \"" << oToken.m_strName << "\"";
           HandleError(strMessage.str().c_str(), GetTokenCount());
+          return false;
         }
       }
       break;
@@ -76,5 +79,6 @@ void cTestPasTokenHandler::HandleToken(tToken& oToken)
     }
   }
   IncTokenCount();
+  return true;
 }
 

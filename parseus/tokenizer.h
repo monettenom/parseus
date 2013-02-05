@@ -138,7 +138,7 @@ public:
 class ITokenHandler
 {
 public:
-  virtual void HandleToken(tToken& oToken) = 0;
+  virtual bool HandleToken(tToken& oToken) = 0;
   virtual void HandleError(const char* strError, int iLine) = 0;
   virtual void LogEntry(const char* strLog) = 0;
   virtual int GetTokenCount() = 0;

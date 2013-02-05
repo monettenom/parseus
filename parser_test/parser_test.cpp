@@ -1,4 +1,7 @@
-#if (4+5)*(1+2)
+#define A (5+5)
+#define B 3
+
+#if A==10
 #if 0
 
 #define TEXT "any text"

@@ -18,17 +18,17 @@ cTestPhpTokenHandler::~cTestPhpTokenHandler()
 
 }
 
-void cTestPhpTokenHandler::HandleToken(tToken& oToken)
+bool cTestPhpTokenHandler::HandleToken(tToken& oToken)
 {
   if (!GetResult())
-    return;
+    return false;
 
   // will be sent every new line if there was a line before
   if (oToken.m_Token == TOKEN_NEWLINE)
-    return;
+    return true;
 
   if (GetTestEntry()->m_bIgnoreWhitespace && oToken.m_Token == TOKEN_WHITESPACE)
-    return;
+    return true;
 
   if (oToken.m_Token != GetTestEntry()->m_pTokenList[GetTokenCount()])
   {
@@ -36,6 +36,7 @@ void cTestPhpTokenHandler::HandleToken(tToken& oToken)
     strMessage << "Token mismatch! Expected: " << m_Tokenizer.GetTokenString(GetTestEntry()->m_pTokenList[GetTokenCount()]) << 
       " result: " << m_Tokenizer.GetTokenString(oToken.m_Token);
     HandleError(strMessage.str().c_str(), GetTokenCount());
+    return false;
   }
   else
   {
@@ -52,6 +53,7 @@ void cTestPhpTokenHandler::HandleToken(tToken& oToken)
               ", found: " <<
               m_Tokenizer.GetOperatorString(oToken.m_Type);
             HandleError(strMessage.str().c_str(), GetTokenCount());
+            return false;
           }
         }
         break;
@@ -67,6 +69,7 @@ void cTestPhpTokenHandler::HandleToken(tToken& oToken)
               ", found: " <<
               m_Tokenizer.GetKeywordString(oToken.m_Type);
             HandleError(strMessage.str().c_str(), GetTokenCount());
+            return false;
           }
         }
         break;
@@ -86,6 +89,7 @@ void cTestPhpTokenHandler::HandleToken(tToken& oToken)
           stringstream strMessage;
           strMessage << "expected: \"" << GetTestEntry()->m_pNameList[GetTokenCount()] << "\", result: \"" << oToken.m_strName << "\"";
           HandleError(strMessage.str().c_str(), GetTokenCount());
+          return false;
         }
       }
       break;
@@ -96,5 +100,6 @@ void cTestPhpTokenHandler::HandleToken(tToken& oToken)
     }
   }
   IncTokenCount();
+  return true;
 }
 

@@ -10,7 +10,7 @@ public:
   ~cTestPPTokenHandler();
 
 protected:
-  void HandleToken(tToken& oToken);
+  bool HandleToken(tToken& oToken);
 
 private:
   cPPTokenizer m_Tokenizer;

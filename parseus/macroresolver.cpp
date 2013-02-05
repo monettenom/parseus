@@ -35,14 +35,14 @@ void cMacroResolver::FinishParam()
       m_bEllipsis = true;
     }
     m_nParamIndex++;
-    if (m_nParamIndex == m_pMacro->GetParamCount())
+    if (m_nParamIndex > m_pMacro->GetParamCount())
     {
       m_eState = eReady;
     }
   }
   else
   {
-    m_eState = eMacro;
+    m_eState = eReady;
   }
 }
 
@@ -90,7 +90,7 @@ bool cMacroResolver::HandleToken(tToken& oToken)
       }
 
       // if bracket depth is zero and comma is not inside brackets and not ellipsis mode
-      if(bParamReady || ((m_nBracketDepth == 0) && oToken.IsToken(TOKEN_OPERATOR, PP_OP_COMMA)) && m_bEllipsis)
+      if(bParamReady || ((m_nBracketDepth == 0) && oToken.IsToken(TOKEN_OPERATOR, PP_OP_COMMA)) && !m_bEllipsis)
       {
         FinishParam();
       }

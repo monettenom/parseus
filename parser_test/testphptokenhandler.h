@@ -10,7 +10,7 @@ public:
   ~cTestPhpTokenHandler();
 
 protected:
-  void HandleToken(tToken& oToken);
+  bool HandleToken(tToken& oToken);
 
 private:
   cPHPTokenizer m_Tokenizer;

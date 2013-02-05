@@ -179,7 +179,7 @@ void cPreProcessor::HandleExpression(tToken& oToken)
   }
   else if (m_pExpression->IsReady())
   {
-    int iResult = m_pExpression->Evaluate(this);
+    int iResult = m_pExpression->Evaluate();
     m_ConditionStack.push(iResult != 0);
     delete m_pExpression;
     m_pExpression = NULL;
@@ -202,22 +202,22 @@ void cPreProcessor::OutputCode(char cCode)
   }
 }
 
-void cPreProcessor::HandleToken(tToken& oToken)
+bool cPreProcessor::HandleToken(tToken& oToken)
 {
   if (m_pCurrentMacro)
   {
     HandleMacro(oToken);
-    return;
+    return true;
   }
   if (m_pMacroResolver)
   {
     ResolveMacro(oToken);
-    return;
+    return true;
   }
   if (m_pExpression)
   {
     HandleExpression(oToken);
-    return;
+    return true;
   }
 
   switch(oToken.m_Token)
@@ -251,7 +251,7 @@ void cPreProcessor::HandleToken(tToken& oToken)
           std::cout << "include" << std::endl;
           break;
         case PP_KW_IF:
-          m_pExpression = new cPreprocessorExpression;
+          m_pExpression = new cPreprocessorExpression(this);
           break;
         case PP_KW_ENDIF:
           m_ConditionStack.pop();
@@ -314,4 +314,5 @@ void cPreProcessor::HandleToken(tToken& oToken)
       OutputCode('\n');
       break;
   }
+  return false;
 }

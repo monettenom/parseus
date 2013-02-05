@@ -34,7 +34,7 @@ void cCPPTokenPrinter::Parse(const char* strInFile, const char* strOutFile)
   m_fOut.close();
 }
 
-void cCPPTokenPrinter::HandleToken(tToken& oToken)
+bool cCPPTokenPrinter::HandleToken(tToken& oToken)
 {
   switch(oToken.m_Token)
   {
@@ -69,6 +69,7 @@ void cCPPTokenPrinter::HandleToken(tToken& oToken)
       break;
   }
   m_iTokenCount++;
+  return true;
 }
 
 void cCPPTokenPrinter::HandleError(const char* strError, int iLine)

@@ -2,9 +2,10 @@
 #include "pp_tokenizer.h"
 #include "ppexpression.h"
 
-cPreprocessorExpression::cPreprocessorExpression()
+cPreprocessorExpression::cPreprocessorExpression(IMacroMap* pMacroMap)
 : m_eState(eInit)
-, m_pMacroMap(NULL)
+, m_pMacroMap(pMacroMap)
+, m_pMacroResolver(NULL)
 {
 }
 
@@ -12,16 +13,77 @@ cPreprocessorExpression::~cPreprocessorExpression()
 {
 }
 
+void cPreprocessorExpression::ResolveMacro(tToken& oToken)
+{
+  if (!m_pMacroResolver->HandleToken(oToken))
+  {
+    //std::cout << "Error while resolving macro!" << std::endl;
+    delete m_pMacroResolver;
+    m_pMacroResolver = NULL;
+  }
+  if (m_pMacroResolver->IsReady())
+  {
+    //std::cout << "Macro resolved." << std::endl;
+    cMacroResolver* pMacroResolver = m_pMacroResolver;
+    m_pMacroResolver = NULL;
+    pMacroResolver->ExpandMacro(this);
+    delete pMacroResolver;
+  }
+}
+
+void cPreprocessorExpression::HandleError(const char* strError, int iLine)
+{
+
+}
+
+void cPreprocessorExpression::LogEntry(const char* strLog)
+{
+
+}
+
+int cPreprocessorExpression::GetTokenCount()
+{
+  return 0;
+}
+
 bool cPreprocessorExpression::HandleToken(tToken& oToken)
 {
+  if (m_pMacroResolver)
+  {
+    if (!m_pMacroResolver->IsReady())
+    {
+      ResolveMacro(oToken);
+      return true;
+    }
+    else
+    {
+      ResolveMacro(oToken);
+    }
+  }
+
   switch (oToken.m_Token)
   {
     case TOKEN_WHITESPACE:
+      printf("WHITESPACE: '%s'\n", oToken.m_strName);
+      break;
     case TOKEN_NEWLINE:
+      printf("NEWLINE\n");
       break;
     case TOKEN_LITERAL:
-    case TOKEN_LABEL:
+      printf("LITERAL: %s\n", oToken.m_strName);
       m_Expression.push_back(oToken);
+      break;
+    case TOKEN_LABEL:
+      if(m_pMacroMap->IsDefined(oToken.m_strName))
+      {
+        printf("MACRO: %s\n", oToken.m_strName);
+        m_pMacroResolver = new cMacroResolver(m_pMacroMap->GetMacro(oToken.m_strName));
+      }
+      else
+      {
+        printf("LABEL: %s\n", oToken.m_strName);
+        m_Expression.push_back(oToken);
+      }
       break;
     case TOKEN_OPERATOR:
       if (oToken.m_Type == PP_OP_PREPROC_END)
@@ -30,6 +92,7 @@ bool cPreprocessorExpression::HandleToken(tToken& oToken)
       }
       else
       {
+        printf("OPERATOR: %d\n", oToken.m_Type);
         m_Expression.push_back(oToken);
       }
       break;
@@ -367,9 +430,8 @@ int cPreprocessorExpression::GetCommaExpression()
   return iValue;
 }
 
-int cPreprocessorExpression::Evaluate(IMacroMap* pMacroMap)
+int cPreprocessorExpression::Evaluate()
 {
-  m_pMacroMap = pMacroMap;
   m_itCursor = m_Expression.begin();
 
   return GetCommaExpression();

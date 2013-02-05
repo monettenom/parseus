@@ -43,7 +43,7 @@ bool cTestTokenHandler::Test(tTestData* pTestData)
   {
     m_pTokenizer->Parse(pTestData->m_strCode[i]); 
   }
-  if (pTestData->m_nExpectedTokens != m_nTokenCount)
+  if (pTestData->m_nExpectedTokens != IGNORE_TOKEN_COUNT && pTestData->m_nExpectedTokens != m_nTokenCount)
   {
     std::stringstream strLog;
     strLog << "Expected tokens: " << pTestData->m_nExpectedTokens << ", tokens found: " << m_nTokenCount;
