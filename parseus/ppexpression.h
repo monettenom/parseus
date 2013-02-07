@@ -22,6 +22,7 @@ public:
   int Evaluate();
 
 protected:
+  int ParseInteger(const char* strLiteral);
   int GetLiteral();
   int GetUnaryExpression();
   int GetFunctionCallExpression();

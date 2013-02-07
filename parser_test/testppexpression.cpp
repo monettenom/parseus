@@ -43,7 +43,16 @@ void cTestPPExpression::HandleMacro(tToken& oToken)
   }
   else if (m_pCurrentMacro->IsReady())
   {
-    m_MacroMap.insert(tMacroMapEntry(m_pCurrentMacro->GetName(), m_pCurrentMacro));
+    tMacroMap::iterator it = m_MacroMap.find(m_pCurrentMacro->GetName());
+    if (it == m_MacroMap.end())
+    {
+      m_MacroMap.insert(tMacroMapEntry(m_pCurrentMacro->GetName(), m_pCurrentMacro));
+    }
+    else
+    {
+      delete it->second;
+      it->second = m_pCurrentMacro;
+    }
     m_pCurrentMacro = NULL;
   }
 }

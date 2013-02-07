@@ -73,6 +73,13 @@ bool cPreprocessorExpression::HandleToken(tToken& oToken)
       printf("LITERAL: %s\n", oToken.m_strName);
       m_Expression.push_back(oToken);
       break;
+    case TOKEN_STRING:
+      if (oToken.m_strName[0] == '\'')
+      {
+        printf("CHAR: %s (%d)\n", oToken.m_strName, oToken.m_strName[1]);
+        m_Expression.push_back(oToken);
+      }
+      break;
     case TOKEN_LABEL:
       if(m_pMacroMap->IsDefined(oToken.m_strName))
       {
@@ -81,8 +88,11 @@ bool cPreprocessorExpression::HandleToken(tToken& oToken)
       }
       else
       {
-        printf("LABEL: %s\n", oToken.m_strName);
-        m_Expression.push_back(oToken);
+        tToken ZeroToken;
+        ZeroToken.m_Token = TOKEN_LITERAL;
+        ZeroToken.SetName("0");
+        printf("Undefined Macro: %s\n", oToken.m_strName);
+        m_Expression.push_back(ZeroToken);
       }
       break;
     case TOKEN_OPERATOR:
@@ -112,6 +122,67 @@ bool cPreprocessorExpression::IsReady()
 http://en.wikipedia.org/wiki/Order_of_operations
 */
 
+int cPreprocessorExpression::ParseInteger(const char* strLiteral)
+{
+  int iResult = 0;
+  int iBase = 10;
+  int iOffset = 0;
+
+  while (strLiteral[iOffset])
+  {
+    switch(strLiteral[iOffset])
+    {
+      case '0':
+        if (iOffset == 0)
+        {
+          iBase = 8;
+        }
+        else
+        {
+          iResult = iResult * iBase;
+        }
+        break;
+
+      case 'x':
+        if (iOffset == 1)
+        {
+          iBase = 16;
+        }
+        else
+        {
+          return iResult;
+        }
+        break;
+
+      case '1': case '2': case '3':
+      case '4': case '5': case '6':
+      case '7': case '8': case '9':
+        if (iBase == 8 && strLiteral[iOffset] >= '8')
+        {
+          // Error: Ungültige Ziffer '8/9' für Basis '8'
+          break;
+        }
+        else
+        {
+          iResult = iResult * iBase + (strLiteral[iOffset] - '0');
+        }
+        break;
+      case 'a': case 'b': case 'c':
+      case 'd': case 'e': case 'f':
+        iResult = iResult * iBase + (strLiteral[iOffset] - 'a' + 10);
+        break;
+      case 'A': case 'B': case 'C':
+      case 'D': case 'E': case 'F':
+        iResult = iResult * iBase + (strLiteral[iOffset] - 'A' + 10);
+        break;
+      default:
+        break;
+    }
+    iOffset++;
+  }
+  return iResult;
+}
+
 int cPreprocessorExpression::GetLiteral()
 {
   int iResult = 0;
@@ -120,7 +191,11 @@ int cPreprocessorExpression::GetLiteral()
     switch (m_itCursor->m_Token)
     {
       case TOKEN_LITERAL:
-        iResult = atoi(m_itCursor->m_strName);
+        iResult = ParseInteger(m_itCursor->m_strName);
+        m_itCursor++;
+        return iResult;
+      case TOKEN_STRING:
+        iResult = m_itCursor->m_strName[1];
         m_itCursor++;
         return iResult;
       default:
