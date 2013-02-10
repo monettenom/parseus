@@ -6,6 +6,7 @@ cPreprocessorExpression::cPreprocessorExpression(IMacroMap* pMacroMap)
 : m_eState(eInit)
 , m_pMacroMap(pMacroMap)
 , m_pMacroResolver(NULL)
+, m_bExpectLabel(false)
 {
 }
 
@@ -46,6 +47,21 @@ int cPreprocessorExpression::GetTokenCount()
   return 0;
 }
 
+void cPreprocessorExpression::PushToken(tToken& oToken)
+{
+  if (m_bExpectLabel && 
+      oToken.m_Token != TOKEN_LABEL && 
+      !oToken.IsToken(TOKEN_OPERATOR, PP_OP_BRACKET_OPEN))
+  {
+    printf("Token expected!\n");
+    m_eState = eError;
+  }
+  else
+  {
+    m_Expression.push_back(oToken);
+  }
+}
+
 bool cPreprocessorExpression::HandleToken(tToken& oToken)
 {
   if (m_pMacroResolver)
@@ -71,17 +87,36 @@ bool cPreprocessorExpression::HandleToken(tToken& oToken)
       break;
     case TOKEN_LITERAL:
       printf("LITERAL: %s\n", oToken.m_strName);
-      m_Expression.push_back(oToken);
+      PushToken(oToken);
+      break;
+	case TOKEN_KEYWORD:
+      if (oToken.m_Type == PP_KW_DEFINED)
+      {
+        printf("KEYWORD: defined\n", oToken.m_Type);
+        PushToken(oToken);
+        m_bExpectLabel = true;
+      }
+      else
+      {
+        printf("Unexpected KEYWORD: %d\n", oToken.m_Type);
+        m_eState = eError;
+      }
       break;
     case TOKEN_STRING:
       if (oToken.m_strName[0] == '\'')
       {
         printf("CHAR: %s (%d)\n", oToken.m_strName, oToken.m_strName[1]);
-        m_Expression.push_back(oToken);
+        PushToken(oToken);
       }
       break;
     case TOKEN_LABEL:
-      if(m_pMacroMap->IsDefined(oToken.m_strName))
+      if (m_bExpectLabel)
+      {
+        printf("LABEL: %s\n", oToken.m_strName);
+        m_bExpectLabel = false;
+        PushToken(oToken);
+      }
+      else if(m_pMacroMap->IsDefined(oToken.m_strName))
       {
         printf("MACRO: %s\n", oToken.m_strName);
         m_pMacroResolver = new cMacroResolver(m_pMacroMap->GetMacro(oToken.m_strName));
@@ -92,7 +127,7 @@ bool cPreprocessorExpression::HandleToken(tToken& oToken)
         ZeroToken.m_Token = TOKEN_LITERAL;
         ZeroToken.SetName("0");
         printf("Undefined Macro: %s\n", oToken.m_strName);
-        m_Expression.push_back(ZeroToken);
+        PushToken(ZeroToken);
       }
       break;
     case TOKEN_OPERATOR:
@@ -103,7 +138,7 @@ bool cPreprocessorExpression::HandleToken(tToken& oToken)
       else
       {
         printf("OPERATOR: %d\n", oToken.m_Type);
-        m_Expression.push_back(oToken);
+        PushToken(oToken);
       }
       break;
     default:
@@ -239,6 +274,44 @@ int cPreprocessorExpression::GetUnaryExpression()
   }
 }
 
+int cPreprocessorExpression::GetParenthesizedMacroExpression()
+{
+  int iResult = 0;
+
+  if (m_itCursor == m_Expression.end())
+  {
+    // Error: 
+    return iResult;
+  }
+
+  if (m_itCursor->IsToken(TOKEN_OPERATOR, PP_OP_BRACKET_OPEN))
+  {
+    m_itCursor++;
+    iResult = GetParenthesizedMacroExpression();
+    if (m_itCursor->IsToken(TOKEN_OPERATOR, PP_OP_BRACKET_CLOSE))
+    {
+      m_itCursor++;
+    }
+    else
+    {
+      //Error
+      return 0;
+    }
+  }
+  else if (m_itCursor->IsToken(TOKEN_LABEL))
+  {
+    iResult = m_pMacroMap->IsDefined(m_itCursor->m_strName) ? 1 : 0;
+    m_itCursor++;
+  }
+  else
+  {
+    //Error
+    return 0;
+  }
+
+  return iResult;
+}
+
 int cPreprocessorExpression::GetFunctionCallExpression()
 {
   if (m_itCursor == m_Expression.end())
@@ -250,7 +323,7 @@ int cPreprocessorExpression::GetFunctionCallExpression()
   if (m_itCursor->IsToken(TOKEN_KEYWORD, PP_KW_DEFINED))
   {
     m_itCursor++;
-    return GetParenthesisExpression();
+    return GetParenthesizedMacroExpression();
   }
 
   return GetUnaryExpression();

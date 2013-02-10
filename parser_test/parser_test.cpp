@@ -1,7 +1,7 @@
 #define A (5+5)
 #define B 
 
-#if 48==L'01'
+#if A && defined B && A==10
 #if 0
 
 #define TEXT "any text"

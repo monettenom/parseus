@@ -127,6 +127,25 @@ tTestData sPPExpressionTestData[] =
       NULL
     }, IGNORE_TOKEN_COUNT, true, {""}, {0}, {}
   },
+  {
+    {
+      "#define A",
+      "#if defined(A)",
+      NULL
+    }, IGNORE_TOKEN_COUNT, true, {""}, {1}, {}
+  },
+  {
+    {
+      "#if !defined(UNDEFINED_MACRO)",
+      NULL
+    }, IGNORE_TOKEN_COUNT, true, {""}, {1}, {}
+  },
+  {
+    {
+      "#if defined(A) && defined B && !defined(((NOT_DEFINED)))",
+      NULL
+    }, IGNORE_TOKEN_COUNT, true, {""}, {1}, {}
+  },
   // stopping entry
   {
     {NULL}, -1, false, {""}, {-1}, {-1}

@@ -40,11 +40,15 @@ protected:
   int GetConditionalExpression();
   int GetCommaExpression();
 
+  int GetParenthesizedMacroExpression();
+
   void ResolveMacro(tToken& oToken);
 
   void HandleError(const char* strError, int iLine);
   void LogEntry(const char* strLog);
   int GetTokenCount();
+
+  void PushToken(tToken& oToken);
 
 private:
   enum eMacroState
@@ -61,6 +65,7 @@ private:
   IMacroMap* m_pMacroMap;
   cMacroResolver* m_pMacroResolver;
   tTokenList::const_iterator m_itCursor;
+  bool m_bExpectLabel;
 };
 
 #endif // PPEXPRESSION_H
