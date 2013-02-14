@@ -42,6 +42,10 @@ add_executable(parser_test
   ppexptestdata.inc
   testppexpression.cpp
   testppexpression.h
+  
+  preproctestdata.inc
+  testpreprocessor.cpp
+  testpreprocessor.h  
 )
 
 target_link_libraries (parser_test parseus) 

@@ -7,6 +7,7 @@ cPreprocessorExpression::cPreprocessorExpression(IMacroMap* pMacroMap)
 , m_pMacroMap(pMacroMap)
 , m_pMacroResolver(NULL)
 , m_bExpectLabel(false)
+, m_bNegateResult(false)
 {
 }
 
@@ -47,13 +48,18 @@ int cPreprocessorExpression::GetTokenCount()
   return 0;
 }
 
+void cPreprocessorExpression::Negate()
+{
+  m_bNegateResult = true;
+}
+
 void cPreprocessorExpression::PushToken(tToken& oToken)
 {
   if (m_bExpectLabel && 
       oToken.m_Token != TOKEN_LABEL && 
       !oToken.IsToken(TOKEN_OPERATOR, PP_OP_BRACKET_OPEN))
   {
-    printf("Token expected!\n");
+    //printf("Token expected!\n");
     m_eState = eError;
   }
   else
@@ -80,45 +86,45 @@ bool cPreprocessorExpression::HandleToken(tToken& oToken)
   switch (oToken.m_Token)
   {
     case TOKEN_WHITESPACE:
-      printf("WHITESPACE: '%s'\n", oToken.m_strName);
+      //printf("WHITESPACE: '%s'\n", oToken.m_strName);
       break;
     case TOKEN_NEWLINE:
-      printf("NEWLINE\n");
+      //printf("NEWLINE\n");
       break;
     case TOKEN_LITERAL:
-      printf("LITERAL: %s\n", oToken.m_strName);
+      //printf("LITERAL: %s\n", oToken.m_strName);
       PushToken(oToken);
       break;
 	case TOKEN_KEYWORD:
       if (oToken.m_Type == PP_KW_DEFINED)
       {
-        printf("KEYWORD: defined\n", oToken.m_Type);
+        //printf("KEYWORD: defined\n", oToken.m_Type);
         PushToken(oToken);
         m_bExpectLabel = true;
       }
       else
       {
-        printf("Unexpected KEYWORD: %d\n", oToken.m_Type);
+        //printf("Unexpected KEYWORD: %d\n", oToken.m_Type);
         m_eState = eError;
       }
       break;
     case TOKEN_STRING:
       if (oToken.m_strName[0] == '\'')
       {
-        printf("CHAR: %s (%d)\n", oToken.m_strName, oToken.m_strName[1]);
+        //printf("CHAR: %s (%d)\n", oToken.m_strName, oToken.m_strName[1]);
         PushToken(oToken);
       }
       break;
     case TOKEN_LABEL:
       if (m_bExpectLabel)
       {
-        printf("LABEL: %s\n", oToken.m_strName);
+        //printf("LABEL: %s\n", oToken.m_strName);
         m_bExpectLabel = false;
         PushToken(oToken);
       }
       else if(m_pMacroMap->IsDefined(oToken.m_strName))
       {
-        printf("MACRO: %s\n", oToken.m_strName);
+        //printf("MACRO: %s\n", oToken.m_strName);
         m_pMacroResolver = new cMacroResolver(m_pMacroMap->GetMacro(oToken.m_strName));
       }
       else
@@ -126,7 +132,7 @@ bool cPreprocessorExpression::HandleToken(tToken& oToken)
         tToken ZeroToken;
         ZeroToken.m_Token = TOKEN_LITERAL;
         ZeroToken.SetName("0");
-        printf("Undefined Macro: %s\n", oToken.m_strName);
+        //printf("Undefined Macro: %s\n", oToken.m_strName);
         PushToken(ZeroToken);
       }
       break;
@@ -137,7 +143,7 @@ bool cPreprocessorExpression::HandleToken(tToken& oToken)
       }
       else
       {
-        printf("OPERATOR: %d\n", oToken.m_Type);
+        //printf("OPERATOR: %d\n", oToken.m_Type);
         PushToken(oToken);
       }
       break;
@@ -582,5 +588,8 @@ int cPreprocessorExpression::Evaluate()
 {
   m_itCursor = m_Expression.begin();
 
-  return GetCommaExpression();
+  int iResult = GetCommaExpression();
+  if (m_bNegateResult)
+    return iResult ? false : true;
+  return iResult;
 }

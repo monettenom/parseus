@@ -2,6 +2,13 @@
 tTestData sPPExpressionTestData[] =
 {
   {
+    {
+      "#define A (5+5)",
+      "#if A*2",
+      NULL
+    }, IGNORE_TOKEN_COUNT, true, {""}, {20}, {}
+  },
+  {
     {"#if 1", NULL}, // expression
     4, // nbr of tokens
     true, // ignore whitespaces

@@ -14,10 +14,17 @@ typedef std::map<std::string, cPreprocessorMacro*> tMacroMap;
 typedef std::pair<std::string, cPreprocessorMacro*> tMacroMapEntry;
 typedef std::stack<bool> tConditionStack;
 
+class ICodeHandler
+{
+public:
+  virtual void HandleCode(char strCode) = 0;
+  virtual void HandleCode(const char* strCode) = 0;
+};
+
 class cPreProcessor: public ITokenHandler, IMacroMap
 {
 public:
-  cPreProcessor();
+  cPreProcessor(ICodeHandler* m_pCodeHandler);
   ~cPreProcessor();
 
   // ITokenHandler
@@ -33,6 +40,7 @@ public:
 
   // cPreProcessor
   bool Process(const char* strFile);
+  bool Parse(const char* strLine, bool bSkipWhiteSpaces = false, bool bSkipComments = false);
   void Include(const char* strFile);
   bool IsDefined(const char* strMacro);
   cPreprocessorMacro* GetMacro(const char* strMacro);
@@ -56,6 +64,7 @@ private:
   cMacroResolver* m_pMacroResolver;
   cPreprocessorExpression* m_pExpression;
   tConditionStack m_ConditionStack;
+  ICodeHandler* m_pCodeHandler;
 };
 
 #endif // PREPROCESSOR_H

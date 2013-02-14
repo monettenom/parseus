@@ -41,9 +41,15 @@ tToken::tToken(const char* strLabel)
 }
 
 tToken::tToken(const tToken& token)
+: m_Token(token.m_Token)
+, m_strName(token.m_strName)
 {
-  m_Token = token.m_Token;
-  m_strName = token.m_strName;
+}
+
+tToken::tToken(int nToken, int nType)
+: m_Token(nToken)
+, m_Type(nType)
+{
 }
 
 tToken::~tToken()

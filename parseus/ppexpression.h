@@ -20,6 +20,7 @@ public:
   bool HandleToken(tToken& oToken);
   bool IsReady();
   int Evaluate();
+  void Negate();
 
 protected:
   int ParseInteger(const char* strLiteral);
@@ -66,6 +67,7 @@ private:
   cMacroResolver* m_pMacroResolver;
   tTokenList::const_iterator m_itCursor;
   bool m_bExpectLabel;
+  bool m_bNegateResult;
 };
 
 #endif // PPEXPRESSION_H

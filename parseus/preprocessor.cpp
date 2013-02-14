@@ -4,12 +4,13 @@
 #include "ppexpression.h"
 #include "preprocessor.h"
 
-cPreProcessor::cPreProcessor()
+cPreProcessor::cPreProcessor(ICodeHandler* pCodeHandler)
 : m_bPreProc(false)
 , m_bInclude(false)
 , m_pCurrentMacro(NULL)
 , m_pMacroResolver(NULL)
 , m_pExpression(NULL)
+, m_pCodeHandler(pCodeHandler)
 {
   m_Tokenizer.SetTokenHandler(this);
   m_ConditionStack.push(true);
@@ -68,7 +69,7 @@ bool cPreProcessor::Process(const char* strFile)
     while (input.good())
     {
       getline (input, line);
-      m_Tokenizer.Parse(line.c_str());
+      Parse(line.c_str());
     }
     input.close();
     return true;
@@ -78,6 +79,11 @@ bool cPreProcessor::Process(const char* strFile)
     std::cout << "Unable to open file '" << strFile << "'" << std::endl;
     return false;
   }
+}
+
+bool cPreProcessor::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkipComments)
+{
+  return m_Tokenizer.Parse(strLine, bSkipWhiteSpaces, bSkipComments);
 }
 
 bool cPreProcessor::FindInclude(tIncludeList& vIncludes, const char* strFile, std::string& strPath)
@@ -145,13 +151,20 @@ void cPreProcessor::HandleMacro(tToken& oToken)
   }
   else if (m_pCurrentMacro->IsReady())
   {
-    //std::cout << "Macro finished: " << m_pCurrentMacro->GetName() << std::endl;
-    m_MacroMap.insert(tMacroMapEntry(m_pCurrentMacro->GetName(), m_pCurrentMacro));
-    m_pCurrentMacro->Debug();
+    tMacroMap::iterator it = m_MacroMap.find(m_pCurrentMacro->GetName());
+    if (it == m_MacroMap.end())
+    {
+      m_MacroMap.insert(tMacroMapEntry(m_pCurrentMacro->GetName(), m_pCurrentMacro));
+    }
+    else
+    {
+      // error: already defined
+    }
     m_pCurrentMacro = NULL;
     m_bPreProc = false;
   }
 }
+
 void cPreProcessor::ResolveMacro(tToken& oToken)
 {
   if (!m_pMacroResolver->HandleToken(oToken))
@@ -190,7 +203,7 @@ void cPreProcessor::OutputCode(const char* strCode)
 {
   if (m_ConditionStack.top())
   {
-    std::cout << strCode;
+    m_pCodeHandler->HandleCode(strCode);
   }
 }
 
@@ -198,7 +211,7 @@ void cPreProcessor::OutputCode(char cCode)
 {
   if (m_ConditionStack.top())
   {
-    std::cout << cCode;
+    m_pCodeHandler->HandleCode(cCode);
   }
 }
 
@@ -253,8 +266,25 @@ bool cPreProcessor::HandleToken(tToken& oToken)
         case PP_KW_IF:
           m_pExpression = new cPreprocessorExpression(this);
           break;
+        case PP_KW_IFDEF:
+          m_pExpression = new cPreprocessorExpression(this);
+          m_pExpression->HandleToken(tToken(TOKEN_KEYWORD, PP_KW_DEFINED));
+          break;
+        case PP_KW_IFNDEF:
+          m_pExpression = new cPreprocessorExpression(this);
+          m_pExpression->Negate();
+          m_pExpression->HandleToken(tToken(TOKEN_KEYWORD, PP_KW_DEFINED));
+          break;
         case PP_KW_ENDIF:
           m_ConditionStack.pop();
+          break;
+        case PP_KW_ELSE:
+          m_ConditionStack.top() = !m_ConditionStack.top();
+          break;
+        case PP_KW_ELIF:
+          m_ConditionStack.top() = !m_ConditionStack.top();
+          break;
+          m_pExpression = new cPreprocessorExpression(this);
           break;
         case PP_KW_DEFINE:
           m_pCurrentMacro = new cPreprocessorMacro;

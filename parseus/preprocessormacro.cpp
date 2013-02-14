@@ -99,13 +99,19 @@ bool cPreprocessorMacro::HandleToken(tToken& oToken)
       }
       break;
     case eMacro:
-      if (oToken.IsToken(TOKEN_OPERATOR, PP_OP_PREPROC_END))
+      switch (oToken.m_Token)
       {
-        m_eState = eReady;
-      }
-      else if (!oToken.IsToken(TOKEN_WHITESPACE))
-      {
-        m_vMacroText.push_back(oToken);
+        case TOKEN_OPERATOR:
+          if (oToken.m_Type == PP_OP_PREPROC_END)
+            m_eState = eReady;
+          else
+            m_vMacroText.push_back(oToken);
+          break;
+        case TOKEN_WHITESPACE:
+          break;
+        default:
+          m_vMacroText.push_back(oToken);
+          break;
       }
       break;
     case eReady:

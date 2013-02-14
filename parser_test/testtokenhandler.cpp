@@ -37,20 +37,20 @@ void cTestTokenHandler::LogEntry(const char* strLog)
 
 bool cTestTokenHandler::Test(tTestData* pTestData)
 {
-  m_nTestCount++;
+  IncTestCount();
   InitTest(pTestData);
   for (int i = 0; pTestData->m_strCode[i] != NULL; i++)
   {
     m_pTokenizer->Parse(pTestData->m_strCode[i]); 
   }
-  if (pTestData->m_nExpectedTokens != IGNORE_TOKEN_COUNT && pTestData->m_nExpectedTokens != m_nTokenCount)
+  if (pTestData->m_nExpectedTokens != IGNORE_TOKEN_COUNT && pTestData->m_nExpectedTokens != GetTokenCount())
   {
     std::stringstream strLog;
-    strLog << "Expected tokens: " << pTestData->m_nExpectedTokens << ", tokens found: " << m_nTokenCount;
+    strLog << "Expected tokens: " << pTestData->m_nExpectedTokens << ", tokens found: " << GetTokenCount();
     LogEntry(strLog.str().c_str());
-    m_bResult = false;;
+    SetResult(false);
   }
-  return m_bResult;
+  return GetResult();
 }
 
 int cTestTokenHandler::RunTests()

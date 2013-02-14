@@ -106,6 +106,7 @@ struct tToken
   tToken();
   tToken(const char* strLabel);
   tToken(const tToken& token);
+  tToken(int nToken, int nType);
   ~tToken();
 
   void SetName(const char* strName);

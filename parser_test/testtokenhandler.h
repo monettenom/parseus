@@ -22,11 +22,12 @@ public:
   cTestTokenHandler(cTokenizer* pTokenizer, tTestData pTestData[]);
   virtual ~cTestTokenHandler();
 
-  void InitTest(tTestData* pTestData);
-  bool Test(tTestData* pTestData);
-  int RunTests();
+  virtual void InitTest(tTestData* pTestData);
+  virtual bool Test(tTestData* pTestData);
+  virtual int RunTests();
   
   int GetTestCount(){ return m_nTestCount; }
+  void IncTestCount(){ m_nTestCount++; };
   int GetTokenCount(){ return m_nTokenCount; }
   void IncTokenCount(){ m_nTokenCount++; }
   tTestData* GetTestEntry(){ return m_pCurrentTestEntry; }

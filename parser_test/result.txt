@@ -1,652 +1,73 @@
-Running test case 1
-1: |bool char short int long float double wchar_t signed unsigned|
-Running test case 2
-2: |asm auto break case catch class const const_cast continue default delete do dynamic_cast else enum explicit export|
-3: |extern false for friend goto if inline mutable namespace new operator private protected public register|
-4: |reinterpret_cast return sizeof static static_cast struct switch template this throw true try typedef typeid typename|
-5: |union using virtual void volatile while|
-Running test case 3
-6: |alignas alignof char16_t char32_t constexpr decltype noexcept final nullptr override static_assert thread_local|
-Running test case 4
-7: |= += -= *= /= %= &= |= ^= <<= >>=|
-Running test case 5
-8: |+ - * / % ~ & | ^ << >> ++ --|
-Running test case 6
-9: |! && || == != < > <= >=|
-Running test case 7
-10: |[] -> . ->* .* ::|
-Running test case 8
-11: |?: ... , (){}|
-Running test case 9
-12: |1 2l 3u 4ul 5ll 6ull 2L 3U 4UL 5LL 6ULL|
-Running test case 10
-13: |01 -07 0x1 0xabcd 0xFEDCBA|
-Running test case 11
-14: |1.23456e-65 .1E4f 58. 4e2 1.6e-19 6.02e23f 3.14159L|
-Running test case 12
-15: |"test" "two
-lines" L"wide chars"|
-16: |"multi\|
-17: |line"|
-18: |"multiwrap 1st line\|
-19: |second line\|
-20: |third line"|
-21: |""|
-Running test case 13
-22: |'a''b''
-' ' '|
-Running test case 14
-23: |#define xyz(a) fc(a)|
-24: |#define wrap(x) 1st line \|
-25: |second line|
-26: |#define multiwrap(x) 1st line \|
-27: |second line \|
-28: |third line|
-Running test case 15
-29: |//comment|
-30: |// comment //|
-31: |// wrapped line comment\|
-32: |second part of line comment|
-33: |/*block comment*/|
-34: |///*block comment*/|
-35: |/*block comment|
-36: |two lines*/|
-37: |/*block comment|
-38: |three|
-39: |lines*/|
-40: |/*block comment*/ //line comment|
-41: |/**/ //|
-42: |/*|
-43: |*/|
-Running test case 16
-44: |1+1|
-Running test case 17
-45: ||
-Tokens checked: 175
-Running test case 1
-1: |ansichar ansistring array boolean byte bytebool cardinal char comp currency double extended int64|
-2: |integer longbool longint longword olevariant pointer rawbytestring real real48 record shortint|
-3: |shortstring single smallint string uint64 unicodestring variant widechar widestring word wordbool|
-Running test case 2
-4: |integer INTEGER Integer iNtEgEr|
-Running test case 3
-5: |absolute abstract add and as asm assembler at automated case cdecl class const constructor|
-6: |contains default deprecated destructor dispid dispinterface div do downto dynamic else|
-7: |except export exports external false file final finalization finally for forward function|
-8: |goto helper if implementation implements in index inherited initialization inline interface|
-9: |is label library local message mod name near nil nodefault not of on operator or out overload|
-10: |package packed pascal platform pointermath private procedure program property protected public|
-11: |published raise read readonly register reintroduce remove repeat requires resident resourcestring|
-12: |result savecall scopedenums sealed set shl shr static stdcall stored strict then threadvar to true|
-13: |try type unit unsafe until uses var varargs virtual while with write writeonly xor|
-Running test case 4
-14: |begin end|
-Running test case 5
-15: |+ - * / := = <> < <= > >= : ^ @ & , ; . .. ()[]|
-Running test case 6
-16: |(. .)|
-Running test case 7
-17: |//comment|
-18: |// comment //|
-19: |{block comment}|
-20: |//{block comment}|
-21: |{block comment|
-22: |two lines}|
-23: |{block comment|
-24: |three|
-25: |lines}|
-26: |{block comment} //line comment|
-27: |{} //|
-28: |{|
-29: |}|
-30: |(*alternative comment*)|
-Running test case 8
-31: |1 $a $12ab34cd -100 $1$2|
-Running test case 9
-32: |1.23456e-65 .1E4 58. 4e2 1.6e-19 6.02e23 3.14159|
-Running test case 10
-33: |'test' '''' 'a''b' '''a'''|
-Running test case 11
-34: |#123 #$ff #1#2|
-Running test case 12
-35: |1+1|
-Running test case 13
-36: ||
-Tokens checked: 219
-Running test case 1
-1: |bool boolean int integer float double string array object binary null|
-Running test case 2
-2: |__halt_compiler abstract and as break callable case catch class clone const|
-3: |continue declare default die do echo else elseif empty enddeclare endfor|
-4: |endforeach endif endswitch endwhile eval exit extends final for foreach|
-5: |function global goto if implements include include_once instanceof insteadof|
-6: |interface isset list namespace new or print private protected public require|
-7: |require_once return static unset switch throw trait try unset use var while xor|
-Running test case 3
-8: |= += -= *= /= %= &= |= ^= <<= >>=|
-Running test case 4
-9: |+ - * / % ~ & | ^ << >> ++ --|
-Running test case 5
-10: |! && || == != === !== < > <= >=|
-Running test case 6
-11: |? . , -> => ()[]{}|
-Running test case 7
-12: |1 200 01 -07 0x1 0xabcd 0xFEDCBA|
-Running test case 8
-13: |1.23456e-65 .1E4 58. 4e2 1.6e-19 6.02e23 3.14159|
-Running test case 9
-14: |'single quoted' "double quoted" "two
-lines" b"binary string"|
-15: |`backticks`|
-Running test case 10
-16: |$ $a $$b $$$c|
-Running test case 11
-17: |//comment|
-18: |// comment //|
-19: |/*block comment*/|
-20: |///*block comment*/|
-21: |/*block comment|
-22: |two lines*/|
-23: |/*block comment|
-24: |three|
-25: |lines*/|
-26: |/*block comment*/ //line comment|
-27: |/**/ //|
-28: |/*|
-29: |*/|
-30: |#scriptlike comment|
-Running test case 12
-31: |$a = <<< HTEXT|
-32: |Das ist ein langer Text,|
-33: |der über mehrere Zeilen geht.|
-34: |HTEXT;|
-35: |<<<HTEXT|
-36: |HTEXT;|
-37: |<<<'NOWDOC'|
-38: |Nowdoctest|
-39: |NOWDOC;|
-Running test case 13
-40: |1+1|
-Running test case 14
-41: ||
-Tokens checked: 182
-Running test case 1
-1: |#include include_next import define undef ifdef ifndef if defined else|
-2: |#elif endif error warning line pragma ident sccs assert unassert|
-Running test case 2
-3: |# # ( , ) ## ...|
-4: |# + - * / % ! && || & | ^ ~ == != < <= > >= << >>|
-Running test case 3
-5: |#define MAX 1024|
-6: | #define MAX 1024|
-7: |# define MAX 1024|
-Running test case 4
-8: |// #define MAX 1024|
-Running test case 5
-9: |#define MAX 1024 // any comment|
-Running test case 6
-10: |#define a 1 //wrap\|
-11: |line|
-Running test case 7
-12: |#define MAX (1<</*shl*/10)/*1024*/|
-Running test case 8
-13: |#define MAX /* this is|
-14: |a multiline comment|
-15: |*/ 1024|
-Running test case 9
-16: |#define MAX\|
-17: |1024|
-Running test case 10
-18: |#  define  MAX	1024	 |
-Running test case 11
-19: |int a=1;|
-20: |int define();|
-Running test case 12
-21: |"test"|
-22: |"multi\|
-23: |line"|
-24: |"multi\|
-25: |line\|
-26: |string"|
-27: |'c'|
-28: |'"'|
-Running test case 13
-29: |#include "test.h"|
-30: |#include <test>|
-31: |#include SYSTEM_H|
-32: |#define SYSTEM_H <system.h>|
-Running test case 14
-33: |#define inc(a) a++|
-Running test case 15
-34: |#define make_list(varname, type, ...) type varname[] = {__VA_ARGS__, (type)-1}|
-Running test case 16
-35: |#define MK_STRING(string) #string|
-Running test case 17
-36: |#define CONCAT(a, b) a##b|
-Running test case 18
-37: |#ifdef MACRO|
-38: |#ifndef MACRO|
-39: |#endif|
-Running test case 19
-40: |#if defined(X) || defined(Y)|
-Running test case 20
-41: |#line 20 "vector"|
-Running test case 21
-42: |#error "error"|
-43: |#warning "warning"|
-Running test case 22
-44: |<% %> <: :> %:|
-Running test case 23
-45: |??< ??> ??( ??) ??' ??! ??- ??= ??/ ?? ?|
-Running test case 24
-46: |#if 1+1|
-Running test case 25
-47: ||
-Tokens checked: 266
-Running test case 1
-1: |#if 1|
-LITERAL: 1
-Running test case 2
-2: |#if 1+1|
-LITERAL: 1
-OPERATOR: 9
-LITERAL: 1
-Running test case 3
-3: |#if 4-2|
-LITERAL: 4
-OPERATOR: 10
-LITERAL: 2
-Running test case 4
-4: |#if 1+1+3|
-LITERAL: 1
-OPERATOR: 9
-LITERAL: 1
-OPERATOR: 9
-LITERAL: 3
-Running test case 5
-5: |#if 2+2*3|
-LITERAL: 2
-OPERATOR: 9
-LITERAL: 2
-OPERATOR: 11
-LITERAL: 3
-Running test case 6
-6: |#if (2+2)*3|
-OPERATOR: 3
-LITERAL: 2
-OPERATOR: 9
-LITERAL: 2
-OPERATOR: 4
-OPERATOR: 11
-LITERAL: 3
-Running test case 7
-7: |#if (2+2)*(3-1)|
-OPERATOR: 3
-LITERAL: 2
-OPERATOR: 9
-LITERAL: 2
-OPERATOR: 4
-OPERATOR: 11
-OPERATOR: 3
-LITERAL: 3
-OPERATOR: 10
-LITERAL: 1
-OPERATOR: 4
-Running test case 8
-8: |#if (2+2)/(3-1)|
-OPERATOR: 3
-LITERAL: 2
-OPERATOR: 9
-LITERAL: 2
-OPERATOR: 4
-OPERATOR: 12
-OPERATOR: 3
-LITERAL: 3
-OPERATOR: 10
-LITERAL: 1
-OPERATOR: 4
-Running test case 9
-9: |#if 2<<2|
-LITERAL: 2
-OPERATOR: 21
-LITERAL: 2
-Running test case 10
-10: |#if 7>>2|
-LITERAL: 7
-OPERATOR: 22
-LITERAL: 2
-Running test case 11
-11: |#if 2<<2>>1|
-LITERAL: 2
-OPERATOR: 21
-LITERAL: 2
-OPERATOR: 22
-LITERAL: 1
-Running test case 12
-12: |#if 1&&1|
-LITERAL: 1
-OPERATOR: 14
-LITERAL: 1
-Running test case 13
-13: |#if 0&&1|
-LITERAL: 0
-OPERATOR: 14
-LITERAL: 1
-Running test case 14
-14: |#if 1&&0|
-LITERAL: 1
-OPERATOR: 14
-LITERAL: 0
-Running test case 15
-15: |#if 1&&1&&1|
-LITERAL: 1
-OPERATOR: 14
-LITERAL: 1
-OPERATOR: 14
-LITERAL: 1
-Running test case 16
-16: |#if 1||1|
-LITERAL: 1
-OPERATOR: 15
-LITERAL: 1
-Running test case 17
-17: |#if 1||0|
-LITERAL: 1
-OPERATOR: 15
-LITERAL: 0
-Running test case 18
-18: |#if 0||1|
-LITERAL: 0
-OPERATOR: 15
-LITERAL: 1
-Running test case 19
-19: |#if 0||0|
-LITERAL: 0
-OPERATOR: 15
-LITERAL: 0
-Running test case 20
-20: |#if 0||0||1|
-LITERAL: 0
-OPERATOR: 15
-LITERAL: 0
-OPERATOR: 15
-LITERAL: 1
-Running test case 21
-21: |#if 1&&1||0&&1|
-LITERAL: 1
-OPERATOR: 14
-LITERAL: 1
-OPERATOR: 15
-LITERAL: 0
-OPERATOR: 14
-LITERAL: 1
-Running test case 22
-22: |#if 1&&0||0&&1|
-LITERAL: 1
-OPERATOR: 14
-LITERAL: 0
-OPERATOR: 15
-LITERAL: 0
-OPERATOR: 14
-LITERAL: 1
-Running test case 23
-23: |#if 1||0&&1||0|
-LITERAL: 1
-OPERATOR: 15
-LITERAL: 0
-OPERATOR: 14
-LITERAL: 1
-OPERATOR: 15
-LITERAL: 0
-Running test case 24
-24: |#if !1|
-OPERATOR: 16
-LITERAL: 1
-Running test case 25
-25: |#if 1&3|
-LITERAL: 1
-OPERATOR: 17
-LITERAL: 3
-Running test case 26
-26: |#if 5&2|
-LITERAL: 5
-OPERATOR: 17
-LITERAL: 2
-Running test case 27
-27: |#if 7&5&3|
-LITERAL: 7
-OPERATOR: 17
-LITERAL: 5
-OPERATOR: 17
-LITERAL: 3
-Running test case 28
-28: |#if 1^3|
-LITERAL: 1
-OPERATOR: 19
-LITERAL: 3
-Running test case 29
-29: |#if 3^3|
-LITERAL: 3
-OPERATOR: 19
-LITERAL: 3
-Running test case 30
-30: |#if 1^2^4|
-LITERAL: 1
-OPERATOR: 19
-LITERAL: 2
-OPERATOR: 19
-LITERAL: 4
-Running test case 31
-31: |#if 3|6|
-LITERAL: 3
-OPERATOR: 18
-LITERAL: 6
-Running test case 32
-32: |#if 15|(15<<4)|
-LITERAL: 15
-OPERATOR: 18
-OPERATOR: 3
-LITERAL: 15
-OPERATOR: 21
-LITERAL: 4
-OPERATOR: 4
-Running test case 33
-33: |#if 3&6|1&5|
-LITERAL: 3
-OPERATOR: 17
-LITERAL: 6
-OPERATOR: 18
-LITERAL: 1
-OPERATOR: 17
-LITERAL: 5
-Running test case 34
-34: |#if 5==3+2|
-LITERAL: 5
-OPERATOR: 23
-LITERAL: 3
-OPERATOR: 9
-LITERAL: 2
-Running test case 35
-35: |#if 2*3==3+2|
-LITERAL: 2
-OPERATOR: 11
-LITERAL: 3
-OPERATOR: 23
-LITERAL: 3
-OPERATOR: 9
-LITERAL: 2
-Running test case 36
-36: |#if 2*3==4+2==7-6|
-LITERAL: 2
-OPERATOR: 11
-LITERAL: 3
-OPERATOR: 23
-LITERAL: 4
-OPERATOR: 9
-LITERAL: 2
-OPERATOR: 23
-LITERAL: 7
-OPERATOR: 10
-LITERAL: 6
-Running test case 37
-37: |#if 1!=2|
-LITERAL: 1
-OPERATOR: 24
-LITERAL: 2
-Running test case 38
-38: |#if -2|
-OPERATOR: 10
-LITERAL: 2
-Running test case 39
-39: |#if -2+-1|
-OPERATOR: 10
-LITERAL: 2
-OPERATOR: 9
-OPERATOR: 10
-LITERAL: 1
-Running test case 40
-40: |#if -(2-4)|
-OPERATOR: 10
-OPERATOR: 3
-LITERAL: 2
-OPERATOR: 10
-LITERAL: 4
-OPERATOR: 4
-Running test case 41
-41: |#if 0xa|
-LITERAL: 0xa
-Running test case 42
-42: |#if 0xFF|
-LITERAL: 0xFF
-Running test case 43
-43: |#if 0xaBcDeF|
-LITERAL: 0xaBcDeF
-Running test case 44
-44: |#if 010|
-LITERAL: 010
-Running test case 45
-45: |#if 0xa*0xa|
-LITERAL: 0xa
-OPERATOR: 11
-LITERAL: 0xa
-Running test case 46
-46: |#if 'A'|
-CHAR: 'A' (65)
-Running test case 47
-47: |#if 'A'+' '|
-CHAR: 'A' (65)
-OPERATOR: 9
-CHAR: ' ' (32)
-Running test case 48
-48: |#define A 1|
-49: |#if A|
-MACRO: A
-LITERAL: 1
-Running test case 49
-50: |#define A 1|
-51: |#if A*2|
-MACRO: A
-LITERAL: 1
-OPERATOR: 11
-LITERAL: 2
-Running test case 50
-52: |#define A (5+5)|
-53: |#if A*2|
-MACRO: A
-OPERATOR: 3
-LITERAL: 5
-OPERATOR: 9
-LITERAL: 5
-OPERATOR: 4
-OPERATOR: 11
-LITERAL: 2
-Running test case 51
-54: |#define A(x) (x*x)|
-55: |#if A(4)|
-MACRO: A
-OPERATOR: 3
-LITERAL: 4
-OPERATOR: 11
-LITERAL: 4
-OPERATOR: 4
-Running test case 52
-56: |#define A(x,y) (x*y)|
-57: |#if A(2,3)|
-MACRO: A
-OPERATOR: 3
-LITERAL: 2
-OPERATOR: 11
-LITERAL: 3
-OPERATOR: 4
-Running test case 53
-58: |#define A(a,b,c) (a*b*c)|
-59: |#if A((1+1),3,(8/2))|
-MACRO: A
-OPERATOR: 3
-OPERATOR: 3
-LITERAL: 1
-OPERATOR: 9
-LITERAL: 1
-OPERATOR: 4
-OPERATOR: 11
-LITERAL: 3
-OPERATOR: 11
-OPERATOR: 3
-LITERAL: 8
-OPERATOR: 12
-LITERAL: 2
-OPERATOR: 4
-OPERATOR: 4
-Running test case 54
-60: |#define A(a) (a*2)|
-61: |#define B(a) (a*3)|
-62: |#if A(2)+B(2)|
-MACRO: A
-OPERATOR: 3
-LITERAL: 2
-OPERATOR: 11
-LITERAL: 2
-OPERATOR: 4
-OPERATOR: 9
-MACRO: B
-OPERATOR: 3
-LITERAL: 2
-OPERATOR: 11
-LITERAL: 3
-OPERATOR: 4
-Running test case 55
-63: |#define A 100|
-64: |#define B(a) (a*2)|
-65: |#if B(A)|
-MACRO: B
-OPERATOR: 3
-MACRO: A
-LITERAL: 100
-OPERATOR: 11
-LITERAL: 2
-OPERATOR: 4
-Running test case 56
-66: |#define A(a) (a*2)|
-67: |#define X 5|
-68: |#if A(A(X))|
-MACRO: A
-OPERATOR: 3
-MACRO: A
-OPERATOR: 3
-MACRO: X
-LITERAL: 5
-OPERATOR: 11
-LITERAL: 2
-OPERATOR: 4
-OPERATOR: 11
-LITERAL: 2
-OPERATOR: 4
-Running test case 57
-69: |#if NOT_DEFINED_MACRO|
-Undefined Macro: NOT_DEFINED_MACRO
-Running test case 58
-70: |#define A|
-71: |#if defined(A)|
-Expression error! index 7
-Tokens checked: 319
-1 of 128 tests failed!
+include
+Include: "stdafx.h"
+ 
+include
+Include: "testsuite.h"
+ 
+include
+Include: "preprocessormacro.h"
+ 
+include
+Include: "macroresolver.h"
+ 
+include
+Include: "ppexpression.h"
+ 
+include
+Include: "preprocessor.h"
+ 
+
+class cCPPCode
+: public cCPPTokenizer
+, public ICodeHandler
+{
+public:
+ cCPPCode();
+ ~cCPPCode();
+
+ void HandleCode(char strCode);
+ void HandleCode(const char* strCode);
+
+private:
+ std::stringstream m_strLine;
+};
+
+cCPPCode::cCPPCode()
+{
+}
+
+cCPPCode::~cCPPCode()
+{
+}
+
+void cCPPCode::HandleCode(char strCode)
+{
+ if (strCode == '\n')
+{
+ 
+ std::cout << m_strLine.str().c_str() << std::endl;
+ m_strLine.str(std::string());
+}
+ else
+{
+ m_strLine << strCode; 
+}
+}
+
+void cCPPCode::HandleCode(const char* strCode)
+{
+ m_strLine << strCode;
+}
+
+
+int main(int argc, char* argv[])
+{
+ cCPPCode cppCode;
+ cPreProcessor pp(&cppCode);
+ pp.AddStandardInclude("C:/Program Files (x86)/Microsoft Visual Studio 8/VC/include");
+ pp.AddProjectInclude("D:/Projekte/parseus");
+ pp.AddProjectInclude("D:/Projekte/parseus/parseus");
+
+ pp.Process("parser_test.cpp");
+ 
+}
