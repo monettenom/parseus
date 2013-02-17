@@ -60,6 +60,7 @@ static tKeyword g_KeyWords[] = {
 
 static tKeyword g_Operators[] = {
   {"#", PP_OP_PREPROC},
+  {"PP_END", PP_OP_PREPROC_END},
   {"(", PP_OP_BRACKET_OPEN},
   {")", PP_OP_BRACKET_CLOSE},
   {",", PP_OP_COMMA},
@@ -650,3 +651,33 @@ bool cPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkipC
 
   return PushPreProcEnd();
 }
+
+void cPPTokenizer::PrintToken(tToken& token)
+{
+  switch(token.m_Token)
+  {
+    case TOKEN_NEWLINE:
+      printf("TOKEN_NEWLINE\n");
+      break;
+    case TOKEN_WHITESPACE:
+    case TOKEN_LABEL:
+    case TOKEN_LITERAL:
+    case TOKEN_STRING:
+      printf("%s: (%s)\n", GetTokenString(token.m_Token), token.m_strName);
+      break;
+    case TOKEN_CHAR:
+      printf("%s: '%c'\n", GetTokenString(token.m_Token), token.m_cChar);
+      break;
+    case TOKEN_OPERATOR:
+      printf("%s: %s (%d)\n", GetTokenString(token.m_Token), GetOperatorString(token.m_Type), token.m_Type);
+      break;
+    case TOKEN_KEYWORD:
+      printf("%s: %s\n", GetTokenString(token.m_Token), GetKeywordString(token.m_Type));
+      break;
+    default:
+      printf("%d: %d\n", token.m_Token, token.m_Type);
+      break;
+  }
+}
+
+

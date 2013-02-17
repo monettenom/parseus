@@ -9,17 +9,42 @@
 #include <map>
 #include <stack>
 
-typedef std::vector<std::string> tIncludeList;
-typedef std::map<std::string, cPreprocessorMacro*> tMacroMap;
-typedef std::pair<std::string, cPreprocessorMacro*> tMacroMapEntry;
-typedef std::stack<bool> tConditionStack;
-
 class ICodeHandler
 {
 public:
   virtual void HandleCode(char strCode) = 0;
   virtual void HandleCode(const char* strCode) = 0;
 };
+
+class cNestingLevel
+{
+public:
+  enum eNestingLevelType
+  {
+    NLTYPE_NONE,
+    NLTYPE_IF,
+    NLTYPE_ELSE,
+  };
+
+public:
+  cNestingLevel(eNestingLevelType eType = NLTYPE_NONE, bool bOutputAllowed = true);
+  cNestingLevel(const cNestingLevel& NestingLevel);
+  ~cNestingLevel();
+
+  bool IsOutputAllowed();
+  eNestingLevelType GetType();
+  void DoElse();
+
+private:
+  bool m_bOutputAllowed;
+  bool m_bWasTrue;
+  eNestingLevelType m_eType;
+};
+
+typedef std::vector<std::string> tIncludeList;
+typedef std::map<std::string, cPreprocessorMacro*> tMacroMap;
+typedef std::pair<std::string, cPreprocessorMacro*> tMacroMapEntry;
+typedef std::stack<cNestingLevel> tConditionStack;
 
 class cPreProcessor: public ITokenHandler, IMacroMap
 {
@@ -43,7 +68,11 @@ public:
   bool Parse(const char* strLine, bool bSkipWhiteSpaces = false, bool bSkipComments = false);
   void Include(const char* strFile);
   bool IsDefined(const char* strMacro);
+  void Undef(const char* strMacro);
+  void Endif();
   cPreprocessorMacro* GetMacro(const char* strMacro);
+  int GetDepth(){return m_ConditionStack.size();}
+  void Reset();
 
 protected:
   void OutputCode(char cCode);
@@ -53,6 +82,8 @@ protected:
   void ResolveMacro(tToken& oToken);
   void HandleExpression(tToken& oToken);
 
+  bool IsOutputAllowed();
+
 private:
   cPPTokenizer m_Tokenizer;
   tIncludeList m_vStdIncludes;
@@ -60,6 +91,7 @@ private:
   tMacroMap m_MacroMap;
   bool m_bPreProc;
   bool m_bInclude;
+  bool m_bUndefNext;
   cPreprocessorMacro* m_pCurrentMacro;
   cMacroResolver* m_pMacroResolver;
   cPreprocessorExpression* m_pExpression;

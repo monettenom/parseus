@@ -39,10 +39,13 @@ void cTestPreprocessor::HandleCode(const char* strCode)
 bool cTestPreprocessor::Test(tTestData* pTestData)
 {
   IncTestCount();
+  m_Preprocessor.Reset();
   InitTest(pTestData);
   for (int i = 0; pTestData->m_strCode[i] != NULL; i++)
   {
-    m_Preprocessor.Parse(pTestData->m_strCode[i]); 
+    printf("Code: %s\n", pTestData->m_strCode[i]);
+    m_Preprocessor.Parse(pTestData->m_strCode[i]);
+    printf("Depth: %d\n", m_Preprocessor.GetDepth());
   }
   if (pTestData->m_nExpectedTokens != IGNORE_TOKEN_COUNT && pTestData->m_nExpectedTokens != GetTokenCount())
   {

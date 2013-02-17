@@ -78,6 +78,7 @@ public:
   ~cPPTokenizer();
 
   bool Parse(const char* strLine, bool bSkipWhiteSpaces = false, bool bSkipComments = false);
+  void PrintToken(tToken& token);
 
 protected:
   const char* HandleWhiteSpace(const char* strLine, bool bSkipWhiteSpaces);

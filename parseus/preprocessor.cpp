@@ -4,22 +4,89 @@
 #include "ppexpression.h"
 #include "preprocessor.h"
 
+cNestingLevel::cNestingLevel(cNestingLevel::eNestingLevelType eType, bool bOutputAllowed)
+: m_bOutputAllowed(bOutputAllowed)
+, m_eType(eType)
+, m_bWasTrue(false)
+{
+
+}
+
+cNestingLevel::cNestingLevel(const cNestingLevel& NestingLevel)
+: m_bOutputAllowed(NestingLevel.m_bOutputAllowed)
+, m_eType(NestingLevel.m_eType)
+, m_bWasTrue(NestingLevel.m_bWasTrue)
+{
+}
+
+cNestingLevel::~cNestingLevel()
+{
+}
+
+bool cNestingLevel::IsOutputAllowed()
+{
+  return m_bOutputAllowed;
+}
+
+cNestingLevel::eNestingLevelType cNestingLevel::GetType()
+{
+  return m_eType;
+}
+
+void cNestingLevel::DoElse()
+{
+  // handles else cases also for elif
+  // only one block in the expression can be true
+  if (m_bOutputAllowed)
+  {
+    m_bWasTrue = true;
+    m_bOutputAllowed = false;
+  }
+  else
+  {
+    if (!m_bWasTrue)
+    {
+      m_bOutputAllowed = true;
+    }
+  }
+  m_eType = cNestingLevel::NLTYPE_ELSE;
+}
+
 cPreProcessor::cPreProcessor(ICodeHandler* pCodeHandler)
 : m_bPreProc(false)
 , m_bInclude(false)
+, m_bUndefNext(false)
 , m_pCurrentMacro(NULL)
 , m_pMacroResolver(NULL)
 , m_pExpression(NULL)
 , m_pCodeHandler(pCodeHandler)
 {
   m_Tokenizer.SetTokenHandler(this);
-  m_ConditionStack.push(true);
+  m_ConditionStack.push(cNestingLevel(cNestingLevel::NLTYPE_NONE, true));
 }
 
 cPreProcessor::~cPreProcessor()
 {
 
 }
+
+void cPreProcessor::Reset()
+{
+  m_bPreProc = false;
+  m_bInclude = false;
+  m_bUndefNext = false;
+  delete m_pCurrentMacro;
+  m_pCurrentMacro = NULL;
+  delete m_pMacroResolver;
+  m_pMacroResolver = NULL;
+  delete m_pExpression;
+  m_pExpression = NULL;
+  while(!m_ConditionStack.empty())
+    m_ConditionStack.pop();
+  m_ConditionStack.push(cNestingLevel(cNestingLevel::NLTYPE_NONE, true));
+  m_MacroMap.clear();
+}
+
 void cPreProcessor::HandleError(const char* strError, int iLine)
 {
   std::cout << strError << " in line: " << iLine << std::endl;
@@ -88,7 +155,7 @@ bool cPreProcessor::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkip
 
 bool cPreProcessor::FindInclude(tIncludeList& vIncludes, const char* strFile, std::string& strPath)
 {
-  for(tIncludeList::const_iterator it = vIncludes.begin(); it != vIncludes.end(); ++it)
+  for (tIncludeList::const_iterator it = vIncludes.begin(); it != vIncludes.end(); ++it)
   {
     strPath = *it;
     strPath.append(strFile);
@@ -131,6 +198,23 @@ bool cPreProcessor::IsDefined(const char* strMacro)
   return GetMacro(strMacro) != NULL;
 }
 
+void cPreProcessor::Undef(const char* strMacro)
+{
+  m_MacroMap.erase(strMacro);
+}
+
+void cPreProcessor::Endif()
+{
+  if (m_ConditionStack.size() > 1)
+  {
+    m_ConditionStack.pop();
+  }
+  else
+  {
+    //Nesting Error. Endif without ifxx
+  }
+}
+
 cPreprocessorMacro* cPreProcessor::GetMacro(const char* strMacro)
 {
   tMacroMap::const_iterator it = m_MacroMap.find(strMacro);
@@ -138,6 +222,11 @@ cPreprocessorMacro* cPreProcessor::GetMacro(const char* strMacro)
     return it->second;
   else
     return NULL;
+}
+
+bool cPreProcessor::IsOutputAllowed()
+{
+  return m_ConditionStack.top().IsOutputAllowed();
 }
 
 void cPreProcessor::HandleMacro(tToken& oToken)
@@ -152,7 +241,7 @@ void cPreProcessor::HandleMacro(tToken& oToken)
   else if (m_pCurrentMacro->IsReady())
   {
     tMacroMap::iterator it = m_MacroMap.find(m_pCurrentMacro->GetName());
-    if (it == m_MacroMap.end())
+    if (IsOutputAllowed() && (it == m_MacroMap.end()))
     {
       m_MacroMap.insert(tMacroMapEntry(m_pCurrentMacro->GetName(), m_pCurrentMacro));
     }
@@ -178,7 +267,8 @@ void cPreProcessor::ResolveMacro(tToken& oToken)
     //std::cout << "Macro resolved." << std::endl;
     cMacroResolver* pMacroResolver = m_pMacroResolver;
     m_pMacroResolver = NULL;
-    pMacroResolver->ExpandMacro(this);
+    if (IsOutputAllowed())
+      pMacroResolver->ExpandMacro(this);
     delete pMacroResolver;
   }
 }
@@ -193,7 +283,9 @@ void cPreProcessor::HandleExpression(tToken& oToken)
   else if (m_pExpression->IsReady())
   {
     int iResult = m_pExpression->Evaluate();
-    m_ConditionStack.push(iResult != 0);
+    bool bFlag = IsOutputAllowed() && (iResult != 0);
+    printf("Expression result: %d\n", iResult);
+    m_ConditionStack.push(cNestingLevel(cNestingLevel::NLTYPE_IF, bFlag));
     delete m_pExpression;
     m_pExpression = NULL;
   }
@@ -201,7 +293,7 @@ void cPreProcessor::HandleExpression(tToken& oToken)
 
 void cPreProcessor::OutputCode(const char* strCode)
 {
-  if (m_ConditionStack.top())
+  if (IsOutputAllowed())
   {
     m_pCodeHandler->HandleCode(strCode);
   }
@@ -209,7 +301,7 @@ void cPreProcessor::OutputCode(const char* strCode)
 
 void cPreProcessor::OutputCode(char cCode)
 {
-  if (m_ConditionStack.top())
+  if (IsOutputAllowed())
   {
     m_pCodeHandler->HandleCode(cCode);
   }
@@ -217,18 +309,23 @@ void cPreProcessor::OutputCode(char cCode)
 
 bool cPreProcessor::HandleToken(tToken& oToken)
 {
+  //printf("[%d] ", m_ConditionStack.top().IsOutputAllowed());
+  //m_Tokenizer.PrintToken(oToken);
   if (m_pCurrentMacro)
   {
+    //printf("HandleMacro\n");
     HandleMacro(oToken);
     return true;
   }
   if (m_pMacroResolver)
   {
+    //printf("ResolveMacro\n");
     ResolveMacro(oToken);
     return true;
   }
   if (m_pExpression)
   {
+    //printf("HandleExpression\n");
     HandleExpression(oToken);
     return true;
   }
@@ -241,12 +338,10 @@ bool cPreProcessor::HandleToken(tToken& oToken)
       {
         case PP_OP_PREPROC: 
           m_bPreProc = true; 
-          //std::cout << "Preproc" << std::endl; 
           break;
         case PP_OP_PREPROC_END: 
           m_bPreProc = false;
           m_bInclude = false;
-          //std::cout << "Preproc End" << std::endl; 
           break;
         default:
           OutputCode(m_Tokenizer.GetOperatorString(oToken.m_Type));
@@ -266,6 +361,17 @@ bool cPreProcessor::HandleToken(tToken& oToken)
         case PP_KW_IF:
           m_pExpression = new cPreprocessorExpression(this);
           break;
+        case PP_KW_ELIF:
+          if (!IsOutputAllowed())
+          {
+            m_ConditionStack.pop();
+            m_pExpression = new cPreprocessorExpression(this);
+          }
+          else
+          {
+            m_ConditionStack.top().DoElse();
+          }
+          break;
         case PP_KW_IFDEF:
           m_pExpression = new cPreprocessorExpression(this);
           m_pExpression->HandleToken(tToken(TOKEN_KEYWORD, PP_KW_DEFINED));
@@ -276,18 +382,18 @@ bool cPreProcessor::HandleToken(tToken& oToken)
           m_pExpression->HandleToken(tToken(TOKEN_KEYWORD, PP_KW_DEFINED));
           break;
         case PP_KW_ENDIF:
-          m_ConditionStack.pop();
+          Endif();
           break;
         case PP_KW_ELSE:
-          m_ConditionStack.top() = !m_ConditionStack.top();
-          break;
-        case PP_KW_ELIF:
-          m_ConditionStack.top() = !m_ConditionStack.top();
+          m_ConditionStack.top().DoElse();
           break;
           m_pExpression = new cPreprocessorExpression(this);
           break;
         case PP_KW_DEFINE:
           m_pCurrentMacro = new cPreprocessorMacro;
+          break;
+        case PP_KW_UNDEF:
+          m_bUndefNext = true;
           break;
       }
     }
@@ -320,9 +426,16 @@ bool cPreProcessor::HandleToken(tToken& oToken)
 
     case TOKEN_LABEL:
     {
-      if (IsDefined(oToken.m_strName))
+      if (m_bUndefNext)
       {
-        m_pMacroResolver = new cMacroResolver(GetMacro(oToken.m_strName));
+        Undef(oToken.m_strName);
+        m_bUndefNext = false;
+      }
+      else if (IsDefined(oToken.m_strName))
+      {
+        {
+          m_pMacroResolver = new cMacroResolver(GetMacro(oToken.m_strName));
+        }
         //std::cout << "Macro: " << oToken.m_strName << std::endl;
       }
       else
@@ -341,7 +454,7 @@ bool cPreProcessor::HandleToken(tToken& oToken)
       break;
 
     case TOKEN_NEWLINE:
-      OutputCode('\n');
+      m_pCodeHandler->HandleCode('\n');
       break;
   }
   return false;
