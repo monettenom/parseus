@@ -92,6 +92,7 @@ private:
   bool m_bPreProc;
   bool m_bInclude;
   bool m_bUndefNext;
+  bool m_bStringify;
   cPreprocessorMacro* m_pCurrentMacro;
   cMacroResolver* m_pMacroResolver;
   cPreprocessorExpression* m_pExpression;

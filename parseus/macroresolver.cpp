@@ -71,26 +71,33 @@ bool cMacroResolver::HandleToken(tToken& oToken)
   case eParam:
     {
       bool bParamReady = false;
+      bool bComma = false;
 
-      // check bracket depth
-      if (oToken.IsToken(TOKEN_OPERATOR, PP_OP_BRACKET_CLOSE))
+      if (oToken.IsToken(TOKEN_OPERATOR))
       {
-        if (m_nBracketDepth == 0)
+        switch (oToken.m_Type)
         {
-          bParamReady = true;
+          case PP_OP_BRACKET_CLOSE:
+            if (m_nBracketDepth == 0)
+            {
+              bParamReady = true;
+            }
+            else
+            {
+              m_nBracketDepth--;
+            }
+            break;
+          case PP_OP_BRACKET_OPEN:
+            m_nBracketDepth++;
+            break;
+          case PP_OP_COMMA:
+            bComma = true;
+            break;
         }
-        else
-        {
-          m_nBracketDepth--;
-        }
-      }
-      else if (oToken.IsToken(TOKEN_OPERATOR, PP_OP_BRACKET_OPEN))
-      {
-        m_nBracketDepth++;
       }
 
       // if bracket depth is zero and comma is not inside brackets and not ellipsis mode
-      if(bParamReady || ((m_nBracketDepth == 0) && oToken.IsToken(TOKEN_OPERATOR, PP_OP_COMMA)) && !m_bEllipsis)
+      if(bParamReady || ((m_nBracketDepth == 0) && bComma) && !m_bEllipsis)
       {
         FinishParam();
       }
@@ -119,11 +126,16 @@ bool cMacroResolver::IsParam(const char* strLabel)
   return it != m_Params.end();
 }
 
+void cMacroResolver::CallTokenHandler(ITokenHandler* pHandler, tToken& oToken)
+{
+  pHandler->HandleToken(oToken);
+}
+
 void cMacroResolver::InsertParamText(ITokenHandler* pHandler, tTokenList& tokenList)
 {
   for (tTokenList::iterator it = tokenList.begin(); it != tokenList.end(); ++it)
   {
-    pHandler->HandleToken(*it);
+    CallTokenHandler(pHandler, *it);
   }
 }
 
@@ -147,11 +159,11 @@ bool cMacroResolver::ExpandMacro(ITokenHandler* pHandler)
       }
       else
       {
-        pHandler->HandleToken(*it);
+        CallTokenHandler(pHandler, *it);
       }
       break;
     default:
-      pHandler->HandleToken(*it);
+      CallTokenHandler(pHandler, *it);
       break;
     }
   }

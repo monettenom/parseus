@@ -175,6 +175,30 @@ tTestData sPreprocessorTestData[] =
       NULL
     }, 1, true, {"ok"}, {TOKEN_LABEL, -1}, {CPP_OP_UNKNOWN}
   },
+  // 15
+  {
+    {
+      "#define A ok",
+      "A;",
+      NULL
+    }, 1, true, {"ok"}, {TOKEN_LABEL, -1}, {CPP_OP_UNKNOWN}
+  },
+  // 16 concatenation
+  {
+    {
+      "#define A(x,y) x##y",
+      "A(o,k);",
+      NULL
+    }, 2, true, {"ok",""}, {TOKEN_LABEL, TOKEN_OPERATOR, -1}, {CPP_OP_UNKNOWN, CPP_OP_COMMAND_END}
+  },
+  // 17 stringification
+  {
+    {
+      "#define A(x) #x",
+      "A(ok);",
+      NULL
+    }, 2, true, {"\"ok\"",""}, {TOKEN_STRING, TOKEN_OPERATOR, -1}, {CPP_OP_UNKNOWN, CPP_OP_COMMAND_END}
+  },
   // stopping entry
   {
     {NULL}, -1, false, {""}, {-1}, {-1}

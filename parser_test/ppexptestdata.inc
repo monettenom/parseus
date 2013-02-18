@@ -153,6 +153,28 @@ tTestData sPPExpressionTestData[] =
       NULL
     }, IGNORE_TOKEN_COUNT, true, {""}, {1}, {}
   },
+  {
+    {
+      "#define A 1",
+      "#if A ? 22 : 11",
+      NULL
+    }, IGNORE_TOKEN_COUNT, true, {""}, {22}, {}
+  },
+  {
+    {
+      "#define A 0",
+      "#if A ? 22 : 11",
+      NULL
+    }, IGNORE_TOKEN_COUNT, true, {""}, {11}, {}
+  },
+  {
+    {
+      "#define A 1",
+      "#define B 0",
+      "#if A ? (B ? 11 : 22) : 33",
+      NULL
+    }, IGNORE_TOKEN_COUNT, true, {""}, {22}, {}
+  },
   // stopping entry
   {
     {NULL}, -1, false, {""}, {-1}, {-1}

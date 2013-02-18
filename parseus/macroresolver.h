@@ -18,6 +18,7 @@ protected:
   void FinishParam();
   void InsertParamText(ITokenHandler* pHandler, tTokenList& tokenList);
   bool IsParam(const char* strLabel);
+  void CallTokenHandler(ITokenHandler* pHandler, tToken& oToken);
 
 private:
   enum eResolveState

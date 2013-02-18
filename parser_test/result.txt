@@ -379,7 +379,17 @@ Running test case 60
 74: |#if !defined(UNDEFINED_MACRO)|
 Running test case 61
 75: |#if defined(A) && defined B && !defined(((NOT_DEFINED)))|
-Tokens checked: 313
+Running test case 62
+76: |#define A 1|
+77: |#if A ? 22 : 11|
+Running test case 63
+78: |#define A 0|
+79: |#if A ? 22 : 11|
+Running test case 64
+80: |#define A 1|
+81: |#define B 0|
+82: |#if A ? (B ? 11 : 22) : 33|
+Tokens checked: 307
 Running test case 1
 Code: #define A
 Depth: 1
@@ -393,158 +403,139 @@ Depth: 2
 Code: #endif
 3: |ok|
 Depth: 1
+4: ||
 Running test case 2
 Code: #define A 1
-4: ||
+5: ||
 Depth: 1
 Code: #if A==1
-5: ||
+6: ||
 Expression result: 1
 Depth: 2
 Code: ok
-6: ||
+7: ||
 Depth: 2
 Code: #endif
-7: |ok|
+8: |ok|
 Depth: 1
+9: ||
 Running test case 3
 Code: #ifndef NOT_DEFINED
-8: ||
+10: ||
 Expression result: 1
 Depth: 2
 Code: ok
-9: ||
+11: ||
 Depth: 2
 Code: #endif
-10: |ok|
+12: |ok|
 Depth: 1
+13: ||
 Running test case 4
 Code: #define A
-11: ||
+14: ||
 Depth: 1
 Code: #if defined A
-12: ||
+15: ||
 Expression result: 1
 Depth: 2
 Code: ok
-13: ||
-Depth: 2
-Code: #endif
-14: |ok|
-Depth: 1
-Running test case 5
-Code: #ifdef NOT_DEFINED
-15: ||
-Expression result: 0
-Depth: 2
-Code: not ok
 16: ||
 Depth: 2
-Code: #else
-17: ||
-Depth: 2
-Code: ok
-18: ||
-Depth: 2
 Code: #endif
-19: |ok|
+17: |ok|
 Depth: 1
-Running test case 6
-Code: #if defined(NOT_DEFINED)
-20: ||
+18: ||
+Running test case 5
+Code: #ifdef NOT_DEFINED
+19: ||
 Expression result: 0
 Depth: 2
 Code: not ok
-21: ||
+20: ||
 Depth: 2
 Code: #else
-22: ||
+21: ||
 Depth: 2
 Code: ok
-23: ||
+22: ||
 Depth: 2
 Code: #endif
-24: |ok|
+23: |ok|
 Depth: 1
-Running test case 7
+24: ||
+Running test case 6
 Code: #if defined(NOT_DEFINED)
 25: ||
 Expression result: 0
 Depth: 2
-Code: #define B
+Code: not ok
 26: ||
 Depth: 2
-Code: #endif
+Code: #else
 27: ||
+Depth: 2
+Code: ok
+28: ||
+Depth: 2
+Code: #endif
+29: |ok|
+Depth: 1
+30: ||
+Running test case 7
+Code: #if defined(NOT_DEFINED)
+31: ||
+Expression result: 0
+Depth: 2
+Code: #define B
+32: ||
+Depth: 2
+Code: #endif
+33: ||
 Depth: 1
 Code: #ifndef B
-28: ||
+34: ||
 Expression result: 1
 Depth: 2
 Code: ok
-29: ||
+35: ||
 Depth: 2
 Code: #endif
-30: |ok|
+36: |ok|
 Depth: 1
+37: ||
 Running test case 8
 Code: #define B
-31: ||
+38: ||
 Depth: 1
 Code: #undef B
-32: ||
+39: ||
 Depth: 1
 Code: #ifndef B
-33: ||
+40: ||
 Expression result: 1
 Depth: 2
 Code: ok
-34: ||
+41: ||
 Depth: 2
 Code: #endif
-35: |ok|
+42: |ok|
 Depth: 1
+43: ||
 Running test case 9
 Code: #define A
-36: ||
+44: ||
 Depth: 1
 Code: #define B
-37: ||
-Depth: 1
-Code: #ifdef A
-38: ||
-Expression result: 1
-Depth: 2
-Code: #ifdef B
-39: ||
-Expression result: 1
-Depth: 3
-Code: ok
-40: ||
-Depth: 3
-Code: #endif
-41: |ok|
-Depth: 2
-Code: #endif
-42: ||
-Depth: 1
-Running test case 10
-Code: #define A
-43: ||
-Depth: 1
-Code: #ifdef A
-44: ||
-Expression result: 1
-Depth: 2
-Code: #ifdef B
 45: ||
-Expression result: 0
-Depth: 3
-Code: not ok
+Depth: 1
+Code: #ifdef A
 46: ||
-Depth: 3
-Code: #else
+Expression result: 1
+Depth: 2
+Code: #ifdef B
 47: ||
+Expression result: 1
 Depth: 3
 Code: ok
 48: ||
@@ -555,59 +546,54 @@ Depth: 2
 Code: #endif
 50: ||
 Depth: 1
-Running test case 11
-Code: #define A
 51: ||
-Depth: 1
-Code: #if defined(A)
+Running test case 10
+Code: #define A
 52: ||
+Depth: 1
+Code: #ifdef A
+53: ||
 Expression result: 1
 Depth: 2
-Code: ok
-53: ||
-Depth: 2
-Code: #elif B
-54: |ok|
-Depth: 2
+Code: #ifdef B
+54: ||
+Expression result: 0
+Depth: 3
 Code: not ok
 55: ||
-Depth: 2
+Depth: 3
 Code: #else
 56: ||
-Depth: 2
-Code: not ok
+Depth: 3
+Code: ok
 57: ||
+Depth: 3
+Code: #endif
+58: |ok|
 Depth: 2
 Code: #endif
-58: ||
-Depth: 1
-Running test case 12
-Code: #define A 3
 59: ||
 Depth: 1
-Code: #if A==1
 60: ||
-Expression result: 0
-Depth: 2
-Code: not ok
+Running test case 11
+Code: #define A
 61: ||
-Depth: 2
-Code: #elif A==2
+Depth: 1
+Code: #if defined(A)
 62: ||
-Expression result: 0
-Depth: 2
-Code: not ok
-63: ||
-Depth: 2
-Code: #elif A==3
-64: ||
 Expression result: 1
 Depth: 2
 Code: ok
+63: ||
+Depth: 2
+Code: #elif B
+64: |ok|
+Depth: 2
+Code: not ok
 65: ||
 Depth: 2
 Code: #else
-66: |ok|
+66: ||
 Depth: 2
 Code: not ok
 67: ||
@@ -615,35 +601,34 @@ Depth: 2
 Code: #endif
 68: ||
 Depth: 1
-Running test case 13
-Code: #define A
 69: ||
-Depth: 1
-Code: #define B
+Running test case 12
+Code: #define A 3
 70: ||
 Depth: 1
-Code: #ifdef A
+Code: #if A==1
 71: ||
+Expression result: 0
+Depth: 2
+Code: not ok
+72: ||
+Depth: 2
+Code: #elif A==2
+73: ||
+Expression result: 0
+Depth: 2
+Code: not ok
+74: ||
+Depth: 2
+Code: #elif A==3
+75: ||
 Expression result: 1
 Depth: 2
-Code: # ifndef B
-72: ||
-Expression result: 0
-Depth: 3
-Code: not ok
-73: | |
-Depth: 3
-Code: # else
-74: ||
-Depth: 3
 Code: ok
-75: ||
-Depth: 3
-Code: # endif
-76: |ok|
+76: ||
 Depth: 2
 Code: #else
-77: | |
+77: |ok|
 Depth: 2
 Code: not ok
 78: ||
@@ -651,39 +636,102 @@ Depth: 2
 Code: #endif
 79: ||
 Depth: 1
-Running test case 14
-Code: #ifndef A
 80: ||
-Expression result: 1
-Depth: 2
-Code: #define A 1
+Running test case 13
+Code: #define A
 81: ||
-Depth: 2
-Code: #endif
+Depth: 1
+Code: #define B
 82: ||
 Depth: 1
 Code: #ifdef A
 83: ||
 Expression result: 1
 Depth: 2
-Code: #undef A
+Code: # ifndef B
 84: ||
+Expression result: 0
+Depth: 3
+Code: not ok
+85: | |
+Depth: 3
+Code: # else
+86: ||
+Depth: 3
+Code: ok
+87: ||
+Depth: 3
+Code: # endif
+88: |ok|
 Depth: 2
-Code: #define A 2
-85: ||
+Code: #else
+89: | |
+Depth: 2
+Code: not ok
+90: ||
 Depth: 2
 Code: #endif
-86: ||
+91: ||
+Depth: 1
+92: ||
+Running test case 14
+Code: #ifndef A
+93: ||
+Expression result: 1
+Depth: 2
+Code: #define A 1
+94: ||
+Depth: 2
+Code: #endif
+95: ||
+Depth: 1
+Code: #ifdef A
+96: ||
+Expression result: 1
+Depth: 2
+Code: #undef A
+97: ||
+Depth: 2
+Code: #define A 2
+98: ||
+Depth: 2
+Code: #endif
+99: ||
 Depth: 1
 Code: #if A==2
-87: ||
+100: ||
 Expression result: 1
 Depth: 2
 Code: ok
-88: ||
+101: ||
 Depth: 2
 Code: #endif
-89: |ok|
+102: |ok|
 Depth: 1
-Tokens checked: 14
-0 of 145 tests failed!
+103: ||
+Running test case 15
+Code: #define A ok
+104: ||
+Depth: 1
+Code: A;
+105: ||
+Depth: 1
+106: |ok|
+Running test case 16
+Code: #define A(x,y) x##y
+107: ||
+Depth: 1
+Code: A(o,k);
+108: ||
+Depth: 1
+109: |ok;|
+Running test case 17
+Code: #define A(x) #x
+110: ||
+Depth: 1
+Code: A(ok);
+111: ||
+Depth: 1
+112: |"ok";|
+Tokens checked: 19
+0 of 151 tests failed!

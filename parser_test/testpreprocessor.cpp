@@ -47,6 +47,7 @@ bool cTestPreprocessor::Test(tTestData* pTestData)
     m_Preprocessor.Parse(pTestData->m_strCode[i]);
     printf("Depth: %d\n", m_Preprocessor.GetDepth());
   }
+  HandleCode('\n');
   if (pTestData->m_nExpectedTokens != IGNORE_TOKEN_COUNT && pTestData->m_nExpectedTokens != GetTokenCount())
   {
     std::stringstream strLog;

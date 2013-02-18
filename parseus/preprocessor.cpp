@@ -56,6 +56,7 @@ cPreProcessor::cPreProcessor(ICodeHandler* pCodeHandler)
 : m_bPreProc(false)
 , m_bInclude(false)
 , m_bUndefNext(false)
+, m_bStringify(false)
 , m_pCurrentMacro(NULL)
 , m_pMacroResolver(NULL)
 , m_pExpression(NULL)
@@ -343,6 +344,15 @@ bool cPreProcessor::HandleToken(tToken& oToken)
           m_bPreProc = false;
           m_bInclude = false;
           break;
+        case PP_OP_CONCATENATION:
+          // just ignore
+          // since only text will be outputted the 
+          // both tokens (before and after) will be printed
+          // without whitespace
+          break;
+        case PP_OP_STRINGIFICATION:
+          m_bStringify = true;
+          break;
         default:
           OutputCode(m_Tokenizer.GetOperatorString(oToken.m_Type));
           break;
@@ -426,7 +436,13 @@ bool cPreProcessor::HandleToken(tToken& oToken)
 
     case TOKEN_LABEL:
     {
-      if (m_bUndefNext)
+      if (m_bStringify)
+      {
+        OutputCode('\"');
+        OutputCode(oToken.m_strName);
+        OutputCode('\"');
+      }
+      else if (m_bUndefNext)
       {
         Undef(oToken.m_strName);
         m_bUndefNext = false;
