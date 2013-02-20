@@ -18,6 +18,7 @@ public:
 
 protected:
   bool HandleToken(tToken& oToken);
+  int CreateInclude(const char** strLines, int iStartIndex);
 
 private:
   std::stringstream m_strLine;

@@ -36,6 +36,17 @@ void cTestPreprocessor::HandleCode(const char* strCode)
   m_strLine << strCode;
 }
 
+int cTestPreprocessor::CreateInclude(const char** strLines, int iStartIndex)
+{
+  std::ofstream ofile(strLines[iStartIndex]+1, ios::out);
+  while (strcmp(strLines[++iStartIndex], "<") != 0)
+  {
+    ofile.write(strLines[iStartIndex],strlen(strLines[iStartIndex]));
+    ofile.write("\n", 1);
+  }
+  return iStartIndex;
+}
+
 bool cTestPreprocessor::Test(tTestData* pTestData)
 {
   IncTestCount();
@@ -44,7 +55,18 @@ bool cTestPreprocessor::Test(tTestData* pTestData)
   for (int i = 0; pTestData->m_strCode[i] != NULL; i++)
   {
     printf("Code: %s\n", pTestData->m_strCode[i]);
-    m_Preprocessor.Parse(pTestData->m_strCode[i]);
+    switch (pTestData->m_strCode[i][0])
+    {
+      case '>':
+        i = CreateInclude(pTestData->m_strCode, i);
+        break;
+      case '-':
+        _unlink(pTestData->m_strCode[i]+1);
+        break;
+      default:
+        m_Preprocessor.Parse(pTestData->m_strCode[i]);
+        break;
+    }
     printf("Depth: %d\n", m_Preprocessor.GetDepth());
   }
   HandleCode('\n');

@@ -199,6 +199,53 @@ tTestData sPreprocessorTestData[] =
       NULL
     }, 2, true, {"\"ok\"",""}, {TOKEN_STRING, TOKEN_OPERATOR, -1}, {CPP_OP_UNKNOWN, CPP_OP_COMMAND_END}
   },
+  // 18 include
+  {
+    {
+      ">test.h",
+      "#ifndef TEST_H",
+      "#define TEST_H",
+      "ok",
+      "#endif",
+      "<",
+      "#include \"test.h\"",
+      "-test.h",
+      NULL
+    }, 1, true, {"ok"}, {TOKEN_LABEL, -1}, {CPP_OP_UNKNOWN}
+  },
+  // 19 include same file twice
+  {
+    {
+      ">test.h",
+      "#ifndef TEST_H",
+      "#define TEST_H",
+      "ok",
+      "#endif",
+      "<",
+      "#include \"test.h\"",
+      "#include \"test.h\"",
+      "-test.h",
+      NULL
+    }, 1, true, {"ok"}, {TOKEN_LABEL, -1}, {CPP_OP_UNKNOWN}
+  },
+  // 20 nested include
+  {
+    {
+      ">test.h",
+      "#ifndef TEST_H",
+      "#define TEST_H",
+      "ok",
+      "#endif",
+      "<",
+      ">test2.h",
+      "#include \"test.h\"",
+      "<",
+      "#include \"test2.h\"",
+      "-test.h",
+      "-test2.h",
+      NULL
+    }, 1, true, {"ok"}, {TOKEN_LABEL, -1}, {CPP_OP_UNKNOWN}
+  },
   // stopping entry
   {
     {NULL}, -1, false, {""}, {-1}, {-1}

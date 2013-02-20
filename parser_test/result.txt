@@ -171,77 +171,79 @@ Running test case 14
 41: ||
 Tokens checked: 182
 Running test case 1
-1: |#include include_next import define undef ifdef ifndef if defined else|
+1: |#import define undef ifdef ifndef if defined else|
 2: |#elif endif error warning line pragma ident sccs assert unassert|
+3: |#include|
+4: |#include_next|
 Running test case 2
-3: |# # ( , ) ## ...|
-4: |# + - * / % ! && || & | ^ ~ == != < <= > >= << >>|
+5: |# # ( , ) ## ...|
+6: |# + - * / % ! && || & | ^ ~ == != < <= > >= << >>|
 Running test case 3
-5: |#define MAX 1024|
-6: | #define MAX 1024|
-7: |# define MAX 1024|
+7: |#define MAX 1024|
+8: | #define MAX 1024|
+9: |# define MAX 1024|
 Running test case 4
-8: |// #define MAX 1024|
+10: |// #define MAX 1024|
 Running test case 5
-9: |#define MAX 1024 // any comment|
+11: |#define MAX 1024 // any comment|
 Running test case 6
-10: |#define a 1 //wrap\|
-11: |line|
+12: |#define a 1 //wrap\|
+13: |line|
 Running test case 7
-12: |#define MAX (1<</*shl*/10)/*1024*/|
+14: |#define MAX (1<</*shl*/10)/*1024*/|
 Running test case 8
-13: |#define MAX /* this is|
-14: |a multiline comment|
-15: |*/ 1024|
+15: |#define MAX /* this is|
+16: |a multiline comment|
+17: |*/ 1024|
 Running test case 9
-16: |#define MAX\|
-17: |1024|
+18: |#define MAX\|
+19: |1024|
 Running test case 10
-18: |#  define  MAX	1024	 |
+20: |#  define  MAX	1024	 |
 Running test case 11
-19: |int a=1;|
-20: |int define();|
+21: |int a=1;|
+22: |int define();|
 Running test case 12
-21: |"test"|
-22: |"multi\|
-23: |line"|
+23: |"test"|
 24: |"multi\|
-25: |line\|
-26: |string"|
-27: |'c'|
-28: |'"'|
+25: |line"|
+26: |"multi\|
+27: |line\|
+28: |string"|
+29: |'c'|
+30: |'"'|
 Running test case 13
-29: |#include "test.h"|
-30: |#include <test>|
-31: |#include SYSTEM_H|
-32: |#define SYSTEM_H <system.h>|
+31: |#include "test.h"|
+32: |#include <test>|
+33: |#include SYSTEM_H|
+34: |#define SYSTEM_H <system.h>|
 Running test case 14
-33: |#define inc(a) a++|
+35: |#define inc(a) a++|
 Running test case 15
-34: |#define make_list(varname, type, ...) type varname[] = {__VA_ARGS__, (type)-1}|
+36: |#define make_list(varname, type, ...) type varname[] = {__VA_ARGS__, (type)-1}|
 Running test case 16
-35: |#define MK_STRING(string) #string|
+37: |#define MK_STRING(string) #string|
 Running test case 17
-36: |#define CONCAT(a, b) a##b|
+38: |#define CONCAT(a, b) a##b|
 Running test case 18
-37: |#ifdef MACRO|
-38: |#ifndef MACRO|
-39: |#endif|
+39: |#ifdef MACRO|
+40: |#ifndef MACRO|
+41: |#endif|
 Running test case 19
-40: |#if defined(X) || defined(Y)|
+42: |#if defined(X) || defined(Y)|
 Running test case 20
-41: |#line 20 "vector"|
+43: |#line 20 "vector"|
 Running test case 21
-42: |#error "error"|
-43: |#warning "warning"|
+44: |#error "error"|
+45: |#warning "warning"|
 Running test case 22
-44: |<% %> <: :> %:|
+46: |<% %> <: :> %:|
 Running test case 23
-45: |??< ??> ??( ??) ??' ??! ??- ??= ??/ ?? ?|
+47: |??< ??> ??( ??) ??' ??! ??- ??= ??/ ?? ?|
 Running test case 24
-46: |#if 1+1|
+48: |#if 1+1|
 Running test case 25
-47: ||
+49: ||
 Tokens checked: 266
 Running test case 1
 1: |#define A (5+5)|
@@ -733,5 +735,70 @@ Code: A(ok);
 111: ||
 Depth: 1
 112: |"ok";|
-Tokens checked: 19
-0 of 151 tests failed!
+Running test case 18
+Code: >test.h
+Depth: 1
+Code: #include "test.h"
+113: ||
+include
+114: | |
+Expression result: 1
+115: ||
+116: ||
+117: |ok|
+118: ||
+Depth: 1
+Code: -test.h
+Depth: 1
+119: ||
+Running test case 19
+Code: >test.h
+Depth: 1
+Code: #include "test.h"
+120: ||
+include
+121: | |
+Expression result: 1
+122: ||
+123: ||
+124: |ok|
+125: ||
+Depth: 1
+Code: #include "test.h"
+126: ||
+include
+127: | |
+Expression result: 0
+128: ||
+129: ||
+130: ||
+131: ||
+Depth: 1
+Code: -test.h
+Depth: 1
+132: ||
+Running test case 20
+Code: >test.h
+Depth: 1
+Code: >test2.h
+Depth: 1
+Code: #include "test2.h"
+133: ||
+include
+134: | |
+include
+135: | |
+Expression result: 1
+136: ||
+137: ||
+138: |ok|
+139: ||
+140: ||
+Depth: 1
+Code: -test.h
+Depth: 1
+Code: -test2.h
+Depth: 1
+141: ||
+Tokens checked: 22
+0 of 154 tests failed!

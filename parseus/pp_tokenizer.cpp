@@ -236,6 +236,12 @@ void cPPTokenizer::PushKeyword(int nKeyword)
   else
   {
     m_bInclude = (nKeyword == PP_KW_INCLUDE);
+    if (m_bInclude)
+    {
+      // after includes, preprocmode must be false, since the included file
+      // shouldn't start with this mode activated
+      m_bPreProcMode = false;
+    }
     cTokenizer::PushKeyword(nKeyword);
   }
 }

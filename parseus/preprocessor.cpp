@@ -76,6 +76,7 @@ void cPreProcessor::Reset()
   m_bPreProc = false;
   m_bInclude = false;
   m_bUndefNext = false;
+  m_bStringify = false;
   delete m_pCurrentMacro;
   m_pCurrentMacro = NULL;
   delete m_pMacroResolver;
@@ -154,6 +155,12 @@ bool cPreProcessor::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkip
   return m_Tokenizer.Parse(strLine, bSkipWhiteSpaces, bSkipComments);
 }
 
+bool cPreProcessor::FileExists(const char* strFile)
+{
+  std::fstream input(strFile);
+  return input.good();
+}
+
 bool cPreProcessor::FindInclude(tIncludeList& vIncludes, const char* strFile, std::string& strPath)
 {
   for (tIncludeList::const_iterator it = vIncludes.begin(); it != vIncludes.end(); ++it)
@@ -161,8 +168,7 @@ bool cPreProcessor::FindInclude(tIncludeList& vIncludes, const char* strFile, st
     strPath = *it;
     strPath.append(strFile);
 
-    std::fstream input(strPath.c_str());
-    if (input.good())
+    if (FileExists(strPath.c_str()))
       return true;
   }
   strPath.clear();
@@ -171,7 +177,7 @@ bool cPreProcessor::FindInclude(tIncludeList& vIncludes, const char* strFile, st
 
 void cPreProcessor::Include(const char* strFile)
 {
-  std::cout << "Include: " << strFile << std::endl;
+  //std::cout << "Include: " << strFile << std::endl;
   std::string strName;
   strName.assign(strFile+1, strlen(strFile)-2);
   std::string strPath;
@@ -181,16 +187,27 @@ void cPreProcessor::Include(const char* strFile)
     case '<':
       if (FindInclude(m_vStdIncludes, strName.c_str(), strPath))
         break;
+      // if this include was not found, try with project includes
     case '\"':
       FindInclude(m_vPrjIncludes, strName.c_str(), strPath);
-        break;
+      break;
     default:
       break;
   }
 
+  if (strPath.empty())
+  {
+    if (FileExists(strName.c_str()))
+      strPath = strName;
+  }
+
   if (!strPath.empty())
   {
-    //Process(strPath.c_str());
+    Process(strPath.c_str());
+  }
+  else
+  {
+    printf("File not found: %s\n", strName.c_str());
   }
 }
 

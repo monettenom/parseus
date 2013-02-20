@@ -78,6 +78,7 @@ protected:
   void OutputCode(char cCode);
   void OutputCode(const char* strCode);
   bool FindInclude(tIncludeList& vIncludes, const char* strFile, std::string& strPath);
+  bool FileExists(const char* strFile);
   void HandleMacro(tToken& oToken);
   void ResolveMacro(tToken& oToken);
   void HandleExpression(tToken& oToken);
