@@ -52,6 +52,12 @@ tToken::tToken(int nToken, int nType)
 {
 }
 
+tToken::tToken(int nToken, const char* strName)
+: m_Token(nToken)
+{
+  SetName(strName);
+}
+
 tToken::~tToken()
 {
   m_strName = NULL;

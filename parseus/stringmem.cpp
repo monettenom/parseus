@@ -6,6 +6,7 @@ cStringMemBlock::cStringMemBlock(int nSize, cStringMemBlock* pNext)
 , m_pBlock(NULL)
 , m_pNext(pNext)
 {
+  LOG("Initial allocated: %d", nSize);
   m_pBlock = new char[nSize];
   memset(m_pBlock, 0, nSize);
 }
@@ -53,6 +54,7 @@ char* cStringMem::Alloc(int nSize)
   char* pResult = m_pBlock->Alloc(nSize);
   if (pResult == NULL)
   {
+    LOG("More memory allocated: %d", STRINGMEMBLOCK_SIZE);
     m_pBlock = new cStringMemBlock(STRINGMEMBLOCK_SIZE, m_pBlock);
     pResult = m_pBlock->Alloc(nSize);
   }

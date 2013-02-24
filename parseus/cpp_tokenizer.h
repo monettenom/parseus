@@ -151,6 +151,7 @@ public:
   ~cCPPTokenizer();
 
   bool Parse(const char* strLine, bool bSkipWhiteSpaces = false, bool bSkipComments = false);
+  void LogToken(tToken& token);
 
 protected:
   const char* HandleBlockComment(const char* strLine, bool bSkipComments = false);

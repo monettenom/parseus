@@ -181,7 +181,7 @@ tTestData sPreprocessorTestData[] =
       "#define A ok",
       "A;",
       NULL
-    }, 1, true, {"ok"}, {TOKEN_LABEL, -1}, {CPP_OP_UNKNOWN}
+    }, 2, true, {"ok"}, {TOKEN_LABEL, TOKEN_OPERATOR, -1}, {CPP_OP_UNKNOWN, CPP_OP_COMMAND_END}
   },
   // 16 concatenation
   {
@@ -241,11 +241,58 @@ tTestData sPreprocessorTestData[] =
       "#include \"test.h\"",
       "<",
       "#include \"test2.h\"",
+      "#ifdef TEST_H",
+      "ok",
+      "#endif",
       "-test.h",
       "-test2.h",
       NULL
-    }, 1, true, {"ok"}, {TOKEN_LABEL, -1}, {CPP_OP_UNKNOWN}
+    }, 2, true, {"ok", "ok"}, {TOKEN_LABEL, TOKEN_LABEL, -1}, {CPP_OP_UNKNOWN, CPP_OP_UNKNOWN}
   },
+  // 21 __LINE__
+  {
+    {
+      "__LINE__;",
+      "__LINE__;",
+      NULL
+    }, 4, true, 
+    {"1", "", "2", ""}, 
+    {TOKEN_LITERAL, TOKEN_OPERATOR, TOKEN_LITERAL, TOKEN_OPERATOR, -1}, 
+    {CPP_OP_UNKNOWN, CPP_OP_COMMAND_END, CPP_OP_UNKNOWN, CPP_OP_COMMAND_END}
+  },
+  // 22 __FILE__
+  {
+    {
+      ">test.h",
+      "__FILE__;",
+      "<",
+      "#include \"test.h\"",
+      "-test.h",
+      NULL
+    }, 2, true, 
+    {"\"test.h\"", ""}, 
+    {TOKEN_STRING, TOKEN_OPERATOR, -1}, 
+    {CPP_OP_UNKNOWN, CPP_OP_COMMAND_END}
+  },
+  // 23 __LINE__ in include
+  {
+    {
+      ">test.h",
+      "#ifndef TEST_H",
+      "#define TEST_H",
+      "//comment",
+      "__LINE__;",
+      "#endif",
+      "<",
+      "#include \"test.h\"",
+      "__LINE__;",
+      "-test.h",
+      NULL
+    }, 4, true, 
+    {"4", "", "2", ""}, 
+    {TOKEN_LITERAL, TOKEN_OPERATOR, TOKEN_LITERAL, TOKEN_OPERATOR, -1}, 
+    {CPP_OP_UNKNOWN, CPP_OP_COMMAND_END, CPP_OP_UNKNOWN, CPP_OP_COMMAND_END}
+  },  
   // stopping entry
   {
     {NULL}, -1, false, {""}, {-1}, {-1}

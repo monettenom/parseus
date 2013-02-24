@@ -496,6 +496,7 @@ const char* cCPPTokenizer::HandleLineComment(const char* strLine, bool bSkipComm
 
 bool cCPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkipComments)
 {
+  LOG("strLine: %s", strLine);
   bool bSlashFound = false;
   char c;
 
@@ -796,3 +797,38 @@ bool cCPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkip
 
   return true;
 }
+
+void cCPPTokenizer::LogToken(tToken& token)
+{
+  switch(token.m_Token)
+  {
+    case TOKEN_PREPROC:
+    case TOKEN_LINECOMMENT:
+    case TOKEN_COMMENT: 
+    case TOKEN_WHITESPACE:
+    case TOKEN_LABEL:
+    case TOKEN_LITERAL:
+    case TOKEN_STRING:
+    case TOKEN_MULTILINE_STRING:
+      LOG("%s: (%s)", GetTokenString(token.m_Token), token.m_strName);
+      break;
+    case TOKEN_CHAR:
+      LOG("%s: (%c)", GetTokenString(token.m_Token), token.m_cChar);
+      break;
+    case TOKEN_NEWLINE:
+    case TOKEN_BLOCK_BEGIN:
+    case TOKEN_BLOCK_END:
+      LOG("%s", GetTokenString(token.m_Token));
+      break;
+    case TOKEN_OPERATOR:
+      LOG("%s: %s (%d)", GetTokenString(token.m_Token), GetOperatorString(token.m_Type), token.m_Type);
+      break;
+    case TOKEN_KEYWORD:
+      LOG("%s: %s", GetTokenString(token.m_Token), GetKeywordString(token.m_Type));
+      break;
+    default:
+      LOG("%d: %d", token.m_Token, token.m_Type);
+      break;
+  }
+}
+

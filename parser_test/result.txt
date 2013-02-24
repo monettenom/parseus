@@ -393,412 +393,427 @@ Running test case 64
 82: |#if A ? (B ? 11 : 22) : 33|
 Tokens checked: 307
 Running test case 1
-Code: #define A
+Code: "#define A"
 Depth: 1
-Code: #ifdef A
+Code: "#ifdef A"
 1: ||
-Expression result: 1
 Depth: 2
-Code: ok
+Code: "ok"
 2: ||
 Depth: 2
-Code: #endif
+Code: "#endif"
 3: |ok|
 Depth: 1
 4: ||
 Running test case 2
-Code: #define A 1
+Code: "#define A 1"
 5: ||
 Depth: 1
-Code: #if A==1
+Code: "#if A==1"
 6: ||
-Expression result: 1
 Depth: 2
-Code: ok
+Code: "ok"
 7: ||
 Depth: 2
-Code: #endif
+Code: "#endif"
 8: |ok|
 Depth: 1
 9: ||
 Running test case 3
-Code: #ifndef NOT_DEFINED
+Code: "#ifndef NOT_DEFINED"
 10: ||
-Expression result: 1
 Depth: 2
-Code: ok
+Code: "ok"
 11: ||
 Depth: 2
-Code: #endif
+Code: "#endif"
 12: |ok|
 Depth: 1
 13: ||
 Running test case 4
-Code: #define A
+Code: "#define A"
 14: ||
 Depth: 1
-Code: #if defined A
+Code: "#if defined A"
 15: ||
-Expression result: 1
 Depth: 2
-Code: ok
+Code: "ok"
 16: ||
 Depth: 2
-Code: #endif
+Code: "#endif"
 17: |ok|
 Depth: 1
 18: ||
 Running test case 5
-Code: #ifdef NOT_DEFINED
+Code: "#ifdef NOT_DEFINED"
 19: ||
-Expression result: 0
 Depth: 2
-Code: not ok
+Code: "not ok"
 20: ||
 Depth: 2
-Code: #else
+Code: "#else"
 21: ||
 Depth: 2
-Code: ok
+Code: "ok"
 22: ||
 Depth: 2
-Code: #endif
+Code: "#endif"
 23: |ok|
 Depth: 1
 24: ||
 Running test case 6
-Code: #if defined(NOT_DEFINED)
+Code: "#if defined(NOT_DEFINED)"
 25: ||
-Expression result: 0
 Depth: 2
-Code: not ok
+Code: "not ok"
 26: ||
 Depth: 2
-Code: #else
+Code: "#else"
 27: ||
 Depth: 2
-Code: ok
+Code: "ok"
 28: ||
 Depth: 2
-Code: #endif
+Code: "#endif"
 29: |ok|
 Depth: 1
 30: ||
 Running test case 7
-Code: #if defined(NOT_DEFINED)
+Code: "#if defined(NOT_DEFINED)"
 31: ||
-Expression result: 0
 Depth: 2
-Code: #define B
+Code: "#define B"
 32: ||
 Depth: 2
-Code: #endif
+Code: "#endif"
 33: ||
 Depth: 1
-Code: #ifndef B
+Code: "#ifndef B"
 34: ||
-Expression result: 1
 Depth: 2
-Code: ok
+Code: "ok"
 35: ||
 Depth: 2
-Code: #endif
+Code: "#endif"
 36: |ok|
 Depth: 1
 37: ||
 Running test case 8
-Code: #define B
+Code: "#define B"
 38: ||
 Depth: 1
-Code: #undef B
+Code: "#undef B"
 39: ||
 Depth: 1
-Code: #ifndef B
+Code: "#ifndef B"
 40: ||
-Expression result: 1
 Depth: 2
-Code: ok
+Code: "ok"
 41: ||
 Depth: 2
-Code: #endif
+Code: "#endif"
 42: |ok|
 Depth: 1
 43: ||
 Running test case 9
-Code: #define A
+Code: "#define A"
 44: ||
 Depth: 1
-Code: #define B
+Code: "#define B"
 45: ||
 Depth: 1
-Code: #ifdef A
+Code: "#ifdef A"
 46: ||
-Expression result: 1
 Depth: 2
-Code: #ifdef B
+Code: "#ifdef B"
 47: ||
-Expression result: 1
 Depth: 3
-Code: ok
+Code: "ok"
 48: ||
 Depth: 3
-Code: #endif
+Code: "#endif"
 49: |ok|
 Depth: 2
-Code: #endif
+Code: "#endif"
 50: ||
 Depth: 1
 51: ||
 Running test case 10
-Code: #define A
+Code: "#define A"
 52: ||
 Depth: 1
-Code: #ifdef A
+Code: "#ifdef A"
 53: ||
-Expression result: 1
 Depth: 2
-Code: #ifdef B
+Code: "#ifdef B"
 54: ||
-Expression result: 0
 Depth: 3
-Code: not ok
+Code: "not ok"
 55: ||
 Depth: 3
-Code: #else
+Code: "#else"
 56: ||
 Depth: 3
-Code: ok
+Code: "ok"
 57: ||
 Depth: 3
-Code: #endif
+Code: "#endif"
 58: |ok|
 Depth: 2
-Code: #endif
+Code: "#endif"
 59: ||
 Depth: 1
 60: ||
 Running test case 11
-Code: #define A
+Code: "#define A"
 61: ||
 Depth: 1
-Code: #if defined(A)
+Code: "#if defined(A)"
 62: ||
-Expression result: 1
 Depth: 2
-Code: ok
+Code: "ok"
 63: ||
 Depth: 2
-Code: #elif B
+Code: "#elif B"
 64: |ok|
 Depth: 2
-Code: not ok
+Code: "not ok"
 65: ||
 Depth: 2
-Code: #else
+Code: "#else"
 66: ||
 Depth: 2
-Code: not ok
+Code: "not ok"
 67: ||
 Depth: 2
-Code: #endif
+Code: "#endif"
 68: ||
 Depth: 1
 69: ||
 Running test case 12
-Code: #define A 3
+Code: "#define A 3"
 70: ||
 Depth: 1
-Code: #if A==1
+Code: "#if A==1"
 71: ||
-Expression result: 0
 Depth: 2
-Code: not ok
+Code: "not ok"
 72: ||
 Depth: 2
-Code: #elif A==2
+Code: "#elif A==2"
 73: ||
-Expression result: 0
 Depth: 2
-Code: not ok
+Code: "not ok"
 74: ||
 Depth: 2
-Code: #elif A==3
+Code: "#elif A==3"
 75: ||
-Expression result: 1
 Depth: 2
-Code: ok
+Code: "ok"
 76: ||
 Depth: 2
-Code: #else
+Code: "#else"
 77: |ok|
 Depth: 2
-Code: not ok
+Code: "not ok"
 78: ||
 Depth: 2
-Code: #endif
+Code: "#endif"
 79: ||
 Depth: 1
 80: ||
 Running test case 13
-Code: #define A
+Code: "#define A"
 81: ||
 Depth: 1
-Code: #define B
+Code: "#define B"
 82: ||
 Depth: 1
-Code: #ifdef A
+Code: "#ifdef A"
 83: ||
-Expression result: 1
 Depth: 2
-Code: # ifndef B
+Code: "# ifndef B"
 84: ||
-Expression result: 0
 Depth: 3
-Code: not ok
+Code: "not ok"
 85: | |
 Depth: 3
-Code: # else
+Code: "# else"
 86: ||
 Depth: 3
-Code: ok
+Code: "ok"
 87: ||
 Depth: 3
-Code: # endif
+Code: "# endif"
 88: |ok|
 Depth: 2
-Code: #else
+Code: "#else"
 89: | |
 Depth: 2
-Code: not ok
+Code: "not ok"
 90: ||
 Depth: 2
-Code: #endif
+Code: "#endif"
 91: ||
 Depth: 1
 92: ||
 Running test case 14
-Code: #ifndef A
+Code: "#ifndef A"
 93: ||
-Expression result: 1
 Depth: 2
-Code: #define A 1
+Code: "#define A 1"
 94: ||
 Depth: 2
-Code: #endif
+Code: "#endif"
 95: ||
 Depth: 1
-Code: #ifdef A
+Code: "#ifdef A"
 96: ||
-Expression result: 1
 Depth: 2
-Code: #undef A
+Code: "#undef A"
 97: ||
 Depth: 2
-Code: #define A 2
+Code: "#define A 2"
 98: ||
 Depth: 2
-Code: #endif
+Code: "#endif"
 99: ||
 Depth: 1
-Code: #if A==2
+Code: "#if A==2"
 100: ||
-Expression result: 1
 Depth: 2
-Code: ok
+Code: "ok"
 101: ||
 Depth: 2
-Code: #endif
+Code: "#endif"
 102: |ok|
 Depth: 1
 103: ||
 Running test case 15
-Code: #define A ok
+Code: "#define A ok"
 104: ||
 Depth: 1
-Code: A;
+Code: "A;"
 105: ||
 Depth: 1
-106: |ok|
+106: |ok;|
 Running test case 16
-Code: #define A(x,y) x##y
+Code: "#define A(x,y) x##y"
 107: ||
 Depth: 1
-Code: A(o,k);
+Code: "A(o,k);"
 108: ||
 Depth: 1
 109: |ok;|
 Running test case 17
-Code: #define A(x) #x
+Code: "#define A(x) #x"
 110: ||
 Depth: 1
-Code: A(ok);
+Code: "A(ok);"
 111: ||
 Depth: 1
 112: |"ok";|
 Running test case 18
-Code: >test.h
+Code: ">test.h"
 Depth: 1
-Code: #include "test.h"
+Code: "#include "test.h""
 113: ||
-include
 114: | |
-Expression result: 1
 115: ||
 116: ||
 117: |ok|
 118: ||
 Depth: 1
-Code: -test.h
+Code: "-test.h"
 Depth: 1
 119: ||
 Running test case 19
-Code: >test.h
+Code: ">test.h"
 Depth: 1
-Code: #include "test.h"
+Code: "#include "test.h""
 120: ||
-include
 121: | |
-Expression result: 1
 122: ||
 123: ||
 124: |ok|
 125: ||
 Depth: 1
-Code: #include "test.h"
+Code: "#include "test.h""
 126: ||
-include
 127: | |
-Expression result: 0
 128: ||
 129: ||
 130: ||
 131: ||
 Depth: 1
-Code: -test.h
+Code: "-test.h"
 Depth: 1
 132: ||
 Running test case 20
-Code: >test.h
+Code: ">test.h"
 Depth: 1
-Code: >test2.h
+Code: ">test2.h"
 Depth: 1
-Code: #include "test2.h"
+Code: "#include "test2.h""
 133: ||
-include
 134: | |
-include
 135: | |
-Expression result: 1
 136: ||
 137: ||
 138: |ok|
 139: ||
 140: ||
 Depth: 1
-Code: -test.h
-Depth: 1
-Code: -test2.h
-Depth: 1
+Code: "#ifdef TEST_H"
 141: ||
-Tokens checked: 22
-0 of 154 tests failed!
+Depth: 2
+Code: "ok"
+142: ||
+Depth: 2
+Code: "#endif"
+143: |ok|
+Depth: 1
+Code: "-test.h"
+Depth: 1
+Code: "-test2.h"
+Depth: 1
+144: ||
+Running test case 21
+Code: "__LINE__;"
+145: ||
+Depth: 1
+Code: "__LINE__;"
+146: |1;|
+Depth: 1
+147: |2;|
+Running test case 22
+Code: ">test.h"
+Depth: 1
+Code: "#include "test.h""
+148: ||
+149: | |
+150: |"test.h";|
+Depth: 1
+Code: "-test.h"
+Depth: 1
+151: ||
+Running test case 23
+Code: ">test.h"
+Depth: 1
+Code: "#include "test.h""
+152: ||
+153: | |
+154: ||
+155: ||
+156: ||
+157: |4;|
+158: ||
+Depth: 1
+Code: "__LINE__;"
+159: ||
+Depth: 1
+Code: "-test.h"
+Depth: 1
+160: |2;|
+Tokens checked: 34
+0 of 157 tests failed!

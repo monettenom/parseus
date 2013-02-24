@@ -17,7 +17,13 @@
 #include <iostream>
 
 #include "parseus.h"
+#include "logging.h"
 #include "testsuite.h"
 #include "testtokenhandler.h"
+
+#define TEST_LOG(format, ...)\
+  printf(format, __VA_ARGS__);\
+  printf("\n");\
+  LOG(format, __VA_ARGS__)
 
 #endif //STDAFX_H

@@ -416,6 +416,8 @@ void cPPTokenizer::PushTokenIfPreProcMode(int nToken, int nType, const char* str
 
 bool cPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkipComments)
 {
+  LOG("strLine: %s", strLine);
+
   bool bSlashFound = false;
   char c;
 
@@ -658,30 +660,30 @@ bool cPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkipC
   return PushPreProcEnd();
 }
 
-void cPPTokenizer::PrintToken(tToken& token)
+void cPPTokenizer::LogToken(tToken& token)
 {
   switch(token.m_Token)
   {
     case TOKEN_NEWLINE:
-      printf("TOKEN_NEWLINE\n");
+      LOG("TOKEN_NEWLINE");
       break;
     case TOKEN_WHITESPACE:
     case TOKEN_LABEL:
     case TOKEN_LITERAL:
     case TOKEN_STRING:
-      printf("%s: (%s)\n", GetTokenString(token.m_Token), token.m_strName);
+      LOG("%s: (%s)", GetTokenString(token.m_Token), token.m_strName);
       break;
     case TOKEN_CHAR:
-      printf("%s: '%c'\n", GetTokenString(token.m_Token), token.m_cChar);
+      LOG("%s: '%c'", GetTokenString(token.m_Token), token.m_cChar);
       break;
     case TOKEN_OPERATOR:
-      printf("%s: %s (%d)\n", GetTokenString(token.m_Token), GetOperatorString(token.m_Type), token.m_Type);
+      LOG("%s: %s (%d)", GetTokenString(token.m_Token), GetOperatorString(token.m_Type), token.m_Type);
       break;
     case TOKEN_KEYWORD:
-      printf("%s: %s\n", GetTokenString(token.m_Token), GetKeywordString(token.m_Type));
+      LOG("%s: %s", GetTokenString(token.m_Token), GetKeywordString(token.m_Type));
       break;
     default:
-      printf("%d: %d\n", token.m_Token, token.m_Type);
+      LOG("%d: %d", token.m_Token, token.m_Type);
       break;
   }
 }

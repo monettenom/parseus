@@ -61,14 +61,20 @@ cPreProcessor::cPreProcessor(ICodeHandler* pCodeHandler)
 , m_pMacroResolver(NULL)
 , m_pExpression(NULL)
 , m_pCodeHandler(pCodeHandler)
+, m_pLineMacro(NULL)
+, m_pFileMacro(NULL)
 {
+  LOG("");
   m_Tokenizer.SetTokenHandler(this);
-  m_ConditionStack.push(cNestingLevel(cNestingLevel::NLTYPE_NONE, true));
+  Reset();
 }
 
 cPreProcessor::~cPreProcessor()
 {
-
+  delete m_pLineMacro;
+  m_pLineMacro = NULL;
+  delete m_pFileMacro;
+  m_pFileMacro = NULL;
 }
 
 void cPreProcessor::Reset()
@@ -85,8 +91,15 @@ void cPreProcessor::Reset()
   m_pExpression = NULL;
   while(!m_ConditionStack.empty())
     m_ConditionStack.pop();
+  while(!m_FileInfoStack.empty())
+    m_FileInfoStack.pop();
   m_ConditionStack.push(cNestingLevel(cNestingLevel::NLTYPE_NONE, true));
+  m_FileInfoStack.push(tFileInfo("",1));
   m_MacroMap.clear();
+  m_pLineMacro = NULL;
+  m_pFileMacro = NULL;
+  SetLineMacro(0);
+  SetFileMacro("no file");
 }
 
 void cPreProcessor::HandleError(const char* strError, int iLine)
@@ -97,6 +110,44 @@ void cPreProcessor::HandleError(const char* strError, int iLine)
 void cPreProcessor::LogEntry(const char* strLog)
 {
   //std::cout << strLog << std::endl;
+}
+
+void cPreProcessor::SetLineMacro(int iLine)
+{
+  std::stringstream strNumber;
+  strNumber << iLine;
+
+  if (!m_pLineMacro)
+  {
+    m_pLineMacro = new cPreprocessorMacro;
+    m_pLineMacro->HandleToken(tToken(TOKEN_LABEL, "__LINE__"));
+    m_pLineMacro->HandleToken(tToken(TOKEN_LITERAL, strNumber.str().c_str()));
+    m_pLineMacro->HandleToken(tToken(TOKEN_OPERATOR, PP_OP_PREPROC_END));
+    m_MacroMap.insert(std::pair<std::string,cPreprocessorMacro*>("__LINE__", m_pLineMacro));
+  }
+  else
+  {
+    m_pLineMacro->GetMacroText()[0] = tToken(TOKEN_LITERAL, strNumber.str().c_str());
+  }
+}
+
+void cPreProcessor::SetFileMacro(const char* strFile)
+{
+  std::stringstream strText;
+  strText << "\"" << strFile << "\"";
+
+  if (!m_pFileMacro)
+  {
+    m_pFileMacro = new cPreprocessorMacro;
+    m_pFileMacro->HandleToken(tToken(TOKEN_LABEL, "__FILE__"));
+    m_pFileMacro->HandleToken(tToken(TOKEN_STRING, strText.str().c_str()));
+    m_pFileMacro->HandleToken(tToken(TOKEN_OPERATOR, PP_OP_PREPROC_END));
+    m_MacroMap.insert(std::pair<std::string,cPreprocessorMacro*>("__FILE__", m_pFileMacro));
+  }
+  else
+  {
+    m_pFileMacro->GetMacroText()[0] = tToken(TOKEN_STRING, strText.str().c_str());
+  }
 }
 
 void cPreProcessor::AddStandardInclude(const char* strPath)
@@ -133,26 +184,35 @@ bool cPreProcessor::Process(const char* strFile)
 {
   std::string line;
   std::ifstream input(strFile);
+  
   if (input.is_open())
   {
+    m_FileInfoStack.push(tFileInfo(strFile,1));
+    SetFileMacro(m_FileInfoStack.top().m_strFile.c_str());
     while (input.good())
     {
       getline (input, line);
+      LOG("%s:%d", m_FileInfoStack.top().m_strFile.c_str(), m_FileInfoStack.top().m_iLine);
       Parse(line.c_str());
     }
     input.close();
+    m_FileInfoStack.pop();
+    SetFileMacro(m_FileInfoStack.top().m_strFile.c_str());
     return true;
   }
   else
   {
-    std::cout << "Unable to open file '" << strFile << "'" << std::endl;
+    LOG("Unable to open file '%s'", strFile);
     return false;
   }
 }
 
 bool cPreProcessor::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkipComments)
 {
-  return m_Tokenizer.Parse(strLine, bSkipWhiteSpaces, bSkipComments);
+  SetLineMacro(m_FileInfoStack.top().m_iLine);
+  bool bResult = m_Tokenizer.Parse(strLine, bSkipWhiteSpaces, bSkipComments);
+  m_FileInfoStack.top().m_iLine++;
+  return bResult;
 }
 
 bool cPreProcessor::FileExists(const char* strFile)
@@ -177,7 +237,7 @@ bool cPreProcessor::FindInclude(tIncludeList& vIncludes, const char* strFile, st
 
 void cPreProcessor::Include(const char* strFile)
 {
-  //std::cout << "Include: " << strFile << std::endl;
+  LOG("Include: %s", strFile);
   std::string strName;
   strName.assign(strFile+1, strlen(strFile)-2);
   std::string strPath;
@@ -201,19 +261,15 @@ void cPreProcessor::Include(const char* strFile)
       strPath = strName;
   }
 
+  m_bInclude = false;
   if (!strPath.empty())
   {
     Process(strPath.c_str());
   }
   else
   {
-    printf("File not found: %s\n", strName.c_str());
+    LOG("File not found: %s\n", strName.c_str());
   }
-}
-
-bool cPreProcessor::IsDefined(const char* strMacro)
-{
-  return GetMacro(strMacro) != NULL;
 }
 
 void cPreProcessor::Undef(const char* strMacro)
@@ -229,8 +285,13 @@ void cPreProcessor::Endif()
   }
   else
   {
-    //Nesting Error. Endif without ifxx
+    LOG("Error: Nesting Error. Endif without if");
   }
+}
+
+bool cPreProcessor::IsDefined(const char* strMacro)
+{
+  return GetMacro(strMacro) != NULL;
 }
 
 cPreprocessorMacro* cPreProcessor::GetMacro(const char* strMacro)
@@ -238,8 +299,8 @@ cPreprocessorMacro* cPreProcessor::GetMacro(const char* strMacro)
   tMacroMap::const_iterator it = m_MacroMap.find(strMacro);
   if (it != m_MacroMap.end())
     return it->second;
-  else
-    return NULL;
+  LOG("Macro not found!");
+  return NULL;
 }
 
 bool cPreProcessor::IsOutputAllowed()
@@ -249,9 +310,10 @@ bool cPreProcessor::IsOutputAllowed()
 
 void cPreProcessor::HandleMacro(tToken& oToken)
 {
+  LOG("HandleMacro");
   if (!m_pCurrentMacro->HandleToken(oToken))
   {
-    std::cout << "Error while handling preprocessor macro!" << std::endl;
+    LOG("Error while handling preprocessor macro!");
     delete m_pCurrentMacro;
     m_pCurrentMacro = NULL;
     m_bPreProc = false;
@@ -265,7 +327,7 @@ void cPreProcessor::HandleMacro(tToken& oToken)
     }
     else
     {
-      // error: already defined
+      LOG("Error: already defined");
     }
     m_pCurrentMacro = NULL;
     m_bPreProc = false;
@@ -274,15 +336,16 @@ void cPreProcessor::HandleMacro(tToken& oToken)
 
 void cPreProcessor::ResolveMacro(tToken& oToken)
 {
+  LOG("ResolveMacro");
   if (!m_pMacroResolver->HandleToken(oToken))
   {
-    //std::cout << "Error while resolving macro!" << std::endl;
+    LOG("Error while resolving macro!");
     delete m_pMacroResolver;
     m_pMacroResolver = NULL;
   }
   else if(m_pMacroResolver->IsReady())
   {
-    //std::cout << "Macro resolved." << std::endl;
+    LOG("Macro resolved.");
     cMacroResolver* pMacroResolver = m_pMacroResolver;
     m_pMacroResolver = NULL;
     if (IsOutputAllowed())
@@ -293,6 +356,7 @@ void cPreProcessor::ResolveMacro(tToken& oToken)
 
 void cPreProcessor::HandleExpression(tToken& oToken)
 {
+  LOG("HandleExpression");
   if (!m_pExpression->HandleToken(oToken))
   {
     delete m_pExpression;
@@ -302,7 +366,7 @@ void cPreProcessor::HandleExpression(tToken& oToken)
   {
     int iResult = m_pExpression->Evaluate();
     bool bFlag = IsOutputAllowed() && (iResult != 0);
-    printf("Expression result: %d\n", iResult);
+    LOG("Expression result: %d", iResult);
     m_ConditionStack.push(cNestingLevel(cNestingLevel::NLTYPE_IF, bFlag));
     delete m_pExpression;
     m_pExpression = NULL;
@@ -327,23 +391,28 @@ void cPreProcessor::OutputCode(char cCode)
 
 bool cPreProcessor::HandleToken(tToken& oToken)
 {
-  //printf("[%d] ", m_ConditionStack.top().IsOutputAllowed());
-  //m_Tokenizer.PrintToken(oToken);
+  m_Tokenizer.LogToken(oToken);
   if (m_pCurrentMacro)
   {
-    //printf("HandleMacro\n");
     HandleMacro(oToken);
     return true;
   }
   if (m_pMacroResolver)
   {
-    //printf("ResolveMacro\n");
-    ResolveMacro(oToken);
-    return true;
+    // if it is a simple macro, process the current macro
+    // after resolve
+    if (!m_pMacroResolver->IsReady())
+    {
+      ResolveMacro(oToken);
+      return true;
+    }
+    else
+    {
+      ResolveMacro(oToken);
+    }
   }
   if (m_pExpression)
   {
-    //printf("HandleExpression\n");
     HandleExpression(oToken);
     return true;
   }
@@ -383,7 +452,6 @@ bool cPreProcessor::HandleToken(tToken& oToken)
       {
         case PP_KW_INCLUDE: 
           m_bInclude = true;
-          std::cout << "include" << std::endl;
           break;
         case PP_KW_IF:
           m_pExpression = new cPreprocessorExpression(this);
@@ -467,9 +535,9 @@ bool cPreProcessor::HandleToken(tToken& oToken)
       else if (IsDefined(oToken.m_strName))
       {
         {
+          LOG("Install MacroHandler");
           m_pMacroResolver = new cMacroResolver(GetMacro(oToken.m_strName));
         }
-        //std::cout << "Macro: " << oToken.m_strName << std::endl;
       }
       else
       {

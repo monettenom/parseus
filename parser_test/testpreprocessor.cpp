@@ -41,7 +41,7 @@ int cTestPreprocessor::CreateInclude(const char** strLines, int iStartIndex)
   std::ofstream ofile(strLines[iStartIndex]+1, ios::out);
   while (strcmp(strLines[++iStartIndex], "<") != 0)
   {
-    ofile.write(strLines[iStartIndex],strlen(strLines[iStartIndex]));
+    ofile.write(strLines[iStartIndex], strlen(strLines[iStartIndex]));
     ofile.write("\n", 1);
   }
   return iStartIndex;
@@ -54,7 +54,7 @@ bool cTestPreprocessor::Test(tTestData* pTestData)
   InitTest(pTestData);
   for (int i = 0; pTestData->m_strCode[i] != NULL; i++)
   {
-    printf("Code: %s\n", pTestData->m_strCode[i]);
+    TEST_LOG("Code: \"%s\"", pTestData->m_strCode[i]);
     switch (pTestData->m_strCode[i][0])
     {
       case '>':
@@ -72,9 +72,7 @@ bool cTestPreprocessor::Test(tTestData* pTestData)
   HandleCode('\n');
   if (pTestData->m_nExpectedTokens != IGNORE_TOKEN_COUNT && pTestData->m_nExpectedTokens != GetTokenCount())
   {
-    std::stringstream strLog;
-    strLog << "Expected tokens: " << pTestData->m_nExpectedTokens << ", tokens found: " << GetTokenCount();
-    LogEntry(strLog.str().c_str());
+    TEST_LOG("Expected tokens: %d, tokens found: %d", pTestData->m_nExpectedTokens, GetTokenCount());
     SetResult(false);
   }
   return GetResult();
@@ -82,6 +80,8 @@ bool cTestPreprocessor::Test(tTestData* pTestData)
 
 bool cTestPreprocessor::HandleToken(tToken& oToken)
 {
+  m_Tokenizer.LogToken(oToken);
+
   if (!GetResult())
     return false;
 

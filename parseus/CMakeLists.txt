@@ -5,6 +5,8 @@ project(parseus)
 add_library(parseus
   stdafx.h
   stdafx.cpp
+  logging.h
+  logging.cpp
   parseus.h
   stringmem.h
   stringmem.cpp

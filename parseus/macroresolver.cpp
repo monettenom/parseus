@@ -32,16 +32,19 @@ void cMacroResolver::FinishParam()
     m_itCurrentParam = m_Params.insert(tParamMapEntry(m_pMacro->GetParam(m_nParamIndex), tTokenList())).first;
     if (m_itCurrentParam->first == "__VA_ARGS__")
     {
+      LOG("__VA_ARGS__");
       m_bEllipsis = true;
     }
     m_nParamIndex++;
     if (m_nParamIndex > m_pMacro->GetParamCount())
     {
+      LOG("Ready");
       m_eState = eReady;
     }
   }
   else
   {
+    LOG("Ready");
     m_eState = eReady;
   }
 }
@@ -58,18 +61,22 @@ bool cMacroResolver::HandleToken(tToken& oToken)
   {
   case eInit:
     {
+      LOG("eInit");
       if (oToken.IsToken(TOKEN_OPERATOR, PP_OP_BRACKET_OPEN))
       {
+        LOG("Param");
         m_eState = eParam;
       }
       else
       {
+        LOG("Error");
         m_eState = eError;
       }
     }
     break;
   case eParam:
     {
+      LOG("eParam");
       bool bParamReady = false;
       bool bComma = false;
 
@@ -109,10 +116,13 @@ bool cMacroResolver::HandleToken(tToken& oToken)
     break;
 
   case eReady:
+    LOG("eReady");
     return true;
   case eError:
+    LOG("eError");
     return false;
   default:
+    LOG("Error");
     m_eState = eError;
     return false;
   }
@@ -143,6 +153,7 @@ bool cMacroResolver::ExpandMacro(ITokenHandler* pHandler)
 {
   if (m_Params.size() == 0)
   {
+    LOG("Simple Macro");
     InsertParamText(pHandler, m_pMacro->GetMacroText());
     return true;
   }

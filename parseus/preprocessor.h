@@ -41,10 +41,29 @@ private:
   eNestingLevelType m_eType;
 };
 
+struct tFileInfo
+{
+  std::string m_strFile;
+  int m_iLine;
+
+  tFileInfo()
+  : m_strFile()
+  , m_iLine(0)
+  {
+  }
+
+  tFileInfo(std::string strFile, int iLine)
+  : m_strFile(strFile)
+  , m_iLine(iLine)
+  {
+  }
+};
+
 typedef std::vector<std::string> tIncludeList;
 typedef std::map<std::string, cPreprocessorMacro*> tMacroMap;
 typedef std::pair<std::string, cPreprocessorMacro*> tMacroMapEntry;
 typedef std::stack<cNestingLevel> tConditionStack;
+typedef std::stack<tFileInfo> tFileInfoStack;
 
 class cPreProcessor: public ITokenHandler, IMacroMap
 {
@@ -84,6 +103,8 @@ protected:
   void HandleExpression(tToken& oToken);
 
   bool IsOutputAllowed();
+  void SetLineMacro(int iLine);
+  void SetFileMacro(const char* strFile);
 
 private:
   cPPTokenizer m_Tokenizer;
@@ -98,7 +119,10 @@ private:
   cMacroResolver* m_pMacroResolver;
   cPreprocessorExpression* m_pExpression;
   tConditionStack m_ConditionStack;
+  tFileInfoStack m_FileInfoStack;
   ICodeHandler* m_pCodeHandler;
+  cPreprocessorMacro* m_pLineMacro;
+  cPreprocessorMacro* m_pFileMacro;
 };
 
 #endif // PREPROCESSOR_H

@@ -13,6 +13,7 @@
 #include <map>
 #include <fstream>
 
+#include "logging.h"
 #include "stringmem.h"
 #include "tokenizer.h"
 
