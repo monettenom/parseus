@@ -95,7 +95,7 @@ bool cPreprocessorExpression::HandleToken(tToken& oToken)
       //printf("LITERAL: %s\n", oToken.m_strName);
       PushToken(oToken);
       break;
-	case TOKEN_KEYWORD:
+    case TOKEN_KEYWORD:
       if (oToken.m_Type == PP_KW_DEFINED)
       {
         //printf("KEYWORD: defined\n", oToken.m_Type);

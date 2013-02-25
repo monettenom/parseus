@@ -5,6 +5,7 @@
 #include "preprocessormacro.h"
 #include "macroresolver.h"
 #include "ppexpression.h"
+#include "pragmahandler.h"
 #include <vector>
 #include <map>
 #include <stack>
@@ -101,6 +102,7 @@ protected:
   void HandleMacro(tToken& oToken);
   void ResolveMacro(tToken& oToken);
   void HandleExpression(tToken& oToken);
+  void HandlePragma(tToken& oToken);
 
   bool IsOutputAllowed();
   void SetLineMacro(int iLine);
@@ -111,16 +113,21 @@ private:
   tIncludeList m_vStdIncludes;
   tIncludeList m_vPrjIncludes;
   tMacroMap m_MacroMap;
+  
   bool m_bPreProc;
   bool m_bInclude;
   bool m_bUndefNext;
   bool m_bStringify;
+  
   cPreprocessorMacro* m_pCurrentMacro;
   cMacroResolver* m_pMacroResolver;
   cPreprocessorExpression* m_pExpression;
+  cPragmaHandler* m_pPragmaHandler;
+
   tConditionStack m_ConditionStack;
   tFileInfoStack m_FileInfoStack;
   ICodeHandler* m_pCodeHandler;
+
   cPreprocessorMacro* m_pLineMacro;
   cPreprocessorMacro* m_pFileMacro;
 };

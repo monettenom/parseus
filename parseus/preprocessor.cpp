@@ -60,6 +60,7 @@ cPreProcessor::cPreProcessor(ICodeHandler* pCodeHandler)
 , m_pCurrentMacro(NULL)
 , m_pMacroResolver(NULL)
 , m_pExpression(NULL)
+, m_pPragmaHandler(NULL)
 , m_pCodeHandler(pCodeHandler)
 , m_pLineMacro(NULL)
 , m_pFileMacro(NULL)
@@ -89,6 +90,8 @@ void cPreProcessor::Reset()
   m_pMacroResolver = NULL;
   delete m_pExpression;
   m_pExpression = NULL;
+  delete m_pPragmaHandler;
+  m_pPragmaHandler = NULL;
   while(!m_ConditionStack.empty())
     m_ConditionStack.pop();
   while(!m_FileInfoStack.empty())
@@ -373,6 +376,23 @@ void cPreProcessor::HandleExpression(tToken& oToken)
   }
 }
 
+void cPreProcessor::HandlePragma(tToken& oToken)
+{
+  LOG("HandlePragma");
+  if (!m_pPragmaHandler->HandleToken(oToken))
+  {
+    delete m_pPragmaHandler;
+    m_pPragmaHandler = NULL;
+  }
+  else if (m_pPragmaHandler->IsReady())
+  {
+    LOG("Pragma: %d", m_pPragmaHandler->GetPragma());
+    LOG("ParamCount: %d", m_pPragmaHandler->GetParams().size());
+    delete m_pPragmaHandler;
+    m_pPragmaHandler = NULL;
+  }
+}
+
 void cPreProcessor::OutputCode(const char* strCode)
 {
   if (IsOutputAllowed())
@@ -414,6 +434,12 @@ bool cPreProcessor::HandleToken(tToken& oToken)
   if (m_pExpression)
   {
     HandleExpression(oToken);
+    return true;
+  }
+
+  if (m_pPragmaHandler)
+  {
+    HandlePragma(oToken);
     return true;
   }
 
@@ -489,6 +515,9 @@ bool cPreProcessor::HandleToken(tToken& oToken)
           break;
         case PP_KW_UNDEF:
           m_bUndefNext = true;
+          break;
+        case PP_KW_PRAGMA:
+          m_pPragmaHandler = new cPragmaHandler;
           break;
       }
     }

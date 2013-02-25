@@ -26,6 +26,8 @@ add_library(parseus
   macroresolver.cpp
   ppexpression.h
   ppexpression.cpp
+  pragmahandler.h
+  pragmahandler.cpp
   preprocessor.h
   preprocessor.cpp
 )

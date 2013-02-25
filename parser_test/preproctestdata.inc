@@ -292,7 +292,15 @@ tTestData sPreprocessorTestData[] =
     {"4", "", "2", ""}, 
     {TOKEN_LITERAL, TOKEN_OPERATOR, TOKEN_LITERAL, TOKEN_OPERATOR, -1}, 
     {CPP_OP_UNKNOWN, CPP_OP_COMMAND_END, CPP_OP_UNKNOWN, CPP_OP_COMMAND_END}
-  },  
+  },
+  // 23 pragma once
+  {
+    {
+      "#pragma once",
+      "ok;",
+      NULL
+    }, 1, true, {"ok",""}, {TOKEN_LABEL, TOKEN_OPERATOR, -1}, {CPP_OP_UNKNOWN, CPP_OP_COMMAND_END}
+  },
   // stopping entry
   {
     {NULL}, -1, false, {""}, {-1}, {-1}

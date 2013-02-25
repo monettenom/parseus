@@ -815,5 +815,13 @@ Depth: 1
 Code: "-test.h"
 Depth: 1
 160: |2;|
-Tokens checked: 34
-0 of 157 tests failed!
+Running test case 24
+Code: "#pragma once"
+161: ||
+Depth: 1
+Code: "ok;"
+Depth: 1
+162: |ok;|
+Expected tokens: 1, tokens found: 2
+Tokens checked: 35
+1 of 158 tests failed!

@@ -33,7 +33,8 @@ void cCPPCode::HandleCode(char strCode)
   if (strCode == '\n')
   {
     //Parse(m_strLine.str().c_str());
-    std::cout << m_strLine.str().c_str() << std::endl;
+    if (strlen(m_strLine.str().c_str()) > 0)
+      std::cout << m_strLine.str().c_str() << std::endl;
     m_strLine.str(std::string());
   }
   else
