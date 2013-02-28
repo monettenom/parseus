@@ -25,6 +25,7 @@ public:
     NLTYPE_NONE,
     NLTYPE_IF,
     NLTYPE_ELSE,
+    NLTYPE_INCLUDE,
   };
 
 public:
@@ -87,6 +88,7 @@ public:
   bool Process(const char* strFile);
   bool Parse(const char* strLine, bool bSkipWhiteSpaces = false, bool bSkipComments = false);
   void Include(const char* strFile);
+  cPreprocessorMacro* Define(const char* strMacro, const char* strText = NULL);
   bool IsDefined(const char* strMacro);
   void Undef(const char* strMacro);
   void Endif();
@@ -103,6 +105,8 @@ protected:
   void ResolveMacro(tToken& oToken);
   void HandleExpression(tToken& oToken);
   void HandlePragma(tToken& oToken);
+
+  void ProcessPragma(cPragmaHandler* pPragmaHandler);
 
   bool IsOutputAllowed();
   void SetLineMacro(int iLine);

@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <algorithm>
 #include "preprocessormacro.h"
 #include "macroresolver.h"
 #include "ppexpression.h"
@@ -122,11 +123,7 @@ void cPreProcessor::SetLineMacro(int iLine)
 
   if (!m_pLineMacro)
   {
-    m_pLineMacro = new cPreprocessorMacro;
-    m_pLineMacro->HandleToken(tToken(TOKEN_LABEL, "__LINE__"));
-    m_pLineMacro->HandleToken(tToken(TOKEN_LITERAL, strNumber.str().c_str()));
-    m_pLineMacro->HandleToken(tToken(TOKEN_OPERATOR, PP_OP_PREPROC_END));
-    m_MacroMap.insert(std::pair<std::string,cPreprocessorMacro*>("__LINE__", m_pLineMacro));
+    m_pLineMacro = Define("__LINE__", strNumber.str().c_str());
   }
   else
   {
@@ -141,11 +138,7 @@ void cPreProcessor::SetFileMacro(const char* strFile)
 
   if (!m_pFileMacro)
   {
-    m_pFileMacro = new cPreprocessorMacro;
-    m_pFileMacro->HandleToken(tToken(TOKEN_LABEL, "__FILE__"));
-    m_pFileMacro->HandleToken(tToken(TOKEN_STRING, strText.str().c_str()));
-    m_pFileMacro->HandleToken(tToken(TOKEN_OPERATOR, PP_OP_PREPROC_END));
-    m_MacroMap.insert(std::pair<std::string,cPreprocessorMacro*>("__FILE__", m_pFileMacro));
+    m_pFileMacro = Define("__FILE__", strText.str().c_str());
   }
   else
   {
@@ -268,6 +261,8 @@ void cPreProcessor::Include(const char* strFile)
   if (!strPath.empty())
   {
     Process(strPath.c_str());
+    if (m_ConditionStack.top().GetType() == cNestingLevel::NLTYPE_INCLUDE)
+      m_ConditionStack.pop();
   }
   else
   {
@@ -275,9 +270,27 @@ void cPreProcessor::Include(const char* strFile)
   }
 }
 
+cPreprocessorMacro* cPreProcessor::Define(const char* strMacro, const char* strText)
+{
+  if (IsDefined(strMacro))
+    Undef(strMacro);
+  cPreprocessorMacro* pMacro = new cPreprocessorMacro;
+  pMacro->HandleToken(tToken(TOKEN_LABEL, strMacro));
+  if (strText != NULL)
+    pMacro->HandleToken(tToken(TOKEN_STRING, strText));
+  pMacro->HandleToken(tToken(TOKEN_OPERATOR, PP_OP_PREPROC_END));
+  m_MacroMap.insert(std::pair<std::string,cPreprocessorMacro*>(strMacro, pMacro));
+  return pMacro;
+}
+
 void cPreProcessor::Undef(const char* strMacro)
 {
-  m_MacroMap.erase(strMacro);
+  cPreprocessorMacro* pMacro = GetMacro(strMacro);
+  if (pMacro)
+  {
+    delete pMacro;
+    m_MacroMap.erase(strMacro);
+  }
 }
 
 void cPreProcessor::Endif()
@@ -376,6 +389,36 @@ void cPreProcessor::HandleExpression(tToken& oToken)
   }
 }
 
+void cPreProcessor::ProcessPragma(cPragmaHandler* pPragmaHandler)
+{
+  LOG("Pragma: %d", pPragmaHandler->GetPragma());
+  LOG("ParamCount: %d", pPragmaHandler->GetParams().size());
+
+  switch (pPragmaHandler->GetPragma())
+  {
+    case PP_PRAGMA_ONCE:
+      {
+        std::string strFile = m_FileInfoStack.top().m_strFile.c_str();
+        LOG("Pragma once: %s", strFile.c_str());
+        std::replace(strFile.begin(),strFile.end(), '.', '_');
+        std::transform(strFile.begin(), strFile.end(), strFile.begin(), ::toupper);
+        LOG("Generated Macro: %s", strFile.c_str());
+        if (IsDefined(strFile.c_str()))
+        {
+          m_ConditionStack.push(cNestingLevel(cNestingLevel::NLTYPE_INCLUDE, false));
+        }
+        else
+        {
+          Define(strFile.c_str());
+        }
+      }
+      break;
+    default:
+      LOG("Pragma not implemented (%d)!", pPragmaHandler->GetPragma());
+      break;
+  }
+}
+
 void cPreProcessor::HandlePragma(tToken& oToken)
 {
   LOG("HandlePragma");
@@ -386,8 +429,7 @@ void cPreProcessor::HandlePragma(tToken& oToken)
   }
   else if (m_pPragmaHandler->IsReady())
   {
-    LOG("Pragma: %d", m_pPragmaHandler->GetPragma());
-    LOG("ParamCount: %d", m_pPragmaHandler->GetParams().size());
+    ProcessPragma(m_pPragmaHandler);
     delete m_pPragmaHandler;
     m_pPragmaHandler = NULL;
   }

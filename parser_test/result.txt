@@ -816,12 +816,18 @@ Code: "-test.h"
 Depth: 1
 160: |2;|
 Running test case 24
-Code: "#pragma once"
+Code: ">test.h"
+Depth: 1
+Code: "#include "test.h""
 161: ||
+162: | |
+163: |ok;|
 Depth: 1
-Code: "ok;"
+Code: "#include "test.h""
+164: ||
+165: | |
+166: ||
 Depth: 1
-162: |ok;|
-Expected tokens: 1, tokens found: 2
-Tokens checked: 35
-1 of 158 tests failed!
+167: ||
+Tokens checked: 36
+0 of 158 tests failed!

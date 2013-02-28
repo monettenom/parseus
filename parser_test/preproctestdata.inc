@@ -296,10 +296,14 @@ tTestData sPreprocessorTestData[] =
   // 23 pragma once
   {
     {
+      ">test.h",
       "#pragma once",
       "ok;",
+      "<",
+      "#include \"test.h\"",
+      "#include \"test.h\"",
       NULL
-    }, 1, true, {"ok",""}, {TOKEN_LABEL, TOKEN_OPERATOR, -1}, {CPP_OP_UNKNOWN, CPP_OP_COMMAND_END}
+    }, 2, true, {"ok",""}, {TOKEN_LABEL, TOKEN_OPERATOR, -1}, {CPP_OP_UNKNOWN, CPP_OP_COMMAND_END}
   },
   // stopping entry
   {
