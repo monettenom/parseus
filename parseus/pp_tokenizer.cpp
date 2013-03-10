@@ -51,6 +51,7 @@ static tKeyword g_KeyWords[] = {
   {"warning", PP_KW_WARNING},
   {"line", PP_KW_LINE},
   {"pragma", PP_KW_PRAGMA},
+  {"__pragma", PP_KW_PRAGMA},
   {"ident", PP_KW_IDENT},
   {"sccs", PP_KW_SCCS},
   {"assert", PP_KW_ASSERT},
@@ -101,6 +102,9 @@ cPPTokenizer::cPPTokenizer()
 , m_bMultiLineString(false)
 , m_bPreProcMode(false)
 , m_bInclude(false)
+, m_bMessage(false)
+, m_bPragma(false)
+, m_bStop(false)
 {
   AddKeywords(g_KeyWords, PP_KW_UNKNOWN);
   AddOperators(g_Operators, PP_OP_UNKNOWN);
@@ -129,6 +133,11 @@ const char* cPPTokenizer::HandleBlockComment(const char* strLine)
     m_bBlockComment = false;
     return strEnd + 2;
   }
+}
+
+void cPPTokenizer::Stop(bool bFlag)
+{
+  m_bStop = bFlag;
 }
 
 const char* cPPTokenizer::AppendBlockComment(const char* strLine)
@@ -227,6 +236,52 @@ const char* cPPTokenizer::HandleLineComment(const char* strLine)
   return NULL;
 }
 
+const char* cPPTokenizer::HandleMessage(const char* strLine)
+{
+  int iLen = strlen(strLine);
+  if (m_strMessage.empty())
+  {
+    m_strMessage.clear();
+    while (*strLine == ' ' || *strLine == '\t')
+    {
+      strLine++;
+    }
+  }
+  m_strMessage.append(strLine);
+
+  if (strLine[iLen-1] != '\\')
+  {
+    PushToken(TOKEN_TEXT, m_strMessage.c_str());
+    m_strMessage.clear();
+    m_bMessage = false;
+    m_bPreProcMode = false;
+    PushToken(TOKEN_OPERATOR, PP_OP_PREPROC_END);
+  }
+  else
+  {
+    m_strMessage.append("\n");
+  }
+  return NULL;
+}
+
+const char* cPPTokenizer::ParseLabel(const char* strLine)
+{
+  if (m_bPragma)
+  {
+    m_bMessage = true;
+    m_bPragma = false;
+    LOG("Pragma: %s", strLine);
+  }
+  return cTokenizer::ParseLabel(strLine);
+}
+
+int cPPTokenizer::IsKeyword(const char* strLabel)
+{
+  if (m_bPragma)
+    return false;
+  return cTokenizer::IsKeyword(strLabel);
+}
+
 void cPPTokenizer::PushKeyword(int nKeyword)
 {
   if (!m_bPreProcMode)
@@ -235,13 +290,26 @@ void cPPTokenizer::PushKeyword(int nKeyword)
   }
   else
   {
-    m_bInclude = (nKeyword == PP_KW_INCLUDE);
-    if (m_bInclude)
+    m_bInclude = false;
+    switch (nKeyword)
     {
-      // after includes, preprocmode must be false, since the included file
-      // shouldn't start with this mode activated
-      m_bPreProcMode = false;
+      case PP_KW_INCLUDE:
+        m_bInclude = true;
+        // after includes, preprocmode must be false, since the included file
+        // shouldn't start with this mode activated
+        m_bPreProcMode = false;
+        break;
+      case PP_KW_ERROR:
+      case PP_KW_WARNING:
+        m_bMessage = true;
+        break;
+      case PP_KW_PRAGMA:
+        m_bPragma = true;
+        break;
+      default:
+        break;
     }
+
     cTokenizer::PushKeyword(nKeyword);
   }
 }
@@ -259,6 +327,11 @@ bool cPPTokenizer::PushPreProcEnd()
     m_bPreProcMode = false;
     m_bInclude = false;
     PushToken(TOKEN_OPERATOR, PP_OP_PREPROC_END);
+  }
+  if (m_bStop)
+  {
+    m_bStop = false;
+    return false;
   }
   return true;
 }
@@ -382,7 +455,7 @@ const char* cPPTokenizer::ParseLiteral(const char* strLine)
   return strCrsr;
 }
 
-const char* cPPTokenizer::HandleWhiteSpace(const char* strLine, bool bSkipWhiteSpaces)
+const char* cPPTokenizer::HandleWhiteSpace(const char* strLine, bool bLineStart)
 {
   const char* strCrsr = strLine;
   char c = *strCrsr;
@@ -390,8 +463,17 @@ const char* cPPTokenizer::HandleWhiteSpace(const char* strLine, bool bSkipWhiteS
   {
     c = *(++strCrsr);
   }
-  if (!bSkipWhiteSpaces && strCrsr[1] != '\0')
-    PushToken(TOKEN_WHITESPACE, " ");
+  if (strCrsr[0] != '\0')
+  {
+    if (bLineStart)
+    {
+      PushToken(TOKEN_WHITESPACE, strLine, strCrsr - strLine);
+    }
+    else
+    {
+      PushToken(TOKEN_WHITESPACE, " ");
+    }
+  }
   return strCrsr;
 }
 
@@ -417,6 +499,7 @@ void cPPTokenizer::PushTokenIfPreProcMode(int nToken, int nType, const char* str
 bool cPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkipComments)
 {
   LOG("strLine: %s", strLine);
+  LOG("Stop: %s", m_bStop ? "true" : "false");
 
   bool bSlashFound = false;
   char c;
@@ -430,6 +513,8 @@ bool cPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkipC
   if (m_bBlockComment)
   {
     strLine = AppendBlockComment(strLine);
+    if (strLine == NULL)
+      return true;
   }
   else if (m_bLineComment)
   {
@@ -439,6 +524,13 @@ bool cPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkipC
   else if (m_bMultiLineString)
   {
     strLine = AppendString(strLine);
+    if (strLine == NULL)
+      return true;
+  }
+  else if (m_bMessage)
+  {
+    HandleMessage(strLine);
+    return true;
   }
   else if (GetLine() > 1)
   {
@@ -446,8 +538,13 @@ bool cPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkipC
       PushToken(TOKEN_NEWLINE);
   }
 
-  if (strLine == NULL)
+  if (m_bStop)
+  {
+    m_bStop = false;
     return false;
+  }
+
+  bool bLineStart = true;
 
   while(c = *strLine++)
   {
@@ -457,7 +554,7 @@ bool cPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkipC
     {
       case ' ':
       case '\t':
-        strLine = HandleWhiteSpace(strLine-1, bSkipWhiteSpaces);
+        strLine = HandleWhiteSpace(strLine-1, bLineStart);
         break;
 
       case '#':
@@ -644,6 +741,12 @@ bool cPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkipC
         if (isalpha(c) || c == '_')
         {
           strLine = ParseLabel(strLine-1);
+          if (m_bMessage)
+          {
+            HandleMessage(strLine);
+            m_bInclude = false;
+            return true;
+          }
         }
         else if (isdigit(c))
         {
@@ -655,6 +758,7 @@ bool cPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkipC
         }
         break;
     }
+    bLineStart = false;
   }
 
   return PushPreProcEnd();
@@ -671,6 +775,7 @@ void cPPTokenizer::LogToken(tToken& token)
     case TOKEN_LABEL:
     case TOKEN_LITERAL:
     case TOKEN_STRING:
+    case TOKEN_TEXT:
       LOG("%s: (%s)", GetTokenString(token.m_Token), token.m_strName);
       break;
     case TOKEN_CHAR:

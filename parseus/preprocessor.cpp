@@ -5,10 +5,14 @@
 #include "ppexpression.h"
 #include "preprocessor.h"
 
-cNestingLevel::cNestingLevel(cNestingLevel::eNestingLevelType eType, bool bOutputAllowed)
+cNestingLevel::cNestingLevel(
+  eNestingLevelType eType,
+  bool bOutputAllowed,
+  bool bOutputAllowedBefore)
 : m_bOutputAllowed(bOutputAllowed)
 , m_eType(eType)
 , m_bWasTrue(false)
+, m_bNeverAllowed(!bOutputAllowedBefore)
 {
 
 }
@@ -17,6 +21,7 @@ cNestingLevel::cNestingLevel(const cNestingLevel& NestingLevel)
 : m_bOutputAllowed(NestingLevel.m_bOutputAllowed)
 , m_eType(NestingLevel.m_eType)
 , m_bWasTrue(NestingLevel.m_bWasTrue)
+, m_bNeverAllowed(NestingLevel.m_bNeverAllowed)
 {
 }
 
@@ -26,7 +31,7 @@ cNestingLevel::~cNestingLevel()
 
 bool cNestingLevel::IsOutputAllowed()
 {
-  return m_bOutputAllowed;
+  return !m_bNeverAllowed && m_bOutputAllowed;
 }
 
 cNestingLevel::eNestingLevelType cNestingLevel::GetType()
@@ -36,18 +41,21 @@ cNestingLevel::eNestingLevelType cNestingLevel::GetType()
 
 void cNestingLevel::DoElse()
 {
-  // handles else cases also for elif
-  // only one block in the expression can be true
-  if (m_bOutputAllowed)
+  if (!m_bNeverAllowed)
   {
-    m_bWasTrue = true;
-    m_bOutputAllowed = false;
-  }
-  else
-  {
-    if (!m_bWasTrue)
+    // handles else cases also for elif
+    // only one block in the expression can be true
+    if (m_bOutputAllowed)
     {
-      m_bOutputAllowed = true;
+      m_bWasTrue = true;
+      m_bOutputAllowed = false;
+    }
+    else
+    {
+      if (!m_bWasTrue)
+      {
+        m_bOutputAllowed = true;
+      }
     }
   }
   m_eType = cNestingLevel::NLTYPE_ELSE;
@@ -58,6 +66,7 @@ cPreProcessor::cPreProcessor(ICodeHandler* pCodeHandler)
 , m_bInclude(false)
 , m_bUndefNext(false)
 , m_bStringify(false)
+, m_bLogMessage(false)
 , m_pCurrentMacro(NULL)
 , m_pMacroResolver(NULL)
 , m_pExpression(NULL)
@@ -81,10 +90,12 @@ cPreProcessor::~cPreProcessor()
 
 void cPreProcessor::Reset()
 {
+  LOG("");
   m_bPreProc = false;
   m_bInclude = false;
   m_bUndefNext = false;
   m_bStringify = false;
+  m_bLogMessage = false;
   delete m_pCurrentMacro;
   m_pCurrentMacro = NULL;
   delete m_pMacroResolver;
@@ -97,7 +108,7 @@ void cPreProcessor::Reset()
     m_ConditionStack.pop();
   while(!m_FileInfoStack.empty())
     m_FileInfoStack.pop();
-  m_ConditionStack.push(cNestingLevel(cNestingLevel::NLTYPE_NONE, true));
+  m_ConditionStack.push(cNestingLevel(cNestingLevel::NLTYPE_NONE, true, true));
   m_FileInfoStack.push(tFileInfo("",1));
   m_MacroMap.clear();
   m_pLineMacro = NULL;
@@ -183,17 +194,27 @@ bool cPreProcessor::Process(const char* strFile)
   
   if (input.is_open())
   {
+    int nConditions = m_ConditionStack.size();
+    LOG("ConditionStack before include! (top: %d, detph: %d)", IsOutputAllowed(), m_ConditionStack.size());
+
     m_FileInfoStack.push(tFileInfo(strFile,1));
     SetFileMacro(m_FileInfoStack.top().m_strFile.c_str());
     while (input.good())
     {
       getline (input, line);
       LOG("%s:%d", m_FileInfoStack.top().m_strFile.c_str(), m_FileInfoStack.top().m_iLine);
-      Parse(line.c_str());
+      if (!Parse(line.c_str()))
+        break;
     }
+    HandleToken(tToken(TOKEN_NEWLINE, PP_OP_UNKNOWN));
     input.close();
     m_FileInfoStack.pop();
     SetFileMacro(m_FileInfoStack.top().m_strFile.c_str());
+    while (m_ConditionStack.size() > nConditions)
+    {
+      LOG("ConditionStack has too much entries! (top: %d, depth: %d)", IsOutputAllowed(), m_ConditionStack.size());
+      m_ConditionStack.pop();
+    }
     return true;
   }
   else
@@ -234,6 +255,13 @@ bool cPreProcessor::FindInclude(tIncludeList& vIncludes, const char* strFile, st
 void cPreProcessor::Include(const char* strFile)
 {
   LOG("Include: %s", strFile);
+
+  if (!IsOutputAllowed())
+  {
+    LOG("Ignored.");
+    return;
+  }
+
   std::string strName;
   strName.assign(strFile+1, strlen(strFile)-2);
   std::string strPath;
@@ -260,9 +288,8 @@ void cPreProcessor::Include(const char* strFile)
   m_bInclude = false;
   if (!strPath.empty())
   {
+    std::cout << strPath << std::endl;
     Process(strPath.c_str());
-    if (m_ConditionStack.top().GetType() == cNestingLevel::NLTYPE_INCLUDE)
-      m_ConditionStack.pop();
   }
   else
   {
@@ -270,17 +297,38 @@ void cPreProcessor::Include(const char* strFile)
   }
 }
 
-cPreprocessorMacro* cPreProcessor::Define(const char* strMacro, const char* strText)
+cPreprocessorMacro* cPreProcessor::InsertMacro(const char* strMacro, int nToken, const char* strText)
 {
   if (IsDefined(strMacro))
     Undef(strMacro);
+  LOG("Defining macro %s, type: %d, text: %s", strMacro, nToken, (strText != NULL) ? strText : "NULL");
   cPreprocessorMacro* pMacro = new cPreprocessorMacro;
   pMacro->HandleToken(tToken(TOKEN_LABEL, strMacro));
   if (strText != NULL)
-    pMacro->HandleToken(tToken(TOKEN_STRING, strText));
+    pMacro->HandleToken(tToken(nToken, strText));
   pMacro->HandleToken(tToken(TOKEN_OPERATOR, PP_OP_PREPROC_END));
   m_MacroMap.insert(std::pair<std::string,cPreprocessorMacro*>(strMacro, pMacro));
   return pMacro;
+}
+
+cPreprocessorMacro* cPreProcessor::Define(const char* strMacro, int nValue)
+{
+  std::stringstream stream;
+  stream << nValue;
+  return InsertMacro(strMacro, TOKEN_LITERAL, stream.str().c_str());
+}
+
+cPreprocessorMacro* cPreProcessor::Define(const char* strMacro, const char* strText)
+{
+  return InsertMacro(strMacro, TOKEN_STRING, strText);
+}
+
+void cPreProcessor::LogMacros()
+{
+  for (tMacroMap::iterator it = m_MacroMap.begin(); it != m_MacroMap.end(); ++it)
+  {
+    LOG("Macro: '%s', Params: %d", it->first.c_str(), it->second->GetMacroText().size());
+  }
 }
 
 void cPreProcessor::Undef(const char* strMacro)
@@ -298,6 +346,7 @@ void cPreProcessor::Endif()
   if (m_ConditionStack.size() > 1)
   {
     m_ConditionStack.pop();
+    LOG("ConditionStack after endif! (top: %d, depth: %d)", IsOutputAllowed(), m_ConditionStack.size());
   }
   else
   {
@@ -315,7 +364,7 @@ cPreprocessorMacro* cPreProcessor::GetMacro(const char* strMacro)
   tMacroMap::const_iterator it = m_MacroMap.find(strMacro);
   if (it != m_MacroMap.end())
     return it->second;
-  LOG("Macro not found!");
+  LOG("Macro '%s' not found!", strMacro);
   return NULL;
 }
 
@@ -336,14 +385,24 @@ void cPreProcessor::HandleMacro(tToken& oToken)
   }
   else if (m_pCurrentMacro->IsReady())
   {
-    tMacroMap::iterator it = m_MacroMap.find(m_pCurrentMacro->GetName());
-    if (IsOutputAllowed() && (it == m_MacroMap.end()))
+    if (IsOutputAllowed())
     {
-      m_MacroMap.insert(tMacroMapEntry(m_pCurrentMacro->GetName(), m_pCurrentMacro));
+      tMacroMap::iterator it = m_MacroMap.find(m_pCurrentMacro->GetName());
+      if (it == m_MacroMap.end())
+      {
+        LOG("Insert Macro: %s", m_pCurrentMacro->GetName());
+        m_MacroMap.insert(tMacroMapEntry(m_pCurrentMacro->GetName(), m_pCurrentMacro));
+      }
+      else
+      {
+        delete m_pCurrentMacro;
+        LOG("Error: already defined");
+      }
     }
     else
     {
-      LOG("Error: already defined");
+      delete m_pCurrentMacro;
+      LOG("Ignored.");
     }
     m_pCurrentMacro = NULL;
     m_bPreProc = false;
@@ -381,9 +440,10 @@ void cPreProcessor::HandleExpression(tToken& oToken)
   else if (m_pExpression->IsReady())
   {
     int iResult = m_pExpression->Evaluate();
-    bool bFlag = IsOutputAllowed() && (iResult != 0);
+    bool bFlag = (iResult != 0);
     LOG("Expression result: %d", iResult);
-    m_ConditionStack.push(cNestingLevel(cNestingLevel::NLTYPE_IF, bFlag));
+    m_ConditionStack.push(cNestingLevel(cNestingLevel::NLTYPE_IF, bFlag, IsOutputAllowed()));
+    LOG("ConditionStack after expression! (top: %d, depth: %d)", IsOutputAllowed(), m_ConditionStack.size());
     delete m_pExpression;
     m_pExpression = NULL;
   }
@@ -393,6 +453,11 @@ void cPreProcessor::ProcessPragma(cPragmaHandler* pPragmaHandler)
 {
   LOG("Pragma: %d", pPragmaHandler->GetPragma());
   LOG("ParamCount: %d", pPragmaHandler->GetParams().size());
+  if (!IsOutputAllowed())
+  {
+    LOG("Pragma ignored.");
+    return;
+  }
 
   switch (pPragmaHandler->GetPragma())
   {
@@ -401,14 +466,22 @@ void cPreProcessor::ProcessPragma(cPragmaHandler* pPragmaHandler)
         std::string strFile = m_FileInfoStack.top().m_strFile.c_str();
         LOG("Pragma once: %s", strFile.c_str());
         std::replace(strFile.begin(),strFile.end(), '.', '_');
+        std::replace(strFile.begin(),strFile.end(), ' ', '_');
+        std::replace(strFile.begin(),strFile.end(), '/', '_');
+        std::replace(strFile.begin(),strFile.end(), '\\', '_');
+        std::replace(strFile.begin(),strFile.end(), '(', '_');
+        std::replace(strFile.begin(),strFile.end(), ')', '_');
+        std::replace(strFile.begin(),strFile.end(), ':', '_');
         std::transform(strFile.begin(), strFile.end(), strFile.begin(), ::toupper);
         LOG("Generated Macro: %s", strFile.c_str());
         if (IsDefined(strFile.c_str()))
         {
-          m_ConditionStack.push(cNestingLevel(cNestingLevel::NLTYPE_INCLUDE, false));
+          LOG("Already exists. Stop parsing this file!");
+          m_Tokenizer.Stop();
         }
         else
         {
+          LOG("Not defined. Continue.");
           Define(strFile.c_str());
         }
       }
@@ -453,7 +526,7 @@ void cPreProcessor::OutputCode(char cCode)
 
 bool cPreProcessor::HandleToken(tToken& oToken)
 {
-  m_Tokenizer.LogToken(oToken);
+  //m_Tokenizer.LogToken(oToken);
   if (m_pCurrentMacro)
   {
     HandleMacro(oToken);
@@ -528,11 +601,14 @@ bool cPreProcessor::HandleToken(tToken& oToken)
           if (!IsOutputAllowed())
           {
             m_ConditionStack.pop();
+            LOG("ConditionStack elif! (top: %d, depth: %d)", IsOutputAllowed(), m_ConditionStack.size());
             m_pExpression = new cPreprocessorExpression(this);
           }
           else
           {
+            LOG("ConditionStack before DoElse! (top: %d, depth: %d)", IsOutputAllowed(), m_ConditionStack.size());
             m_ConditionStack.top().DoElse();
+            LOG("ConditionStack after DoElse! (top: %d, depth: %d)", IsOutputAllowed(), m_ConditionStack.size());
           }
           break;
         case PP_KW_IFDEF:
@@ -548,7 +624,9 @@ bool cPreProcessor::HandleToken(tToken& oToken)
           Endif();
           break;
         case PP_KW_ELSE:
+          LOG("ConditionStack before DoElse! (top: %d, depth: %d)", IsOutputAllowed(), m_ConditionStack.size());
           m_ConditionStack.top().DoElse();
+          LOG("ConditionStack after DoElse! (top: %d, depth: %d)", IsOutputAllowed(), m_ConditionStack.size());
           break;
           m_pExpression = new cPreprocessorExpression(this);
           break;
@@ -561,6 +639,10 @@ bool cPreProcessor::HandleToken(tToken& oToken)
         case PP_KW_PRAGMA:
           m_pPragmaHandler = new cPragmaHandler;
           break;
+        case PP_KW_ERROR:
+        case PP_KW_WARNING:
+          m_bLogMessage = true;
+          break;
       }
     }
     break;
@@ -569,6 +651,7 @@ bool cPreProcessor::HandleToken(tToken& oToken)
     {
       if (m_bInclude)
       {
+        m_bInclude = false;
         Include(oToken.m_strName);
       }
       else

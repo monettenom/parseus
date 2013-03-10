@@ -124,7 +124,7 @@ bool cPreprocessorExpression::HandleToken(tToken& oToken)
       }
       else if(m_pMacroMap->IsDefined(oToken.m_strName))
       {
-        //printf("MACRO: %s\n", oToken.m_strName);
+        LOG("MACRO: %s", oToken.m_strName);
         m_pMacroResolver = new cMacroResolver(m_pMacroMap->GetMacro(oToken.m_strName));
       }
       else
@@ -233,6 +233,7 @@ int cPreprocessorExpression::GetLiteral()
     {
       case TOKEN_LITERAL:
         iResult = ParseInteger(m_itCursor->m_strName);
+        LOG("Value: %d", iResult);
         m_itCursor++;
         return iResult;
       case TOKEN_STRING:
@@ -451,8 +452,12 @@ int cPreprocessorExpression::GetComparisonExpression()
         iValue = iValue <= GetShiftExpression();
         break;
       case PP_OP_BIGGER:
-        m_itCursor++;
-        iValue = iValue > GetShiftExpression();
+        {
+          m_itCursor++;
+          int iExp = GetShiftExpression();
+          LOG("%d > %d", iValue, iExp);
+          iValue = iValue > GetShiftExpression();
+        }
         break;
       case PP_OP_BIGGER_OR_EQUAL:
         m_itCursor++;

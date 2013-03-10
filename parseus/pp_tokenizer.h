@@ -79,15 +79,20 @@ public:
 
   bool Parse(const char* strLine, bool bSkipWhiteSpaces = false, bool bSkipComments = false);
   void LogToken(tToken& token);
+  void Stop(bool bFlag = true);
 
 protected:
-  const char* HandleWhiteSpace(const char* strLine, bool bSkipWhiteSpaces);
+  const char* HandleWhiteSpace(const char* strLine, bool bLineStart);
   const char* HandleBlockComment(const char* strLine);
   const char* AppendBlockComment(const char* strLine);
   const char* HandleLineComment(const char* strLine);
   const char* HandleString(const char* strLine, char cDelimiter, int token);
+  const char* HandleMessage(const char* strLine);
   const char* AppendString(const char* strLine);
   const char* ParseLiteral(const char* strLine);
+  const char* ParseLabel(const char* strLine);
+
+  int IsKeyword(const char* strLabel);
   void PushKeyword(int nKeyword);
   bool PushPreProcEnd();
   void PushTokenIfPreProcMode(int nToken, int nType, const char* strText);
@@ -98,8 +103,12 @@ private:
   bool m_bMultiLineString;
   bool m_bPreProcMode;
   bool m_bInclude;
+  bool m_bMessage;
+  bool m_bPragma;
+  bool m_bStop;
 
   std::string m_strBuffer;
+  std::string m_strMessage;
 };
 
 #endif //PPTOKENIZER_H

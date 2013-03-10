@@ -293,7 +293,7 @@ tTestData sPreprocessorTestData[] =
     {TOKEN_LITERAL, TOKEN_OPERATOR, TOKEN_LITERAL, TOKEN_OPERATOR, -1}, 
     {CPP_OP_UNKNOWN, CPP_OP_COMMAND_END, CPP_OP_UNKNOWN, CPP_OP_COMMAND_END}
   },
-  // 23 pragma once
+  // 24 pragma once
   {
     {
       ">test.h",
@@ -304,6 +304,129 @@ tTestData sPreprocessorTestData[] =
       "#include \"test.h\"",
       NULL
     }, 2, true, {"ok",""}, {TOKEN_LABEL, TOKEN_OPERATOR, -1}, {CPP_OP_UNKNOWN, CPP_OP_COMMAND_END}
+  },
+  // 25 #warning
+  {
+    {
+      "#warning ok",
+      NULL
+    }, 1, true, {"ok"}, {TOKEN_LABEL, -1}, {PP_OP_UNKNOWN}
+  },
+  // 26 #error
+  {
+    {
+      "#error ok",
+      NULL
+    }, 1, true, {"ok"}, {TOKEN_LABEL, -1}, {PP_OP_UNKNOWN}
+  },
+  // 27 #pragma with multi line parameter
+  {
+    {
+      "#pragma warning(\"This is a long \\",
+      "message!\")",
+      NULL
+    }, 0, true, {""}, {-1}, {PP_OP_UNKNOWN}
+  },
+  // 28 pragma once enclosed by #ifdef
+  {
+    {
+      ">test.h",
+      "#ifndef XXX",
+      "#pragma once",
+      "#endif",
+      "ok;",
+      "<",
+      "#include \"test.h\"",
+      "#include \"test.h\"",
+      NULL
+    }, 2, true, {"ok",""}, {TOKEN_LABEL, TOKEN_OPERATOR, -1}, {CPP_OP_UNKNOWN, CPP_OP_COMMAND_END}
+  },
+  // 29 nested ifdefs
+  {
+    {
+      "#define X",
+      "#ifdef A",
+      "#ifdef X",
+      "#define B",
+      "#endif",
+      "#else",
+      "#define C",
+      "#endif",
+      "#ifdef B",
+      "error;",
+      "#endif",
+      "#ifdef C",
+      "ok;",
+      "#endif",
+      NULL
+    }, 2, true, {"ok",""}, {TOKEN_LABEL, TOKEN_OPERATOR, -1}, {CPP_OP_UNKNOWN, CPP_OP_COMMAND_END}
+  },
+  // 30 nested else, output after last endif should be active
+  {
+    {
+      "#ifdef A",
+      "error;",
+      "#else",
+      "#ifdef B",
+      "error;",
+      "#else",
+      "ok;",
+      "#endif",
+      "#endif",
+      "ok;",
+      NULL
+    }, 4, true, {"ok","","ok",""}, {TOKEN_LABEL, TOKEN_OPERATOR, TOKEN_LABEL, TOKEN_OPERATOR, -1}, {CPP_OP_UNKNOWN, CPP_OP_COMMAND_END, CPP_OP_UNKNOWN, CPP_OP_COMMAND_END}
+  },
+  // 31 nested else, different if types, output after last endif should be active
+  {
+    {
+      "#ifndef A",
+      "#if !defined(A)",
+      "#if B",
+      "error;",
+      "#else",
+      "ok;",
+      "#endif",
+      "#endif",
+      "#else",
+      "#endif",
+      "ok;",
+      NULL
+    }, 4, true, {"ok","","ok",""}, {TOKEN_LABEL, TOKEN_OPERATOR, TOKEN_LABEL, TOKEN_OPERATOR, -1}, {CPP_OP_UNKNOWN, CPP_OP_COMMAND_END, CPP_OP_UNKNOWN, CPP_OP_COMMAND_END}
+  },
+  // 32 pragma once in ifdefs
+  {
+    {
+      ">test.h",
+      "#if _MSC_VER > 1000",
+      "#pragma once",
+      "#endif",
+      "<",
+      "#define _MSC_VER 1400",
+      "#include \"test.h\"",
+      "ok;",
+      NULL
+    }, 2, true, {"ok",""}, {TOKEN_LABEL, TOKEN_OPERATOR, -1}, {CPP_OP_UNKNOWN, CPP_OP_COMMAND_END}
+  },
+  // 33 #define _CATMASK(n)	((1 << (n)) >> 1)
+  {
+    {
+      "#define X(n) ((1 << (n)) >> 1)",
+      "#define Y\t\t2",
+      "X(Y);",
+      NULL
+    },
+    12,
+    true,
+    {"", "", "1", "", "",
+     "2", "", "", "", "1",
+     "", ""},
+    {TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_LITERAL, TOKEN_OPERATOR, TOKEN_OPERATOR,
+     TOKEN_LITERAL, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_LITERAL,
+     TOKEN_OPERATOR, TOKEN_OPERATOR, -1},
+    {CPP_OP_BRACKET_OPEN, CPP_OP_BRACKET_OPEN, CPP_OP_UNKNOWN, CPP_OP_SHIFT_LEFT, CPP_OP_BRACKET_OPEN,
+     CPP_OP_UNKNOWN, CPP_OP_BRACKET_CLOSE, CPP_OP_BRACKET_CLOSE, CPP_OP_SHIFT_RIGHT,
+     CPP_OP_UNKNOWN, CPP_OP_BRACKET_CLOSE, CPP_OP_COMMAND_END}
   },
   // stopping entry
   {

@@ -29,7 +29,10 @@ public:
   };
 
 public:
-  cNestingLevel(eNestingLevelType eType = NLTYPE_NONE, bool bOutputAllowed = true);
+  cNestingLevel(
+    eNestingLevelType eType = NLTYPE_NONE, 
+    bool bOutputAllowed = true,
+    bool bOutputAllowedBefore = true);
   cNestingLevel(const cNestingLevel& NestingLevel);
   ~cNestingLevel();
 
@@ -39,6 +42,7 @@ public:
 
 private:
   bool m_bOutputAllowed;
+  bool m_bNeverAllowed;
   bool m_bWasTrue;
   eNestingLevelType m_eType;
 };
@@ -89,6 +93,7 @@ public:
   bool Parse(const char* strLine, bool bSkipWhiteSpaces = false, bool bSkipComments = false);
   void Include(const char* strFile);
   cPreprocessorMacro* Define(const char* strMacro, const char* strText = NULL);
+  cPreprocessorMacro* Define(const char* strMacro, int nValue);
   bool IsDefined(const char* strMacro);
   void Undef(const char* strMacro);
   void Endif();
@@ -96,6 +101,7 @@ public:
   int GetDepth(){return m_ConditionStack.size();}
   void Reset();
 
+  void LogMacros();
 protected:
   void OutputCode(char cCode);
   void OutputCode(const char* strCode);
@@ -107,6 +113,7 @@ protected:
   void HandlePragma(tToken& oToken);
 
   void ProcessPragma(cPragmaHandler* pPragmaHandler);
+  cPreprocessorMacro* InsertMacro(const char* strMacro, int nToken, const char* strText);
 
   bool IsOutputAllowed();
   void SetLineMacro(int iLine);
@@ -122,6 +129,7 @@ private:
   bool m_bInclude;
   bool m_bUndefNext;
   bool m_bStringify;
+  bool m_bLogMessage;
   
   cPreprocessorMacro* m_pCurrentMacro;
   cMacroResolver* m_pMacroResolver;

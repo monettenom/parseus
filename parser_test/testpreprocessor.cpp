@@ -22,8 +22,12 @@ void cTestPreprocessor::HandleCode(char strCode)
 {
   if (strCode == '\n')
   {
-    m_Tokenizer.Parse(m_strLine.str().c_str());
-    m_strLine.str(std::string());
+    if (m_strLine.str().length() > 0)
+    {
+      m_Tokenizer.Parse(m_strLine.str().c_str());
+      std::cout << "CPP-Code: " << m_strLine.str().c_str() << std::endl;
+      m_strLine.str(std::string());
+    }
   }
   else
   {
@@ -67,7 +71,7 @@ bool cTestPreprocessor::Test(tTestData* pTestData)
         m_Preprocessor.Parse(pTestData->m_strCode[i]);
         break;
     }
-    printf("Depth: %d\n", m_Preprocessor.GetDepth());
+    LOG("Depth: %d", m_Preprocessor.GetDepth());
   }
   HandleCode('\n');
   if (pTestData->m_nExpectedTokens != IGNORE_TOKEN_COUNT && pTestData->m_nExpectedTokens != GetTokenCount())
@@ -105,13 +109,17 @@ bool cTestPreprocessor::HandleToken(tToken& oToken)
     switch(oToken.m_Token)
     {
     case TOKEN_KEYWORD:
-    case TOKEN_OPERATOR:
+      if (oToken.m_Type != GetTestEntry()->m_pTokenTypeList[GetTokenCount()])
       {
-        if (oToken.m_Type != GetTestEntry()->m_pTokenTypeList[GetTokenCount()])
-        {
-          HandleError("keyword or operator expected", GetTokenCount());
-          return false;
-        }
+        HandleError("Keyword expected", GetTokenCount());
+        return false;
+      }
+      break;
+    case TOKEN_OPERATOR:
+      if (oToken.m_Type != GetTestEntry()->m_pTokenTypeList[GetTokenCount()])
+      {
+        HandleError("Operator expected", GetTokenCount());
+        return false;
       }
       break;
 

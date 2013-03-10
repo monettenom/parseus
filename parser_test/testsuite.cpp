@@ -29,10 +29,9 @@ void cTestSuite::RunTests()
   std::cout << nFailed << " of " << nTests << " tests failed!" << std::endl;
 }
 
-static cTestSuite s_TestSuite;
-
 cTestSuite* cTestSuite::GetTestSuite()
 {
+  static cTestSuite s_TestSuite;
   return &s_TestSuite;
 }
 

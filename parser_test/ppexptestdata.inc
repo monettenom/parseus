@@ -155,6 +155,13 @@ tTestData sPPExpressionTestData[] =
   },
   {
     {
+      "#define A",
+      "#if !defined(A)",
+      NULL
+    }, IGNORE_TOKEN_COUNT, true, {""}, {0}, {}
+  },
+  {
+    {
       "#define A 1",
       "#if A ? 22 : 11",
       NULL

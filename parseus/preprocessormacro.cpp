@@ -108,6 +108,11 @@ bool cPreprocessorMacro::HandleToken(tToken& oToken)
             m_vMacroText.push_back(oToken);
           break;
         case TOKEN_WHITESPACE:
+          if (m_vMacroText.size() > 0 &&
+              m_vMacroText[m_vMacroText.size()-1].m_Token != TOKEN_WHITESPACE)
+          {
+            m_vMacroText.push_back(tToken(TOKEN_WHITESPACE, " "));
+          }
           break;
         default:
           m_vMacroText.push_back(oToken);
