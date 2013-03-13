@@ -102,6 +102,7 @@ private:
   bool m_bLineComment;
   bool m_bMultiLineString;
   bool m_bPreProcMode;
+  bool m_bExpectKeyword;
   bool m_bInclude;
   bool m_bMessage;
   bool m_bPragma;

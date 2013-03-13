@@ -23,7 +23,7 @@ void cPreprocessorExpression::ResolveMacro(tToken& oToken)
     delete m_pMacroResolver;
     m_pMacroResolver = NULL;
   }
-  if (m_pMacroResolver->IsReady())
+  else if (m_pMacroResolver->IsReady())
   {
     //std::cout << "Macro resolved." << std::endl;
     cMacroResolver* pMacroResolver = m_pMacroResolver;

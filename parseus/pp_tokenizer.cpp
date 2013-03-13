@@ -51,7 +51,6 @@ static tKeyword g_KeyWords[] = {
   {"warning", PP_KW_WARNING},
   {"line", PP_KW_LINE},
   {"pragma", PP_KW_PRAGMA},
-  {"__pragma", PP_KW_PRAGMA},
   {"ident", PP_KW_IDENT},
   {"sccs", PP_KW_SCCS},
   {"assert", PP_KW_ASSERT},
@@ -101,6 +100,7 @@ cPPTokenizer::cPPTokenizer()
 , m_bLineComment(false)
 , m_bMultiLineString(false)
 , m_bPreProcMode(false)
+, m_bExpectKeyword(false)
 , m_bInclude(false)
 , m_bMessage(false)
 , m_bPragma(false)
@@ -284,30 +284,37 @@ int cPPTokenizer::IsKeyword(const char* strLabel)
 
 void cPPTokenizer::PushKeyword(int nKeyword)
 {
-  if (!m_bPreProcMode)
+  if (!m_bExpectKeyword)
   {
     PushToken(TOKEN_LABEL, GetKeywordString(nKeyword));
   }
   else
   {
     m_bInclude = false;
+    m_bExpectKeyword = false;
     switch (nKeyword)
     {
-      case PP_KW_INCLUDE:
-        m_bInclude = true;
-        // after includes, preprocmode must be false, since the included file
-        // shouldn't start with this mode activated
-        m_bPreProcMode = false;
-        break;
-      case PP_KW_ERROR:
-      case PP_KW_WARNING:
-        m_bMessage = true;
-        break;
-      case PP_KW_PRAGMA:
-        m_bPragma = true;
-        break;
-      default:
-        break;
+    case PP_KW_INCLUDE:
+      m_bInclude = true;
+      // after includes, preprocmode must be false, since the included file
+      // shouldn't start with this mode activated
+      m_bPreProcMode = false;
+      break;
+    case PP_KW_ERROR:
+    case PP_KW_WARNING:
+      m_bMessage = true;
+      break;
+    case PP_KW_PRAGMA:
+      m_bPragma = true;
+      break;
+    case PP_KW_IF:
+    case PP_KW_ELSE:
+    case PP_KW_ELIF:
+    case PP_KW_DEFINED:
+      m_bExpectKeyword = true;
+      break;
+    default:
+      break;
     }
 
     cTokenizer::PushKeyword(nKeyword);
@@ -572,6 +579,7 @@ bool cPPTokenizer::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkipC
         {
           PushToken(TOKEN_OPERATOR, PP_OP_PREPROC);
           m_bPreProcMode = true;
+          m_bExpectKeyword = true;
         }
         break;
 

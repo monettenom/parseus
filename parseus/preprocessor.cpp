@@ -5,6 +5,8 @@
 #include "ppexpression.h"
 #include "preprocessor.h"
 
+// cNestingLevel
+
 cNestingLevel::cNestingLevel(
   eNestingLevelType eType,
   bool bOutputAllowed,
@@ -61,6 +63,32 @@ void cNestingLevel::DoElse()
   m_eType = cNestingLevel::NLTYPE_ELSE;
 }
 
+// cBreakPoint
+
+cBreakPoint::cBreakPoint(const char* strFile, int nLine)
+: m_strFile(strFile)
+, m_nLine(nLine)
+{
+
+}
+
+cBreakPoint::~cBreakPoint()
+{
+}
+
+bool cBreakPoint::CheckFile(const char* strFile)
+{
+  return m_bFileHit = m_strFile == strFile;
+}
+
+bool cBreakPoint::CheckLine(int nLine)
+{
+  return m_bFileHit && (m_nLine == nLine);
+}
+
+
+// cPreProcessor
+
 cPreProcessor::cPreProcessor(ICodeHandler* pCodeHandler)
 : m_bPreProc(false)
 , m_bInclude(false)
@@ -74,6 +102,7 @@ cPreProcessor::cPreProcessor(ICodeHandler* pCodeHandler)
 , m_pCodeHandler(pCodeHandler)
 , m_pLineMacro(NULL)
 , m_pFileMacro(NULL)
+, m_pBreakPoint(NULL)
 {
   LOG("");
   m_Tokenizer.SetTokenHandler(this);
@@ -197,19 +226,36 @@ bool cPreProcessor::Process(const char* strFile)
     int nConditions = m_ConditionStack.size();
     LOG("ConditionStack before include! (top: %d, detph: %d)", IsOutputAllowed(), m_ConditionStack.size());
 
-    m_FileInfoStack.push(tFileInfo(strFile,1));
+    m_FileInfoStack.push(tFileInfo(strFile, 1));
     SetFileMacro(m_FileInfoStack.top().m_strFile.c_str());
+
+    if (m_pBreakPoint)
+    {
+      m_pBreakPoint->CheckFile(m_FileInfoStack.top().m_strFile.c_str());
+    }
+
     while (input.good())
     {
       getline (input, line);
       LOG("%s:%d", m_FileInfoStack.top().m_strFile.c_str(), m_FileInfoStack.top().m_iLine);
+      if (m_pBreakPoint && IsOutputAllowed() && m_pBreakPoint->CheckLine(m_FileInfoStack.top().m_iLine))
+      {
+        __asm int 3;
+      }
       if (!Parse(line.c_str()))
         break;
     }
+
     HandleToken(tToken(TOKEN_NEWLINE, PP_OP_UNKNOWN));
     input.close();
+
     m_FileInfoStack.pop();
     SetFileMacro(m_FileInfoStack.top().m_strFile.c_str());
+    if (m_pBreakPoint)
+    {
+      m_pBreakPoint->CheckFile(m_FileInfoStack.top().m_strFile.c_str());
+    }
+
     while (m_ConditionStack.size() > nConditions)
     {
       LOG("ConditionStack has too much entries! (top: %d, depth: %d)", IsOutputAllowed(), m_ConditionStack.size());
@@ -526,7 +572,7 @@ void cPreProcessor::OutputCode(char cCode)
 
 bool cPreProcessor::HandleToken(tToken& oToken)
 {
-  //m_Tokenizer.LogToken(oToken);
+  m_Tokenizer.LogToken(oToken);
   if (m_pCurrentMacro)
   {
     HandleMacro(oToken);
@@ -713,4 +759,9 @@ bool cPreProcessor::HandleToken(tToken& oToken)
       break;
   }
   return false;
+}
+
+void cPreProcessor::SetBreakPoint(cBreakPoint* pBreakPoint)
+{
+  m_pBreakPoint = pBreakPoint;
 }

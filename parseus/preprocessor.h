@@ -65,6 +65,21 @@ struct tFileInfo
   }
 };
 
+class cBreakPoint
+{
+public:
+  cBreakPoint(const char* strFile, int nLine);
+  ~cBreakPoint();
+
+  bool CheckFile(const char* strFile);
+  bool CheckLine(int nLine);
+
+private:
+  std::string m_strFile;
+  int m_nLine;
+  bool m_bFileHit;
+};
+
 typedef std::vector<std::string> tIncludeList;
 typedef std::map<std::string, cPreprocessorMacro*> tMacroMap;
 typedef std::pair<std::string, cPreprocessorMacro*> tMacroMapEntry;
@@ -102,6 +117,8 @@ public:
   void Reset();
 
   void LogMacros();
+  void SetBreakPoint(cBreakPoint* pBreakPoint);
+
 protected:
   void OutputCode(char cCode);
   void OutputCode(const char* strCode);
@@ -124,13 +141,13 @@ private:
   tIncludeList m_vStdIncludes;
   tIncludeList m_vPrjIncludes;
   tMacroMap m_MacroMap;
-  
+
   bool m_bPreProc;
   bool m_bInclude;
   bool m_bUndefNext;
   bool m_bStringify;
   bool m_bLogMessage;
-  
+
   cPreprocessorMacro* m_pCurrentMacro;
   cMacroResolver* m_pMacroResolver;
   cPreprocessorExpression* m_pExpression;
@@ -142,6 +159,8 @@ private:
 
   cPreprocessorMacro* m_pLineMacro;
   cPreprocessorMacro* m_pFileMacro;
+
+  cBreakPoint* m_pBreakPoint;
 };
 
 #endif // PREPROCESSOR_H

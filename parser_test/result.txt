@@ -171,81 +171,6 @@ Running test case 14
 41: ||
 Tokens checked: 182
 Running test case 1
-1: |#import define undef ifdef ifndef if defined else|
-2: |#elif endif line ident sccs assert unassert|
-3: |#include|
-4: |#include_next|
-Running test case 2
-5: |# # ( , ) ## ...|
-6: |# + - * / % ! && || & | ^ ~ == != < <= > >= << >>|
-Running test case 3
-7: |#define MAX 1024|
-8: | #define MAX 1024|
-9: |# define MAX 1024|
-Running test case 4
-10: |// #define MAX 1024|
-Running test case 5
-11: |#define MAX 1024 // any comment|
-Running test case 6
-12: |#define a 1 //wrap\|
-13: |line|
-Running test case 7
-14: |#define MAX (1<</*shl*/10)/*1024*/|
-Running test case 8
-15: |#define MAX /* this is|
-16: |a multiline comment|
-17: |*/ 1024|
-Running test case 9
-18: |#define MAX\|
-19: |1024|
-Running test case 10
-20: |#  define  MAX	1024	 |
-Running test case 11
-21: |int a=1;|
-22: |int define();|
-Running test case 12
-23: |"test"|
-24: |"multi\|
-25: |line"|
-26: |"multi\|
-27: |line\|
-28: |string"|
-29: |'c'|
-30: |'"'|
-Running test case 13
-31: |#include "test.h"|
-32: |#include <test>|
-33: |#include SYSTEM_H|
-34: |#define SYSTEM_H <system.h>|
-Running test case 14
-35: |#define inc(a) a++|
-Running test case 15
-36: |#define make_list(varname, type, ...) type varname[] = {__VA_ARGS__, (type)-1}|
-Running test case 16
-37: |#define MK_STRING(string) #string|
-Running test case 17
-38: |#define CONCAT(a, b) a##b|
-Running test case 18
-39: |#ifdef MACRO|
-40: |#ifndef MACRO|
-41: |#endif|
-Running test case 19
-42: |#if defined(X) || defined(Y)|
-Running test case 20
-43: |#line 20 "vector"|
-Running test case 21
-44: |#error Error|
-45: |#warning Warning|
-Running test case 22
-46: |<% %> <: :> %:|
-Running test case 23
-47: |??< ??> ??( ??) ??' ??! ??- ??= ??/ ?? ?|
-Running test case 24
-48: |#if 1+1|
-Running test case 25
-49: ||
-Tokens checked: 263
-Running test case 1
 1: |#define A (5+5)|
 2: |#if A*2|
 Running test case 2
@@ -394,6 +319,108 @@ Running test case 65
 82: |#define A 1|
 83: |#define B 0|
 84: |#if A ? (B ? 11 : 22) : 33|
+Tokens checked: 305
+Running test case 1
+1: |#import import|
+Running test case 2
+2: |#define define|
+Running test case 3
+3: |#undef undef|
+Running test case 4
+4: |#ifdef ifdef|
+Running test case 5
+5: |#ifndef ifndef|
+Running test case 6
+6: |#endif endif|
+Running test case 7
+7: |#line line|
+Running test case 8
+8: |#ident ident|
+Running test case 9
+9: |#sccs sccs|
+Running test case 10
+10: |#assert assert|
+Running test case 11
+11: |#unassert unassert|
+Running test case 12
+12: |#include include|
+Running test case 13
+13: |#include_next include_next|
+Running test case 14
+14: |#if if defined defined|
+Running test case 15
+15: |#else if defined|
+Running test case 16
+16: |#elif defined|
+Running test case 17
+17: |# # ( , ) ## ...|
+18: |# + - * / % ! && || & | ^ ~ == != < <= > >= << >>|
+Running test case 18
+19: |#define MAX 1024|
+20: | #define MAX 1024|
+21: |# define MAX 1024|
+Running test case 19
+22: |// #define MAX 1024|
+Running test case 20
+23: |#define MAX 1024 // any comment|
+Running test case 21
+24: |#define a 1 //wrap\|
+25: |line|
+Running test case 22
+26: |#define MAX (1<</*shl*/10)/*1024*/|
+Running test case 23
+27: |#define MAX /* this is|
+28: |a multiline comment|
+29: |*/ 1024|
+Running test case 24
+30: |#define MAX\|
+31: |1024|
+Running test case 25
+32: |#  define  MAX	1024	 |
+Running test case 26
+33: |int a=1;|
+34: |int define();|
+Running test case 27
+35: |"test"|
+36: |"multi\|
+37: |line"|
+38: |"multi\|
+39: |line\|
+40: |string"|
+41: |'c'|
+42: |'"'|
+Running test case 28
+43: |#include "test.h"|
+44: |#include <test>|
+45: |#include SYSTEM_H|
+46: |#define SYSTEM_H <system.h>|
+Running test case 29
+47: |#define inc(a) a++|
+Running test case 30
+48: |#define make_list(varname, type, ...) type varname[] = {__VA_ARGS__, (type)-1}|
+Running test case 31
+49: |#define MK_STRING(string) #string|
+Running test case 32
+50: |#define CONCAT(a, b) a##b|
+Running test case 33
+51: |#ifdef MACRO|
+52: |#ifndef MACRO|
+53: |#endif|
+Running test case 34
+54: |#if defined(X) || defined(Y)|
+Running test case 35
+55: |#line 20 "vector"|
+Running test case 36
+56: |#error Error|
+57: |#warning Warning|
+Running test case 37
+58: |<% %> <: :> %:|
+Running test case 38
+59: |??< ??> ??( ??) ??' ??! ??- ??= ??/ ?? ?|
+Running test case 39
+60: |#if 1+1|
+Running test case 40
+61: ||
 Tokens checked: 305
 Running test case 1
 Code: "#define A"
@@ -713,10 +740,14 @@ Code: "ok;"
 52: |ok;|
 CPP-Code: ok;
 Running test case 33
-Code: "#define X(n) ((1 << (n)) >> 1)"
-Code: "#define Y		2"
-Code: "X(Y);"
-53: |((1 << (2)) >> 1);|
-CPP-Code: ((1 << (2)) >> 1);
+Code: "#define Z 2"
+Code: "#define Y Z"
+Code: "#define X(n) ((n))"
+Code: "#define RESULT X(Y)"
+Code: "RESULT;"
+53: |(()2);|
+Token mismatch! Expected: TOKEN_LITERAL result: TOKEN_OPERATOR index 2
+CPP-Code: (()2);
+Expected tokens: 12, tokens found: 2
 Tokens checked: 64
-0 of 168 tests failed!
+1 of 183 tests failed!

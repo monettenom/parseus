@@ -408,25 +408,21 @@ tTestData sPreprocessorTestData[] =
       NULL
     }, 2, true, {"ok",""}, {TOKEN_LABEL, TOKEN_OPERATOR, -1}, {CPP_OP_UNKNOWN, CPP_OP_COMMAND_END}
   },
-  // 33 #define _CATMASK(n)	((1 << (n)) >> 1)
+  // 33 nested defines
   {
     {
-      "#define X(n) ((1 << (n)) >> 1)",
-      "#define Y\t\t2",
-      "X(Y);",
+      "#define Z 2",
+      "#define Y Z",
+      "#define X(n) ((n))",
+      "#define RESULT X(Y)",
+      "RESULT;",
       NULL
     },
     12,
     true,
-    {"", "", "1", "", "",
-     "2", "", "", "", "1",
-     "", ""},
-    {TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_LITERAL, TOKEN_OPERATOR, TOKEN_OPERATOR,
-     TOKEN_LITERAL, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_LITERAL,
-     TOKEN_OPERATOR, TOKEN_OPERATOR, -1},
-    {CPP_OP_BRACKET_OPEN, CPP_OP_BRACKET_OPEN, CPP_OP_UNKNOWN, CPP_OP_SHIFT_LEFT, CPP_OP_BRACKET_OPEN,
-     CPP_OP_UNKNOWN, CPP_OP_BRACKET_CLOSE, CPP_OP_BRACKET_CLOSE, CPP_OP_SHIFT_RIGHT,
-     CPP_OP_UNKNOWN, CPP_OP_BRACKET_CLOSE, CPP_OP_COMMAND_END}
+    {"", "", "2", "", "", ""},
+    {TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_LITERAL, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, -1},
+    {CPP_OP_BRACKET_OPEN, CPP_OP_BRACKET_OPEN, CPP_OP_UNKNOWN, CPP_OP_BRACKET_CLOSE, CPP_OP_BRACKET_CLOSE, CPP_OP_COMMAND_END}
   },
   // stopping entry
   {

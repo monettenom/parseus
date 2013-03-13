@@ -3,26 +3,132 @@ tTestData sPPTestData[] =
 {
   // keywords
   {
-    {"#import define undef ifdef ifndef if defined else",
-     "#elif endif line ident sccs assert unassert",
-     "#include",
-     "#include_next",
-     NULL},
-    24,
+    {"#import import", NULL},
+    4,
     true,
-    {""},
-    {TOKEN_OPERATOR, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD,
-     TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_OPERATOR,
-     TOKEN_OPERATOR, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD,
-     TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_OPERATOR,
-     TOKEN_OPERATOR, TOKEN_KEYWORD,
-     TOKEN_OPERATOR, TOKEN_KEYWORD, TOKEN_OPERATOR, -1},
-    {PP_OP_PREPROC, PP_KW_IMPORT, PP_KW_DEFINE, PP_KW_UNDEF,
-     PP_KW_IFDEF, PP_KW_IFNDEF, PP_KW_IF, PP_KW_DEFINED, PP_KW_ELSE, PP_OP_PREPROC_END,
-     PP_OP_PREPROC, PP_KW_ELIF, PP_KW_ENDIF, PP_KW_LINE,
-     PP_KW_IDENT, PP_KW_SCCS, PP_KW_ASSERT, PP_KW_UNASSERT, PP_OP_PREPROC_END,
-     PP_OP_PREPROC, PP_KW_INCLUDE,
-     PP_OP_PREPROC, PP_KW_INCLUDE_NEXT, PP_OP_PREPROC_END}
+    {"", "", "import", ""},
+    {TOKEN_OPERATOR, TOKEN_KEYWORD, TOKEN_LABEL, TOKEN_OPERATOR},
+    {PP_OP_PREPROC, PP_KW_IMPORT, PP_OP_UNKNOWN, PP_OP_PREPROC_END}
+  },
+  {
+    {"#define define", NULL},
+    4,
+    true,
+    {"", "", "define", ""},
+    {TOKEN_OPERATOR, TOKEN_KEYWORD, TOKEN_LABEL, TOKEN_OPERATOR},
+    {PP_OP_PREPROC, PP_KW_DEFINE, PP_OP_UNKNOWN, PP_OP_PREPROC_END}
+  },
+  {
+    {"#undef undef", NULL},
+    4,
+    true,
+    {"", "", "undef", ""},
+    {TOKEN_OPERATOR, TOKEN_KEYWORD, TOKEN_LABEL, TOKEN_OPERATOR},
+    {PP_OP_PREPROC, PP_KW_UNDEF, PP_OP_UNKNOWN, PP_OP_PREPROC_END}
+  },
+  {
+    {"#ifdef ifdef", NULL},
+    4,
+    true,
+    {"", "", "ifdef", ""},
+    {TOKEN_OPERATOR, TOKEN_KEYWORD, TOKEN_LABEL, TOKEN_OPERATOR},
+    {PP_OP_PREPROC, PP_KW_IFDEF, PP_OP_UNKNOWN, PP_OP_PREPROC_END}
+  },
+  {
+    {"#ifndef ifndef", NULL},
+    4,
+    true,
+    {"", "", "ifndef", ""},
+    {TOKEN_OPERATOR, TOKEN_KEYWORD, TOKEN_LABEL, TOKEN_OPERATOR},
+    {PP_OP_PREPROC, PP_KW_IFNDEF, PP_OP_UNKNOWN, PP_OP_PREPROC_END}
+  },
+  {
+    {"#endif endif", NULL},
+    4,
+    true,
+    {"", "", "endif", ""},
+    {TOKEN_OPERATOR, TOKEN_KEYWORD, TOKEN_LABEL, TOKEN_OPERATOR},
+    {PP_OP_PREPROC, PP_KW_ENDIF, PP_OP_UNKNOWN, PP_OP_PREPROC_END}
+  },
+  {
+    {"#line line", NULL},
+    4,
+    true,
+    {"", "", "line", ""},
+    {TOKEN_OPERATOR, TOKEN_KEYWORD, TOKEN_LABEL, TOKEN_OPERATOR},
+    {PP_OP_PREPROC, PP_KW_LINE, PP_OP_UNKNOWN, PP_OP_PREPROC_END}
+  },
+  {
+    {"#ident ident", NULL},
+    4,
+    true,
+    {"", "", "ident", ""},
+    {TOKEN_OPERATOR, TOKEN_KEYWORD, TOKEN_LABEL, TOKEN_OPERATOR},
+    {PP_OP_PREPROC, PP_KW_IDENT, PP_OP_UNKNOWN, PP_OP_PREPROC_END}
+  },
+  {
+    {"#sccs sccs", NULL},
+    4,
+    true,
+    {"", "", "sccs", ""},
+    {TOKEN_OPERATOR, TOKEN_KEYWORD, TOKEN_LABEL, TOKEN_OPERATOR},
+    {PP_OP_PREPROC, PP_KW_SCCS, PP_OP_UNKNOWN, PP_OP_PREPROC_END}
+  },
+  {
+    {"#assert assert", NULL},
+    4,
+    true,
+    {"", "", "assert", ""},
+    {TOKEN_OPERATOR, TOKEN_KEYWORD, TOKEN_LABEL, TOKEN_OPERATOR},
+    {PP_OP_PREPROC, PP_KW_ASSERT, PP_OP_UNKNOWN, PP_OP_PREPROC_END}
+  },
+  {
+    {"#unassert unassert", NULL},
+    4,
+    true,
+    {"", "", "unassert", ""},
+    {TOKEN_OPERATOR, TOKEN_KEYWORD, TOKEN_LABEL, TOKEN_OPERATOR},
+    {PP_OP_PREPROC, PP_KW_UNASSERT, PP_OP_UNKNOWN, PP_OP_PREPROC_END}
+  },
+  {
+    {"#include include", NULL}, // no preprocend after include
+    3,
+    true,
+    {"", "", "include"},
+    {TOKEN_OPERATOR, TOKEN_KEYWORD, TOKEN_LABEL},
+    {PP_OP_PREPROC, PP_KW_INCLUDE, PP_OP_UNKNOWN}
+  },
+  {
+    {"#include_next include_next", NULL},
+    4,
+    true,
+    {"", "", "include_next", ""},
+    {TOKEN_OPERATOR, TOKEN_KEYWORD, TOKEN_LABEL, TOKEN_OPERATOR},
+    {PP_OP_PREPROC, PP_KW_INCLUDE_NEXT, PP_OP_UNKNOWN, PP_OP_PREPROC_END}
+  },
+  {
+    {"#if if defined defined", NULL},
+    6,
+    true,
+    {"", "", "", "", "", ""},
+    {TOKEN_OPERATOR, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_OPERATOR},
+    {PP_OP_PREPROC, PP_KW_IF, PP_KW_IF, PP_KW_DEFINED, PP_KW_DEFINED, PP_OP_PREPROC_END}
+  },
+  {
+    {"#else if defined", NULL},
+    5,
+    true,
+    {"", "", "", "", ""},
+    {TOKEN_OPERATOR, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_OPERATOR},
+    {PP_OP_PREPROC, PP_KW_ELSE, PP_KW_IF, PP_KW_DEFINED, PP_OP_PREPROC_END}
+  },
+  {
+    {"#elif defined", NULL},
+    4,
+    true,
+    {"", "", "", ""},
+    {TOKEN_OPERATOR, TOKEN_KEYWORD, TOKEN_KEYWORD, TOKEN_OPERATOR},
+    {PP_OP_PREPROC, PP_KW_ELIF, PP_KW_DEFINED, PP_OP_PREPROC_END}
   },
   // operators
   {
