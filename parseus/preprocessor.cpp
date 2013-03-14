@@ -466,11 +466,13 @@ void cPreProcessor::ResolveMacro(tToken& oToken)
   }
   else if(m_pMacroResolver->IsReady())
   {
-    LOG("Macro resolved.");
     cMacroResolver* pMacroResolver = m_pMacroResolver;
     m_pMacroResolver = NULL;
     if (IsOutputAllowed())
+    {
       pMacroResolver->ExpandMacro(this);
+      LOG("Macro expanded");
+    }
     delete pMacroResolver;
   }
 }
@@ -558,6 +560,7 @@ void cPreProcessor::OutputCode(const char* strCode)
 {
   if (IsOutputAllowed())
   {
+    LOG("OutputCode: '%s'", strCode);
     m_pCodeHandler->HandleCode(strCode);
   }
 }
@@ -566,6 +569,7 @@ void cPreProcessor::OutputCode(char cCode)
 {
   if (IsOutputAllowed())
   {
+    LOG("OutputCode: '%c'", cCode);
     m_pCodeHandler->HandleCode(cCode);
   }
 }
@@ -589,7 +593,14 @@ bool cPreProcessor::HandleToken(tToken& oToken)
     }
     else
     {
+      LOG("Process simple Token");
       ResolveMacro(oToken);
+      if (m_pMacroResolver)
+      {
+        HandleToken(oToken);
+        return true;
+      }
+      LOG("Continue processing token");
     }
   }
   if (m_pExpression)

@@ -302,6 +302,7 @@ tTestData sPreprocessorTestData[] =
       "<",
       "#include \"test.h\"",
       "#include \"test.h\"",
+      "-test.h",
       NULL
     }, 2, true, {"ok",""}, {TOKEN_LABEL, TOKEN_OPERATOR, -1}, {CPP_OP_UNKNOWN, CPP_OP_COMMAND_END}
   },
@@ -338,6 +339,7 @@ tTestData sPreprocessorTestData[] =
       "<",
       "#include \"test.h\"",
       "#include \"test.h\"",
+      "-test.h",
       NULL
     }, 2, true, {"ok",""}, {TOKEN_LABEL, TOKEN_OPERATOR, -1}, {CPP_OP_UNKNOWN, CPP_OP_COMMAND_END}
   },
@@ -405,6 +407,7 @@ tTestData sPreprocessorTestData[] =
       "#define _MSC_VER 1400",
       "#include \"test.h\"",
       "ok;",
+      "-test.h",
       NULL
     }, 2, true, {"ok",""}, {TOKEN_LABEL, TOKEN_OPERATOR, -1}, {CPP_OP_UNKNOWN, CPP_OP_COMMAND_END}
   },
@@ -418,11 +421,24 @@ tTestData sPreprocessorTestData[] =
       "RESULT;",
       NULL
     },
-    12,
+    6,
     true,
     {"", "", "2", "", "", ""},
     {TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_LITERAL, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_OPERATOR, -1},
     {CPP_OP_BRACKET_OPEN, CPP_OP_BRACKET_OPEN, CPP_OP_UNKNOWN, CPP_OP_BRACKET_CLOSE, CPP_OP_BRACKET_CLOSE, CPP_OP_COMMAND_END}
+  },
+  // 34 __pragma
+  {
+    {
+      "#define __pragma(x)",
+      "__pragma(warning(disable: 5432));",
+      NULL
+    },
+    1,
+    true,
+    {""},
+    {TOKEN_OPERATOR, -1},
+    {CPP_OP_COMMAND_END}
   },
   // stopping entry
   {

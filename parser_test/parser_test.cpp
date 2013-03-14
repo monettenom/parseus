@@ -67,9 +67,12 @@ int main(int argc, char* argv[])
   pp.Define("NDEBUG");
   pp.Define("_MBCS");
   pp.Define("_MSC_VER", 1400);
+  pp.Parse("#define __pragma(x)");
 
+#ifdef _DEBUG
   cBreakPoint BreakPoint("C:/Program Files (x86)/Microsoft Visual Studio 8/VC/include/crtdefs.h", 713);
   pp.SetBreakPoint(&BreakPoint);
+#endif
 
   //pp.Process("C:/Program Files (x86)/Microsoft Visual Studio 8/VC/include/sal.h");
   //pp.Process("parser_test.cpp");

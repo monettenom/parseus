@@ -658,6 +658,7 @@ Code: "#include "test.h""
 test.h
 40: | |
 CPP-Code:  
+Code: "-test.h"
 Running test case 25
 Code: "#warning ok"
 41: |ok|
@@ -681,6 +682,7 @@ Code: "#include "test.h""
 test.h
 45: | |
 CPP-Code:  
+Code: "-test.h"
 Running test case 29
 Code: "#define X"
 Code: "#ifdef A"
@@ -737,6 +739,7 @@ test.h
 51: | |
 CPP-Code:  
 Code: "ok;"
+Code: "-test.h"
 52: |ok;|
 CPP-Code: ok;
 Running test case 33
@@ -745,9 +748,12 @@ Code: "#define Y Z"
 Code: "#define X(n) ((n))"
 Code: "#define RESULT X(Y)"
 Code: "RESULT;"
-53: |(()2);|
-Token mismatch! Expected: TOKEN_LITERAL result: TOKEN_OPERATOR index 2
-CPP-Code: (()2);
-Expected tokens: 12, tokens found: 2
-Tokens checked: 64
-1 of 183 tests failed!
+53: |((2));|
+CPP-Code: ((2));
+Running test case 34
+Code: "#define __pragma(x)"
+Code: "__pragma(warning(disable: 5432));"
+54: |;|
+CPP-Code: ;
+Tokens checked: 59
+0 of 184 tests failed!
