@@ -1,16 +1,15 @@
-#include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
 #include "logging.h"
 
 cLogger::cLogger()
 {
-  m_File = fopen("parseus.log", "w");
+  m_File.open("parseus.log");
 }
 
 cLogger::~cLogger()
 {
-  fclose(m_File);
+  m_File.close();
 }
 
 void cLogger::Log(const char* strFile, int nLine, const char* strFunction, const char* strFormat, ...)
@@ -27,7 +26,7 @@ void cLogger::Log(const char* strFile, int nLine, const char* strFunction, const
     strCrsr = strFile;
   else
     strCrsr++;
-  fprintf(m_File, "%s:%d %s:\t%s\n", strCrsr, nLine, strFunction, strBuffer);
+  m_File << strCrsr << ':' << nLine << ' ' << strFunction << ":\t" << strBuffer << std::endl;
 }
 
 cLogger* cLogger::GetInstance()

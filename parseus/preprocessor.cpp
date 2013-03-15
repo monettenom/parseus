@@ -5,88 +5,6 @@
 #include "ppexpression.h"
 #include "preprocessor.h"
 
-// cNestingLevel
-
-cNestingLevel::cNestingLevel(
-  eNestingLevelType eType,
-  bool bOutputAllowed,
-  bool bOutputAllowedBefore)
-: m_bOutputAllowed(bOutputAllowed)
-, m_eType(eType)
-, m_bWasTrue(false)
-, m_bNeverAllowed(!bOutputAllowedBefore)
-{
-
-}
-
-cNestingLevel::cNestingLevel(const cNestingLevel& NestingLevel)
-: m_bOutputAllowed(NestingLevel.m_bOutputAllowed)
-, m_eType(NestingLevel.m_eType)
-, m_bWasTrue(NestingLevel.m_bWasTrue)
-, m_bNeverAllowed(NestingLevel.m_bNeverAllowed)
-{
-}
-
-cNestingLevel::~cNestingLevel()
-{
-}
-
-bool cNestingLevel::IsOutputAllowed()
-{
-  return !m_bNeverAllowed && m_bOutputAllowed;
-}
-
-cNestingLevel::eNestingLevelType cNestingLevel::GetType()
-{
-  return m_eType;
-}
-
-void cNestingLevel::DoElse()
-{
-  if (!m_bNeverAllowed)
-  {
-    // handles else cases also for elif
-    // only one block in the expression can be true
-    if (m_bOutputAllowed)
-    {
-      m_bWasTrue = true;
-      m_bOutputAllowed = false;
-    }
-    else
-    {
-      if (!m_bWasTrue)
-      {
-        m_bOutputAllowed = true;
-      }
-    }
-  }
-  m_eType = cNestingLevel::NLTYPE_ELSE;
-}
-
-// cBreakPoint
-
-cBreakPoint::cBreakPoint(const char* strFile, int nLine)
-: m_strFile(strFile)
-, m_nLine(nLine)
-{
-
-}
-
-cBreakPoint::~cBreakPoint()
-{
-}
-
-bool cBreakPoint::CheckFile(const char* strFile)
-{
-  return m_bFileHit = m_strFile == strFile;
-}
-
-bool cBreakPoint::CheckLine(int nLine)
-{
-  return m_bFileHit && (m_nLine == nLine);
-}
-
-
 // cPreProcessor
 
 cPreProcessor::cPreProcessor(ICodeHandler* pCodeHandler)
@@ -216,6 +134,22 @@ void cPreProcessor::AddProjectInclude(const char* strPath)
   m_vPrjIncludes.push_back(strEntry);
 }
 
+void cPreProcessor::SetBreakPointFile()
+{
+  if (m_pBreakPoint)
+  {
+    m_pBreakPoint->CheckFile(m_FileInfoStack.top().m_strFile.c_str());
+  }
+}
+
+bool cPreProcessor::IsBreakPointHit()
+{
+  return
+    m_pBreakPoint &&
+    IsOutputAllowed() &&
+    m_pBreakPoint->CheckLine(m_FileInfoStack.top().m_iLine);
+}
+
 bool cPreProcessor::Process(const char* strFile)
 {
   std::string line;
@@ -229,19 +163,18 @@ bool cPreProcessor::Process(const char* strFile)
     m_FileInfoStack.push(tFileInfo(strFile, 1));
     SetFileMacro(m_FileInfoStack.top().m_strFile.c_str());
 
-    if (m_pBreakPoint)
-    {
-      m_pBreakPoint->CheckFile(m_FileInfoStack.top().m_strFile.c_str());
-    }
+    SetBreakPointFile();
 
     while (input.good())
     {
       getline (input, line);
       LOG("%s:%d", m_FileInfoStack.top().m_strFile.c_str(), m_FileInfoStack.top().m_iLine);
-      if (m_pBreakPoint && IsOutputAllowed() && m_pBreakPoint->CheckLine(m_FileInfoStack.top().m_iLine))
+      
+      if (IsBreakPointHit())
       {
-        __asm int 3;
+        TRIGGER_BREAKPOINT;
       }
+
       if (!Parse(line.c_str()))
         break;
     }
@@ -251,11 +184,9 @@ bool cPreProcessor::Process(const char* strFile)
 
     m_FileInfoStack.pop();
     SetFileMacro(m_FileInfoStack.top().m_strFile.c_str());
-    if (m_pBreakPoint)
-    {
-      m_pBreakPoint->CheckFile(m_FileInfoStack.top().m_strFile.c_str());
-    }
+    SetBreakPointFile();
 
+    // This loop is necessary to clean up stack after pragma once
     while (m_ConditionStack.size() > nConditions)
     {
       LOG("ConditionStack has too much entries! (top: %d, depth: %d)", IsOutputAllowed(), m_ConditionStack.size());
@@ -334,7 +265,6 @@ void cPreProcessor::Include(const char* strFile)
   m_bInclude = false;
   if (!strPath.empty())
   {
-    std::cout << strPath << std::endl;
     Process(strPath.c_str());
   }
   else
@@ -373,7 +303,12 @@ void cPreProcessor::LogMacros()
 {
   for (tMacroMap::iterator it = m_MacroMap.begin(); it != m_MacroMap.end(); ++it)
   {
-    LOG("Macro: '%s', Params: %d", it->first.c_str(), it->second->GetMacroText().size());
+    LOG(
+      "Macro: '%s', Params: %d, Tokens: %d", 
+      it->first.c_str(),
+      it->second->GetParamCount(),
+      it->second->GetMacroText().size()
+    );
   }
 }
 
@@ -497,6 +432,26 @@ void cPreProcessor::HandleExpression(tToken& oToken)
   }
 }
 
+void cPreProcessor::MakeMacroFromPath(std::string& strPath)
+{
+  for(std::string::iterator it = strPath.begin(); it != strPath.end(); ++it)
+  {
+    switch(*it)
+    {
+      case '.':
+      case ' ':
+      case '/':
+      case '\\':
+      case '(':
+      case ')':
+      case ':':
+        *it = '_';
+        break;
+    }
+  }
+  std::transform(strPath.begin(), strPath.end(), strPath.begin(), ::toupper);
+}
+
 void cPreProcessor::ProcessPragma(cPragmaHandler* pPragmaHandler)
 {
   LOG("Pragma: %d", pPragmaHandler->GetPragma());
@@ -513,14 +468,7 @@ void cPreProcessor::ProcessPragma(cPragmaHandler* pPragmaHandler)
       {
         std::string strFile = m_FileInfoStack.top().m_strFile.c_str();
         LOG("Pragma once: %s", strFile.c_str());
-        std::replace(strFile.begin(),strFile.end(), '.', '_');
-        std::replace(strFile.begin(),strFile.end(), ' ', '_');
-        std::replace(strFile.begin(),strFile.end(), '/', '_');
-        std::replace(strFile.begin(),strFile.end(), '\\', '_');
-        std::replace(strFile.begin(),strFile.end(), '(', '_');
-        std::replace(strFile.begin(),strFile.end(), ')', '_');
-        std::replace(strFile.begin(),strFile.end(), ':', '_');
-        std::transform(strFile.begin(), strFile.end(), strFile.begin(), ::toupper);
+        MakeMacroFromPath(strFile);
         LOG("Generated Macro: %s", strFile.c_str());
         if (IsDefined(strFile.c_str()))
         {
@@ -584,8 +532,8 @@ bool cPreProcessor::HandleToken(tToken& oToken)
   }
   if (m_pMacroResolver)
   {
-    // if it is a simple macro, process the current macro
-    // after resolve
+    // if it is a simple macro which doesn't expand another macro, 
+    // process the current macro after resolve
     if (!m_pMacroResolver->IsReady())
     {
       ResolveMacro(oToken);
@@ -603,6 +551,7 @@ bool cPreProcessor::HandleToken(tToken& oToken)
       LOG("Continue processing token");
     }
   }
+
   if (m_pExpression)
   {
     HandleExpression(oToken);
@@ -724,12 +673,6 @@ bool cPreProcessor::HandleToken(tToken& oToken)
     }
     break;
 
-    case TOKEN_TEXT:
-    {
-      OutputCode(oToken.m_strName);
-    }
-    break;
-
     case TOKEN_LABEL:
     {
       if (m_bStringify)
@@ -757,10 +700,8 @@ bool cPreProcessor::HandleToken(tToken& oToken)
     }
     break;
 
+    case TOKEN_TEXT:
     case TOKEN_LITERAL:
-      OutputCode(oToken.m_strName);
-      break;
-
     case TOKEN_WHITESPACE:
       OutputCode(oToken.m_strName);
       break;

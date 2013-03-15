@@ -58,7 +58,7 @@ bool cTestPreprocessor::Test(tTestData* pTestData)
   InitTest(pTestData);
   for (int i = 0; pTestData->m_strCode[i] != NULL; i++)
   {
-    TEST_LOG("Code: \"%s\"", pTestData->m_strCode[i]);
+    LOG("Code: \"%s\"", pTestData->m_strCode[i]);
     switch (pTestData->m_strCode[i][0])
     {
       case '>':
@@ -76,7 +76,7 @@ bool cTestPreprocessor::Test(tTestData* pTestData)
   HandleCode('\n');
   if (pTestData->m_nExpectedTokens != IGNORE_TOKEN_COUNT && pTestData->m_nExpectedTokens != GetTokenCount())
   {
-    TEST_LOG("Expected tokens: %d, tokens found: %d", pTestData->m_nExpectedTokens, GetTokenCount());
+    LOG("Expected tokens: %d, tokens found: %d", pTestData->m_nExpectedTokens, GetTokenCount());
     SetResult(false);
   }
   return GetResult();

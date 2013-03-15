@@ -1,14 +1,16 @@
 #ifndef PREPROCESSOR_H
 #define PREPROCESSOR_H
 
+#include <vector>
+#include <map>
+#include <stack>
+#include "breakpoint.h"
 #include "pp_tokenizer.h"
 #include "preprocessormacro.h"
 #include "macroresolver.h"
 #include "ppexpression.h"
 #include "pragmahandler.h"
-#include <vector>
-#include <map>
-#include <stack>
+#include "nestinglevel.h"
 
 class ICodeHandler
 {
@@ -17,35 +19,6 @@ public:
   virtual void HandleCode(const char* strCode) = 0;
 };
 
-class cNestingLevel
-{
-public:
-  enum eNestingLevelType
-  {
-    NLTYPE_NONE,
-    NLTYPE_IF,
-    NLTYPE_ELSE,
-    NLTYPE_INCLUDE,
-  };
-
-public:
-  cNestingLevel(
-    eNestingLevelType eType = NLTYPE_NONE, 
-    bool bOutputAllowed = true,
-    bool bOutputAllowedBefore = true);
-  cNestingLevel(const cNestingLevel& NestingLevel);
-  ~cNestingLevel();
-
-  bool IsOutputAllowed();
-  eNestingLevelType GetType();
-  void DoElse();
-
-private:
-  bool m_bOutputAllowed;
-  bool m_bNeverAllowed;
-  bool m_bWasTrue;
-  eNestingLevelType m_eType;
-};
 
 struct tFileInfo
 {
@@ -63,21 +36,6 @@ struct tFileInfo
   , m_iLine(iLine)
   {
   }
-};
-
-class cBreakPoint
-{
-public:
-  cBreakPoint(const char* strFile, int nLine);
-  ~cBreakPoint();
-
-  bool CheckFile(const char* strFile);
-  bool CheckLine(int nLine);
-
-private:
-  std::string m_strFile;
-  int m_nLine;
-  bool m_bFileHit;
 };
 
 typedef std::vector<std::string> tIncludeList;
@@ -135,6 +93,10 @@ protected:
   bool IsOutputAllowed();
   void SetLineMacro(int iLine);
   void SetFileMacro(const char* strFile);
+  void MakeMacroFromPath(std::string& strPath);
+
+  void SetBreakPointFile();
+  bool IsBreakPointHit();
 
 private:
   cPPTokenizer m_Tokenizer;

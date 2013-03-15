@@ -1,8 +1,5 @@
 #include "stdafx.h"
 #include "testsuite.h"
-#include "preprocessormacro.h"
-#include "macroresolver.h"
-#include "ppexpression.h"
 #include "preprocessor.h"
 
 
@@ -69,12 +66,9 @@ int main(int argc, char* argv[])
   pp.Define("_MSC_VER", 1400);
   pp.Parse("#define __pragma(x)");
 
-#ifdef _DEBUG
   cBreakPoint BreakPoint("C:/Program Files (x86)/Microsoft Visual Studio 8/VC/include/crtdefs.h", 713);
   pp.SetBreakPoint(&BreakPoint);
-#endif
 
-  //pp.Process("C:/Program Files (x86)/Microsoft Visual Studio 8/VC/include/sal.h");
   //pp.Process("parser_test.cpp");
   //pp.LogMacros();
   cTestSuite::GetTestSuite()->RunTests();
