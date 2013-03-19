@@ -350,8 +350,6 @@ cPreprocessorMacro* cPreProcessor::GetMacro(const char* strMacro)
   tMacroMap::const_iterator it = m_MacroMap.find(strMacro);
   if (it != m_MacroMap.end())
   {
-    if (IsOutputAllowed())
-      m_pStats->UseDefine(strMacro, m_FileInfoStack.top());
     return it->second;
   }
   LOG("Macro '%s' not found!", strMacro);
@@ -414,6 +412,7 @@ void cPreProcessor::ResolveMacro(tToken& oToken)
     m_pMacroResolver = NULL;
     if (IsOutputAllowed())
     {
+      m_pStats->UseDefine(pMacroResolver->GetMacro()->GetName(), m_FileInfoStack.top());
       pMacroResolver->ExpandMacro(this);
       LOG("Macro expanded");
     }

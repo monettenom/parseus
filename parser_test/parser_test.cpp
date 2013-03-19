@@ -100,7 +100,7 @@ int main(int argc, char* argv[])
   pp.SetBreakPoint(&BreakPoint);
   pp.SetPreprocessorStatistics(&Stats);
 
-  pp.Process("parser_test.cpp");
+  //pp.Process("parser_test.cpp");
   //pp.LogMacros();
-  //cTestSuite::GetTestSuite()->RunTests();
+  cTestSuite::GetTestSuite()->RunTests();
 }
