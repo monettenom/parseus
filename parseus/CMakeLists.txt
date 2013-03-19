@@ -18,6 +18,8 @@ set(
   pragmahandler.cpp
   nestinglevel.h
   nestinglevel.cpp
+  fileinfo.h
+  preprocessorstatistics.h
   preprocessor.h
   preprocessor.cpp
 )

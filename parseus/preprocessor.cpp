@@ -21,14 +21,17 @@ cPreProcessor::cPreProcessor(ICodeHandler* pCodeHandler)
 , m_pLineMacro(NULL)
 , m_pFileMacro(NULL)
 , m_pBreakPoint(NULL)
+, m_pStats(NULL)
 {
   LOG("");
   m_Tokenizer.SetTokenHandler(this);
+  SetPreprocessorStatistics(NULL);
   Reset();
 }
 
 cPreProcessor::~cPreProcessor()
 {
+  m_pStats = NULL;
   delete m_pLineMacro;
   m_pLineMacro = NULL;
   delete m_pFileMacro;
@@ -56,7 +59,7 @@ void cPreProcessor::Reset()
   while(!m_FileInfoStack.empty())
     m_FileInfoStack.pop();
   m_ConditionStack.push(cNestingLevel(cNestingLevel::NLTYPE_NONE, true, true));
-  m_FileInfoStack.push(tFileInfo("",1));
+  m_FileInfoStack.push(cFileInfo("",1));
   m_MacroMap.clear();
   m_pLineMacro = NULL;
   m_pFileMacro = NULL;
@@ -138,7 +141,7 @@ void cPreProcessor::SetBreakPointFile()
 {
   if (m_pBreakPoint)
   {
-    m_pBreakPoint->CheckFile(m_FileInfoStack.top().m_strFile.c_str());
+    m_pBreakPoint->CheckFile(m_FileInfoStack.top().GetFile());
   }
 }
 
@@ -147,7 +150,7 @@ bool cPreProcessor::IsBreakPointHit()
   return
     m_pBreakPoint &&
     IsOutputAllowed() &&
-    m_pBreakPoint->CheckLine(m_FileInfoStack.top().m_iLine);
+    m_pBreakPoint->CheckLine(m_FileInfoStack.top().GetLine());
 }
 
 bool cPreProcessor::Process(const char* strFile)
@@ -157,19 +160,19 @@ bool cPreProcessor::Process(const char* strFile)
   
   if (input.is_open())
   {
-    int nConditions = m_ConditionStack.size();
+    unsigned int nConditions = m_ConditionStack.size();
     LOG("ConditionStack before include! (top: %d, detph: %d)", IsOutputAllowed(), m_ConditionStack.size());
 
-    m_FileInfoStack.push(tFileInfo(strFile, 1));
-    SetFileMacro(m_FileInfoStack.top().m_strFile.c_str());
+    m_FileInfoStack.push(cFileInfo(strFile, 0));
+    SetFileMacro(m_FileInfoStack.top().GetFile());
 
     SetBreakPointFile();
 
     while (input.good())
     {
       getline (input, line);
-      LOG("%s:%d", m_FileInfoStack.top().m_strFile.c_str(), m_FileInfoStack.top().m_iLine);
-      
+      LOG("%s:%d", m_FileInfoStack.top().GetFile(), m_FileInfoStack.top().GetLine());
+
       if (IsBreakPointHit())
       {
         TRIGGER_BREAKPOINT;
@@ -183,7 +186,7 @@ bool cPreProcessor::Process(const char* strFile)
     input.close();
 
     m_FileInfoStack.pop();
-    SetFileMacro(m_FileInfoStack.top().m_strFile.c_str());
+    SetFileMacro(m_FileInfoStack.top().GetFile());
     SetBreakPointFile();
 
     // This loop is necessary to clean up stack after pragma once
@@ -203,9 +206,9 @@ bool cPreProcessor::Process(const char* strFile)
 
 bool cPreProcessor::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkipComments)
 {
-  SetLineMacro(m_FileInfoStack.top().m_iLine);
+  SetLineMacro(m_FileInfoStack.top().GetLine());
   bool bResult = m_Tokenizer.Parse(strLine, bSkipWhiteSpaces, bSkipComments);
-  m_FileInfoStack.top().m_iLine++;
+  m_FileInfoStack.top().IncLine();
   return bResult;
 }
 
@@ -265,6 +268,7 @@ void cPreProcessor::Include(const char* strFile)
   m_bInclude = false;
   if (!strPath.empty())
   {
+    m_pStats->AddInclude(strPath.c_str(), m_FileInfoStack.top());
     Process(strPath.c_str());
   }
   else
@@ -278,6 +282,7 @@ cPreprocessorMacro* cPreProcessor::InsertMacro(const char* strMacro, int nToken,
   if (IsDefined(strMacro))
     Undef(strMacro);
   LOG("Defining macro %s, type: %d, text: %s", strMacro, nToken, (strText != NULL) ? strText : "NULL");
+  m_pStats->AddDefine(strMacro, m_FileInfoStack.top());
   cPreprocessorMacro* pMacro = new cPreprocessorMacro;
   pMacro->HandleToken(tToken(TOKEN_LABEL, strMacro));
   if (strText != NULL)
@@ -344,7 +349,11 @@ cPreprocessorMacro* cPreProcessor::GetMacro(const char* strMacro)
 {
   tMacroMap::const_iterator it = m_MacroMap.find(strMacro);
   if (it != m_MacroMap.end())
+  {
+    if (IsOutputAllowed())
+      m_pStats->UseDefine(strMacro, m_FileInfoStack.top());
     return it->second;
+  }
   LOG("Macro '%s' not found!", strMacro);
   return NULL;
 }
@@ -465,23 +474,23 @@ void cPreProcessor::ProcessPragma(cPragmaHandler* pPragmaHandler)
   switch (pPragmaHandler->GetPragma())
   {
     case PP_PRAGMA_ONCE:
+    {
+      std::string strFile = m_FileInfoStack.top().GetFile();
+      LOG("Pragma once: %s", strFile.c_str());
+      MakeMacroFromPath(strFile);
+      LOG("Generated Macro: %s", strFile.c_str());
+      if (IsDefined(strFile.c_str()))
       {
-        std::string strFile = m_FileInfoStack.top().m_strFile.c_str();
-        LOG("Pragma once: %s", strFile.c_str());
-        MakeMacroFromPath(strFile);
-        LOG("Generated Macro: %s", strFile.c_str());
-        if (IsDefined(strFile.c_str()))
-        {
-          LOG("Already exists. Stop parsing this file!");
-          m_Tokenizer.Stop();
-        }
-        else
-        {
-          LOG("Not defined. Continue.");
-          Define(strFile.c_str());
-        }
+        LOG("Already exists. Stop parsing this file!");
+        m_Tokenizer.Stop();
       }
-      break;
+      else
+      {
+        LOG("Not defined. Continue.");
+        Define(strFile.c_str());
+      }
+    }
+    break;
     default:
       LOG("Pragma not implemented (%d)!", pPragmaHandler->GetPragma());
       break;
@@ -509,7 +518,7 @@ void cPreProcessor::OutputCode(const char* strCode)
   if (IsOutputAllowed())
   {
     LOG("OutputCode: '%s'", strCode);
-    m_pCodeHandler->HandleCode(strCode);
+    m_strLine << strCode;
   }
 }
 
@@ -518,8 +527,45 @@ void cPreProcessor::OutputCode(char cCode)
   if (IsOutputAllowed())
   {
     LOG("OutputCode: '%c'", cCode);
-    m_pCodeHandler->HandleCode(cCode);
+    if (cCode == '\n')
+    {
+      if (m_FileInfoStack.top().GetLine() > 0)
+      {
+        m_pCodeHandler->HandleCode(m_strLine.str().c_str(), m_FileInfoStack.top());
+      }
+      m_strLine.str(std::string());
+    }
+    else
+    {
+      m_strLine << cCode;
+    }
   }
+}
+
+bool cPreProcessor::HandleMacroResolver(tToken& oToken)
+{
+  if (!m_pMacroResolver)
+    return true;
+
+  // if it is a simple macro which doesn't expand another macro, 
+  // process the current macro after resolve
+  if (!m_pMacroResolver->IsReady())
+  {
+    ResolveMacro(oToken);
+    return false;
+  }
+  else
+  {
+    LOG("Process simple Token");
+    ResolveMacro(oToken);
+    if (m_pMacroResolver)
+    {
+      HandleToken(oToken);
+      return false;
+    }
+    LOG("Continue processing token");
+  }
+  return true;
 }
 
 bool cPreProcessor::HandleToken(tToken& oToken)
@@ -530,27 +576,9 @@ bool cPreProcessor::HandleToken(tToken& oToken)
     HandleMacro(oToken);
     return true;
   }
-  if (m_pMacroResolver)
-  {
-    // if it is a simple macro which doesn't expand another macro, 
-    // process the current macro after resolve
-    if (!m_pMacroResolver->IsReady())
-    {
-      ResolveMacro(oToken);
-      return true;
-    }
-    else
-    {
-      LOG("Process simple Token");
-      ResolveMacro(oToken);
-      if (m_pMacroResolver)
-      {
-        HandleToken(oToken);
-        return true;
-      }
-      LOG("Continue processing token");
-    }
-  }
+
+  if (!HandleMacroResolver(oToken))
+    return true;
 
   if (m_pExpression)
   {
@@ -707,7 +735,7 @@ bool cPreProcessor::HandleToken(tToken& oToken)
       break;
 
     case TOKEN_NEWLINE:
-      m_pCodeHandler->HandleCode('\n');
+      OutputCode('\n');
       break;
   }
   return false;
@@ -717,3 +745,13 @@ void cPreProcessor::SetBreakPoint(cBreakPoint* pBreakPoint)
 {
   m_pBreakPoint = pBreakPoint;
 }
+
+void cPreProcessor::SetPreprocessorStatistics(IPreProcessorStatistics* pStats)
+{
+  static cPreProcessorStatisticsDummy s_DummyStats;
+  if (pStats != NULL)
+    m_pStats = pStats;
+  else
+    m_pStats = &s_DummyStats;
+}
+

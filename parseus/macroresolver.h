@@ -13,6 +13,7 @@ public:
   bool HandleToken(tToken& oToken);
   bool IsReady();
   bool ExpandMacro(ITokenHandler* pHandler);
+  cPreprocessorMacro* GetMacro(){return m_pMacro;}
 
 protected:
   void FinishParam();

@@ -11,38 +11,20 @@
 #include "ppexpression.h"
 #include "pragmahandler.h"
 #include "nestinglevel.h"
+#include "fileinfo.h"
+#include "preprocessorstatistics.h"
 
 class ICodeHandler
 {
 public:
-  virtual void HandleCode(char strCode) = 0;
-  virtual void HandleCode(const char* strCode) = 0;
-};
-
-
-struct tFileInfo
-{
-  std::string m_strFile;
-  int m_iLine;
-
-  tFileInfo()
-  : m_strFile()
-  , m_iLine(0)
-  {
-  }
-
-  tFileInfo(std::string strFile, int iLine)
-  : m_strFile(strFile)
-  , m_iLine(iLine)
-  {
-  }
+  virtual void HandleCode(const char* strLine, const cFileInfo& FileInfo) = 0;
 };
 
 typedef std::vector<std::string> tIncludeList;
 typedef std::map<std::string, cPreprocessorMacro*> tMacroMap;
 typedef std::pair<std::string, cPreprocessorMacro*> tMacroMapEntry;
 typedef std::stack<cNestingLevel> tConditionStack;
-typedef std::stack<tFileInfo> tFileInfoStack;
+typedef std::stack<cFileInfo> tFileInfoStack;
 
 class cPreProcessor: public ITokenHandler, IMacroMap
 {
@@ -74,8 +56,10 @@ public:
   int GetDepth(){return m_ConditionStack.size();}
   void Reset();
 
-  void LogMacros();
   void SetBreakPoint(cBreakPoint* pBreakPoint);
+  void SetPreprocessorStatistics(IPreProcessorStatistics* pStats);
+
+  void LogMacros();
 
 protected:
   void OutputCode(char cCode);
@@ -83,6 +67,7 @@ protected:
   bool FindInclude(tIncludeList& vIncludes, const char* strFile, std::string& strPath);
   bool FileExists(const char* strFile);
   void HandleMacro(tToken& oToken);
+  bool HandleMacroResolver(tToken& oToken);
   void ResolveMacro(tToken& oToken);
   void HandleExpression(tToken& oToken);
   void HandlePragma(tToken& oToken);
@@ -123,6 +108,9 @@ private:
   cPreprocessorMacro* m_pFileMacro;
 
   cBreakPoint* m_pBreakPoint;
+  IPreProcessorStatistics* m_pStats;
+
+  std::stringstream m_strLine;
 };
 
 #endif // PREPROCESSOR_H

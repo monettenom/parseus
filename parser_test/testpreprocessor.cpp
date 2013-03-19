@@ -18,26 +18,13 @@ cTestPreprocessor::~cTestPreprocessor()
 {
 }
 
-void cTestPreprocessor::HandleCode(char strCode)
+void cTestPreprocessor::HandleCode(const char* strLine, const cFileInfo& FileInfo)
 {
-  if (strCode == '\n')
+  if (strLine[0] != '\0')
   {
-    if (m_strLine.str().length() > 0)
-    {
-      m_Tokenizer.Parse(m_strLine.str().c_str());
-      std::cout << "CPP-Code: " << m_strLine.str().c_str() << std::endl;
-      m_strLine.str(std::string());
-    }
+    m_Tokenizer.Parse(strLine);
+    std::cout << "CPP-Code: " << strLine << std::endl;
   }
-  else
-  {
-    m_strLine << strCode; 
-  }
-}
-
-void cTestPreprocessor::HandleCode(const char* strCode)
-{
-  m_strLine << strCode;
 }
 
 int cTestPreprocessor::CreateInclude(const char** strLines, int iStartIndex)
@@ -73,7 +60,7 @@ bool cTestPreprocessor::Test(tTestData* pTestData)
     }
     LOG("Depth: %d", m_Preprocessor.GetDepth());
   }
-  HandleCode('\n');
+  m_Preprocessor.Parse("\n");
   if (pTestData->m_nExpectedTokens != IGNORE_TOKEN_COUNT && pTestData->m_nExpectedTokens != GetTokenCount())
   {
     LOG("Expected tokens: %d, tokens found: %d", pTestData->m_nExpectedTokens, GetTokenCount());

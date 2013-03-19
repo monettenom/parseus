@@ -12,8 +12,7 @@ public:
   cTestPreprocessor();
   ~cTestPreprocessor();
 
-  void HandleCode(char strCode);
-  void HandleCode(const char* strCode);
+  void HandleCode(const char* strLine, const cFileInfo& FileInfo);
   bool Test(tTestData* pTestData);
 
 protected:

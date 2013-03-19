@@ -440,6 +440,20 @@ tTestData sPreprocessorTestData[] =
     {TOKEN_OPERATOR, -1},
     {CPP_OP_COMMAND_END}
   },
+  // 35 multiline define using block comments
+  {
+    {
+      "#define TEST(x,y) (x /*",
+      "*/ == y)",
+      "TEST(1, 2);",
+      NULL
+    },
+    6,
+    true,
+    {"", "1", "", "2", "", ""},
+    {TOKEN_OPERATOR, TOKEN_LITERAL, TOKEN_OPERATOR, TOKEN_LITERAL, TOKEN_OPERATOR, TOKEN_OPERATOR, -1},
+    {CPP_OP_BRACKET_OPEN, CPP_OP_UNKNOWN, CPP_OP_EQUAL, CPP_OP_UNKNOWN, CPP_OP_BRACKET_CLOSE, CPP_OP_COMMAND_END}
+  },
   // stopping entry
   {
     {NULL}, -1, false, {""}, {-1}, {-1}

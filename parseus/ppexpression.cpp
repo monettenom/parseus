@@ -19,13 +19,13 @@ void cPreprocessorExpression::ResolveMacro(tToken& oToken)
 {
   if (!m_pMacroResolver->HandleToken(oToken))
   {
-    //std::cout << "Error while resolving macro!" << std::endl;
+    LOG("Error while resolving macro!");
     delete m_pMacroResolver;
     m_pMacroResolver = NULL;
   }
   else if (m_pMacroResolver->IsReady())
   {
-    //std::cout << "Macro resolved." << std::endl;
+    LOG("Macro resolved.");
     cMacroResolver* pMacroResolver = m_pMacroResolver;
     m_pMacroResolver = NULL;
     pMacroResolver->ExpandMacro(this);
@@ -59,7 +59,7 @@ void cPreprocessorExpression::PushToken(tToken& oToken)
       oToken.m_Token != TOKEN_LABEL && 
       !oToken.IsToken(TOKEN_OPERATOR, PP_OP_BRACKET_OPEN))
   {
-    //printf("Token expected!\n");
+    LOG("ERROR: Token expected!\n");
     m_eState = eError;
   }
   else
