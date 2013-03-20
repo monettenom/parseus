@@ -2,11 +2,24 @@
 include_directories(
   "${PROJECT_SOURCE_DIR}"
   "${PROJECT_SOURCE_DIR}/parseus"
+  "${PROJECT_SOURCE_DIR}/cpp_preprocessor"
 )
 
 link_directories("${PARSEUS_BINARY_DIR}/parseus")
+link_directories("${PARSEUS_BINARY_DIR}/cpp_preprocessor")
 
-add_executable(parser_test
+set(
+  TEST_FILES
+  cpptestdata.inc
+  pastestdata.inc
+  phptestdata.inc
+  pptestdata.inc
+  ppexptestdata.inc
+  preproctestdata.inc
+)
+
+add_executable(
+  parser_test
   parser_test.cpp
   cpp_tokenprinter.h
   cpp_tokenprinter.cpp
@@ -23,29 +36,30 @@ add_executable(parser_test
   testtokenhandler.h
   testtokenhandler.cpp
 
-  cpptestdata.inc
   testcpptokenhandler.cpp
   testcpptokenhandler.h
 
-  pastestdata.inc
   testpastokenhandler.cpp
   testpastokenhandler.h
 
-  phptestdata.inc
   testphptokenhandler.cpp
   testphptokenhandler.h
 
-  pptestdata.inc
   testpptokenhandler.cpp
   testpptokenhandler.h
   
-  ppexptestdata.inc
   testppexpression.cpp
   testppexpression.h
   
-  preproctestdata.inc
   testpreprocessor.cpp
-  testpreprocessor.h  
+  testpreprocessor.h
+  ${TEST_FILES}
 )
 
-target_link_libraries (parser_test parseus) 
+source_group(
+  "Test Files"
+  FILES 
+  ${TEST_FILES}
+)
+
+target_link_libraries(parser_test parseus cpp_preprocessor) 
