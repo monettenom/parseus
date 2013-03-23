@@ -1,7 +1,4 @@
 #include "stdafx.h"
-#include "tokenizer.h"
-#include "pp_tokenizer.h"
-#include "preprocessormacro.h"
 
 cPreprocessorMacro::cPreprocessorMacro()
 : m_eState(eInit)
@@ -131,7 +128,7 @@ bool cPreprocessorMacro::HandleToken(tToken& oToken)
 
 void cPreprocessorMacro::Debug()
 {
-  //std::cout << "Name: " << m_strName << std::endl;
+  LOG("Name: %s", m_strName);
 
   for (tTokenList::const_iterator it = m_vParamList.begin();
     it != m_vParamList.end(); ++it)
@@ -139,21 +136,21 @@ void cPreprocessorMacro::Debug()
     switch (it->m_Token)
     {
       case TOKEN_LABEL:
-        //std::cout << "Param: " << *it->m_strName << std::endl;
+        LOG("Param: %s", *it->m_strName);
         break;
       case TOKEN_OPERATOR:
         switch (it->m_Type)
         {
           case PP_OP_ELLIPSIS:
-            //std::cout << "Operator: Ellipsis" << std::endl;
+            LOG("Operator: Ellipsis");
             break;
           default:
-            //std::cout << "Operator: " << it->m_Type << std::endl;
+            LOG("Operator: %d");
             break;
         }
         break;
     }
   }
 
-  //std::cout << "Macro text tokens: " << m_vMacroText.size() << std::endl;
+  LOG("Macro text tokens: %d", m_vMacroText.size());
 }

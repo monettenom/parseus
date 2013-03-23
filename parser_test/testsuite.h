@@ -1,8 +1,6 @@
 #ifndef TESTSUITE_H
 #define TESTSUITE_H
 
-#include <vector>
-
 #define REGISTER_TEST(TestClass) cTestClassRegistrator<TestClass> _registrator;
 
 template<class T>

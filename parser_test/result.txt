@@ -423,126 +423,156 @@ Running test case 65
 84: |#if A ? (B ? 11 : 22) : 33|
 Tokens checked: 305
 Running test case 1
-1: |ok|
-CPP-Code: ok
+1: | |
+CPP-Code:  
+2: |4;|
+CPP-Code: 4;
+3: |2;|
+CPP-Code: 2;
 Running test case 2
-2: |ok|
-CPP-Code: ok
-Running test case 3
-3: |ok|
-CPP-Code: ok
-Running test case 4
 4: |ok|
 CPP-Code: ok
-Running test case 5
+Running test case 3
 5: |ok|
 CPP-Code: ok
-Running test case 6
+Running test case 4
 6: |ok|
 CPP-Code: ok
-Running test case 7
+Running test case 5
 7: |ok|
 CPP-Code: ok
-Running test case 8
-8: | |
-CPP-Code:  
+Running test case 6
+8: |ok|
+CPP-Code: ok
+Running test case 7
 9: |ok|
 CPP-Code: ok
-Running test case 9
+Running test case 8
 10: |ok|
 CPP-Code: ok
-Running test case 10
-11: |ok|
-CPP-Code: ok
-Running test case 11
+Running test case 9
+11: | |
+CPP-Code:  
 12: |ok|
 CPP-Code: ok
-Running test case 12
+Running test case 10
 13: |ok|
 CPP-Code: ok
-Running test case 13
-14: | |
-CPP-Code:  
+Running test case 11
+14: |ok|
+CPP-Code: ok
+Running test case 12
 15: |ok|
 CPP-Code: ok
-16: | |
-CPP-Code:  
+Running test case 13
+16: |ok|
+CPP-Code: ok
 Running test case 14
 17: | |
 CPP-Code:  
 18: |ok|
 CPP-Code: ok
+19: | |
+CPP-Code:  
 Running test case 15
-19: |ok;|
-CPP-Code: ok;
+20: | |
+CPP-Code:  
+21: |ok|
+CPP-Code: ok
 Running test case 16
-20: |ok;|
+22: |ok;|
 CPP-Code: ok;
 Running test case 17
-21: |"ok";|
-CPP-Code: "ok";
+23: |ok;|
+CPP-Code: ok;
 Running test case 18
-22: |ok|
-CPP-Code: ok
+24: |"ok";|
+CPP-Code: "ok";
 Running test case 19
-23: |ok|
+25: | |
+CPP-Code:  
+26: |ok|
 CPP-Code: ok
 Running test case 20
-24: |ok|
+27: | |
+CPP-Code:  
+28: |ok|
 CPP-Code: ok
-25: |ok|
-CPP-Code: ok
+29: | |
+CPP-Code:  
 Running test case 21
-26: |1;|
-CPP-Code: 1;
-27: |2;|
-CPP-Code: 2;
-Running test case 22
-28: |"test.h";|
-CPP-Code: "test.h";
-Running test case 23
-29: |3;|
-expected: "4", result: "3" index 0
-CPP-Code: 3;
-30: |2;|
-CPP-Code: 2;
-Running test case 24
-31: |ok;|
-CPP-Code: ok;
-Running test case 25
+30: | |
+CPP-Code:  
+31: | |
+CPP-Code:  
 32: |ok|
 CPP-Code: ok
-Running test case 26
 33: |ok|
 CPP-Code: ok
+Running test case 22
+34: |1;|
+CPP-Code: 1;
+35: |2;|
+CPP-Code: 2;
+Running test case 23
+36: | |
+CPP-Code:  
+37: |"test.h";|
+CPP-Code: "test.h";
+Running test case 24
+38: | |
+CPP-Code:  
+39: |4;|
+CPP-Code: 4;
+40: |2;|
+CPP-Code: 2;
+Running test case 25
+41: | |
+CPP-Code:  
+42: |ok;|
+CPP-Code: ok;
+43: | |
+CPP-Code:  
+Running test case 26
+44: |ok|
+CPP-Code: ok
 Running test case 27
+45: |ok|
+CPP-Code: ok
 Running test case 28
-34: |ok;|
-CPP-Code: ok;
 Running test case 29
-35: |ok;|
+46: | |
+CPP-Code:  
+47: |ok;|
 CPP-Code: ok;
+48: | |
+CPP-Code:  
 Running test case 30
-36: |ok;|
-CPP-Code: ok;
-37: |ok;|
+49: |ok;|
 CPP-Code: ok;
 Running test case 31
-38: |ok;|
+50: |ok;|
 CPP-Code: ok;
-39: |ok;|
+51: |ok;|
 CPP-Code: ok;
 Running test case 32
-40: |ok;|
+52: |ok;|
+CPP-Code: ok;
+53: |ok;|
 CPP-Code: ok;
 Running test case 33
-41: |((2));|
-CPP-Code: ((2));
+54: | |
+CPP-Code:  
+55: |ok;|
+CPP-Code: ok;
 Running test case 34
-42: |;|
-CPP-Code: ;
+56: |((2));|
+CPP-Code: ((2));
 Running test case 35
-43: |(1 == 2);|
+57: |;|
+CPP-Code: ;
+Running test case 36
+58: |(1 == 2);|
 CPP-Code: (1 == 2);
-Tokens checked: 65
-1 of 185 tests failed!
+Tokens checked: 69
+0 of 186 tests failed!

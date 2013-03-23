@@ -11,7 +11,6 @@ cNestingLevel::cNestingLevel(
 , m_bWasTrue(false)
 , m_bNeverAllowed(!bOutputAllowedBefore)
 {
-
 }
 
 cNestingLevel::cNestingLevel(const cNestingLevel& NestingLevel)

@@ -1,9 +1,6 @@
 #ifndef TESTPREPROCESSOR_H
 #define TESTPREPROCESSOR_H
 
-#include "testtokenhandler.h"
-#include "preprocessor.h"
-
 class cTestPreprocessor
 : public cTestTokenHandler
 , public ICodeHandler

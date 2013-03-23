@@ -1,8 +1,6 @@
 #ifndef TESTPASTOKENHANDLER_H
 #define TESTPASTOKENHANDLER_H
 
-#include "testtokenhandler.h"
-
 class cTestPasTokenHandler: public cTestTokenHandler
 {
 public:

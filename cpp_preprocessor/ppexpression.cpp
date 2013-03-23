@@ -1,8 +1,6 @@
 #include "stdafx.h"
-#include "pp_tokenizer.h"
-#include "ppexpression.h"
 
-cPreprocessorExpression::cPreprocessorExpression(IMacroMap* pMacroMap)
+cPreprocessorExpression::cPreprocessorExpression(IMacroHandler* pMacroMap)
 : m_eState(eInit)
 , m_pMacroMap(pMacroMap)
 , m_pMacroResolver(NULL)

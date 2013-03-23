@@ -1,8 +1,4 @@
 #include "stdafx.h"
-#include "tokenizer.h"
-#include "pp_tokenizer.h"
-#include "preprocessormacro.h"
-#include "macroresolver.h"
 
 cMacroResolver::cMacroResolver(cPreprocessorMacro* pMacro)
 : m_pMacro(pMacro)

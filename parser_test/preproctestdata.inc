@@ -1,6 +1,25 @@
 
 tTestData sPreprocessorTestData[] =
 {
+  // 23 __LINE__ in include
+  {
+    {
+      ">test.h",
+      "#ifndef TEST_H",
+      "#define TEST_H",
+      "//comment",
+      "__LINE__;",
+      "#endif",
+      "<",
+      "#include \"test.h\"",
+      "__LINE__;",
+      "-test.h",
+      NULL
+    }, 4, true, 
+    {"4", "", "2", ""}, 
+    {TOKEN_LITERAL, TOKEN_OPERATOR, TOKEN_LITERAL, TOKEN_OPERATOR, -1}, 
+    {CPP_OP_UNKNOWN, CPP_OP_COMMAND_END, CPP_OP_UNKNOWN, CPP_OP_COMMAND_END}
+  },
   // 1 ifdef
   {
     {

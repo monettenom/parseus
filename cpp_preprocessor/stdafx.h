@@ -6,15 +6,7 @@
 #ifndef STDAFX_H
 #define STDAFX_H
 
-#include <iostream>
-#include <vector>
-#include <string>
-#include <sstream>
-#include <map>
-#include <fstream>
-
-#include "logging.h"
-#include "stringmem.h"
-#include "tokenizer.h"
+#include "parseus.h"
+#include "preprocessorlib.h"
 
 #endif //STDAFX_H

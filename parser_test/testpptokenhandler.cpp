@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "pp_tokenizer.h"
 #include "testpptokenhandler.h"
 #include "pptestdata.inc"
 

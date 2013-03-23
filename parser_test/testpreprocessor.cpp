@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "preprocessorlib.h"
 #include "testpreprocessor.h"
 #include "preproctestdata.inc"
 

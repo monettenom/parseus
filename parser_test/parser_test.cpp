@@ -1,6 +1,5 @@
 #include "stdafx.h"
-#include "testsuite.h"
-#include "preprocessor.h"
+#include "preprocessorlib.h"
 
 class cPreProcessorStatisticsHandler
 : public IPreProcessorStatistics

@@ -1,20 +1,11 @@
 #ifndef PPEXPRESSION_H
 #define PPEXPRESSION_H
 
-#include "preprocessormacro.h"
-#include "macroresolver.h"
-
-class IMacroMap
+class cPreprocessorExpression
+: public ITokenHandler
 {
 public:
-  virtual bool IsDefined(const char* strMacro) = 0;
-  virtual cPreprocessorMacro* GetMacro(const char* strMacro) = 0;
-};
-
-class cPreprocessorExpression: public ITokenHandler
-{
-public:
-  cPreprocessorExpression(IMacroMap* pMacroMap);
+  cPreprocessorExpression(IMacroHandler* pMacroMap);
   ~cPreprocessorExpression();
 
   bool HandleToken(tToken& oToken);
@@ -63,7 +54,7 @@ private:
   } m_eState;
 
   tTokenList m_Expression;
-  IMacroMap* m_pMacroMap;
+  IMacroHandler* m_pMacroMap;
   cMacroResolver* m_pMacroResolver;
   tTokenList::const_iterator m_itCursor;
   bool m_bExpectLabel;

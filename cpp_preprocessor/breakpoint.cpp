@@ -6,7 +6,6 @@ cBreakPoint::cBreakPoint(const char* strFile, int nLine)
 : m_strFile(strFile)
 , m_nLine(nLine)
 {
-
 }
 
 cBreakPoint::~cBreakPoint()

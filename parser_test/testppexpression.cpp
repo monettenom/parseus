@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "preprocessorlib.h"
 #include "testppexpression.h"
 #include "ppexptestdata.inc"
 

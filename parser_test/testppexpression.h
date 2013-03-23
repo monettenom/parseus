@@ -1,13 +1,10 @@
 #ifndef TESTPPEXPRESSION_H
 #define TESTPPEXPRESSION_H
 
-#include "testtokenhandler.h"
-#include "ppexpression.h"
-
 typedef std::map<std::string, cPreprocessorMacro*> tMacroMap;
 typedef std::pair<std::string, cPreprocessorMacro*> tMacroMapEntry;
 
-class cTestPPExpression: public cTestTokenHandler, IMacroMap
+class cTestPPExpression: public cTestTokenHandler, IMacroHandler
 {
 public:
   cTestPPExpression();

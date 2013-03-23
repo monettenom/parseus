@@ -9,19 +9,23 @@ set(CPP_PREPROCESSOR_FILES
   stdafx.cpp
   pp_tokenizer.h
   pp_tokenizer.cpp  
+  
   breakpoint.h
-  breakpoint.cpp
-  preprocessormacro.h
-  preprocessormacro.cpp
-  macroresolver.h
-  macroresolver.cpp
-  ppexpression.h
-  ppexpression.cpp
-  pragmahandler.h
-  pragmahandler.cpp
+  breakpoint.cpp  
   nestinglevel.h
-  nestinglevel.cpp
+  nestinglevel.cpp  
   fileinfo.h
+  ppinterfaces.h
+  preprocessormacro.h
+  preprocessormacro.cpp  
+  macrohandler.h
+  macrohandler.cpp
+  macroresolver.h
+  macroresolver.cpp  
+  ppexpression.h
+  ppexpression.cpp  
+  pragmahandler.h
+  pragmahandler.cpp  
   preprocessorstatistics.h
   preprocessor.h
   preprocessor.cpp
@@ -30,5 +34,6 @@ set(CPP_PREPROCESSOR_FILES
 add_library(cpp_preprocessor
   ${CPP_PREPROCESSOR_FILES}
 )
+
 
 

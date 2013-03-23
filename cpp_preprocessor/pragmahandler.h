@@ -1,8 +1,6 @@
 #ifndef PRAGMA_HANDLER_H
 #define PRAGMA_HANDLER_H
 
-#include "tokenizer.h"
-
 enum ePragmaTokenType
 {
   PP_PRAGMA_NULL,

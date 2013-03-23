@@ -1,8 +1,6 @@
 #ifndef TESTPPTOKENHANDLER_H
 #define TESTPPTOKENHANDLER_H
 
-#include "testtokenhandler.h"
-
 class cTestPPTokenHandler: public cTestTokenHandler
 {
 public:

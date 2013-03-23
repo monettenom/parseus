@@ -15,7 +15,6 @@
 #include <iostream>
 
 #include "parseus.h"
-#include "logging.h"
 #include "testsuite.h"
 #include "testtokenhandler.h"
 

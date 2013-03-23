@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "pp_tokenizer.h"
 
 static const char* g_OperatorString[PP_OP_MAX] = {
   "PP_OP_UNKNOWN"

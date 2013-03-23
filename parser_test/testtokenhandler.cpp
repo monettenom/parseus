@@ -1,7 +1,4 @@
-#pragma once
-
 #include "stdafx.h"
-#include "testtokenhandler.h"
 
 cTestTokenHandler::cTestTokenHandler(cTokenizer* pTokenizer, tTestData pTestData[])
 : m_bResult(false)

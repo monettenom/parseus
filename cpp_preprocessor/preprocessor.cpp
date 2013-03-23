@@ -1,9 +1,4 @@
 #include "stdafx.h"
-#include <algorithm>
-#include "preprocessormacro.h"
-#include "macroresolver.h"
-#include "ppexpression.h"
-#include "preprocessor.h"
 
 // cPreProcessor
 
@@ -21,17 +16,14 @@ cPreProcessor::cPreProcessor(ICodeHandler* pCodeHandler)
 , m_pLineMacro(NULL)
 , m_pFileMacro(NULL)
 , m_pBreakPoint(NULL)
-, m_pStats(NULL)
 {
   LOG("");
   m_Tokenizer.SetTokenHandler(this);
-  SetPreprocessorStatistics(NULL);
   Reset();
 }
 
 cPreProcessor::~cPreProcessor()
 {
-  m_pStats = NULL;
   delete m_pLineMacro;
   m_pLineMacro = NULL;
   delete m_pFileMacro;
@@ -41,6 +33,7 @@ cPreProcessor::~cPreProcessor()
 void cPreProcessor::Reset()
 {
   LOG("");
+  cMacroHandler::Reset();
   m_bPreProc = false;
   m_bInclude = false;
   m_bUndefNext = false;
@@ -56,11 +49,7 @@ void cPreProcessor::Reset()
   m_pPragmaHandler = NULL;
   while(!m_ConditionStack.empty())
     m_ConditionStack.pop();
-  while(!m_FileInfoStack.empty())
-    m_FileInfoStack.pop();
   m_ConditionStack.push(cNestingLevel(cNestingLevel::NLTYPE_NONE, true, true));
-  m_FileInfoStack.push(cFileInfo("",1));
-  m_MacroMap.clear();
   m_pLineMacro = NULL;
   m_pFileMacro = NULL;
   SetLineMacro(0);
@@ -141,7 +130,7 @@ void cPreProcessor::SetBreakPointFile()
 {
   if (m_pBreakPoint)
   {
-    m_pBreakPoint->CheckFile(m_FileInfoStack.top().GetFile());
+    m_pBreakPoint->CheckFile(GetCurrentFile());
   }
 }
 
@@ -150,7 +139,7 @@ bool cPreProcessor::IsBreakPointHit()
   return
     m_pBreakPoint &&
     IsOutputAllowed() &&
-    m_pBreakPoint->CheckLine(m_FileInfoStack.top().GetLine());
+    m_pBreakPoint->CheckLine(GetCurrentLine());
 }
 
 bool cPreProcessor::Process(const char* strFile)
@@ -163,15 +152,15 @@ bool cPreProcessor::Process(const char* strFile)
     unsigned int nConditions = m_ConditionStack.size();
     LOG("ConditionStack before include! (top: %d, detph: %d)", IsOutputAllowed(), m_ConditionStack.size());
 
-    m_FileInfoStack.push(cFileInfo(strFile, 0));
-    SetFileMacro(m_FileInfoStack.top().GetFile());
+    PushFileInfo(strFile, 1);
+    SetFileMacro(GetCurrentFile());
 
     SetBreakPointFile();
 
     while (input.good())
     {
       getline (input, line);
-      LOG("%s:%d", m_FileInfoStack.top().GetFile(), m_FileInfoStack.top().GetLine());
+      LOG("%s:%d", GetCurrentFile(), GetCurrentLine());
 
       if (IsBreakPointHit())
       {
@@ -185,8 +174,8 @@ bool cPreProcessor::Process(const char* strFile)
     HandleToken(tToken(TOKEN_NEWLINE, PP_OP_UNKNOWN));
     input.close();
 
-    m_FileInfoStack.pop();
-    SetFileMacro(m_FileInfoStack.top().GetFile());
+    PopFileInfo();
+    SetFileMacro(GetCurrentFile());
     SetBreakPointFile();
 
     // This loop is necessary to clean up stack after pragma once
@@ -206,9 +195,9 @@ bool cPreProcessor::Process(const char* strFile)
 
 bool cPreProcessor::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkipComments)
 {
-  SetLineMacro(m_FileInfoStack.top().GetLine());
+  SetLineMacro(GetCurrentLine());
   bool bResult = m_Tokenizer.Parse(strLine, bSkipWhiteSpaces, bSkipComments);
-  m_FileInfoStack.top().IncLine();
+  IncCurrentLine();
   return bResult;
 }
 
@@ -268,62 +257,12 @@ void cPreProcessor::Include(const char* strFile)
   m_bInclude = false;
   if (!strPath.empty())
   {
-    m_pStats->AddInclude(strPath.c_str(), m_FileInfoStack.top());
+    Stats()->AddInclude(strPath.c_str(), GetFileInfo());
     Process(strPath.c_str());
   }
   else
   {
     LOG("File not found: %s\n", strName.c_str());
-  }
-}
-
-cPreprocessorMacro* cPreProcessor::InsertMacro(const char* strMacro, int nToken, const char* strText)
-{
-  if (IsDefined(strMacro))
-    Undef(strMacro);
-  LOG("Defining macro %s, type: %d, text: %s", strMacro, nToken, (strText != NULL) ? strText : "NULL");
-  m_pStats->AddDefine(strMacro, m_FileInfoStack.top());
-  cPreprocessorMacro* pMacro = new cPreprocessorMacro;
-  pMacro->HandleToken(tToken(TOKEN_LABEL, strMacro));
-  if (strText != NULL)
-    pMacro->HandleToken(tToken(nToken, strText));
-  pMacro->HandleToken(tToken(TOKEN_OPERATOR, PP_OP_PREPROC_END));
-  m_MacroMap.insert(std::pair<std::string,cPreprocessorMacro*>(strMacro, pMacro));
-  return pMacro;
-}
-
-cPreprocessorMacro* cPreProcessor::Define(const char* strMacro, int nValue)
-{
-  std::stringstream stream;
-  stream << nValue;
-  return InsertMacro(strMacro, TOKEN_LITERAL, stream.str().c_str());
-}
-
-cPreprocessorMacro* cPreProcessor::Define(const char* strMacro, const char* strText)
-{
-  return InsertMacro(strMacro, TOKEN_STRING, strText);
-}
-
-void cPreProcessor::LogMacros()
-{
-  for (tMacroMap::iterator it = m_MacroMap.begin(); it != m_MacroMap.end(); ++it)
-  {
-    LOG(
-      "Macro: '%s', Params: %d, Tokens: %d", 
-      it->first.c_str(),
-      it->second->GetParamCount(),
-      it->second->GetMacroText().size()
-    );
-  }
-}
-
-void cPreProcessor::Undef(const char* strMacro)
-{
-  cPreprocessorMacro* pMacro = GetMacro(strMacro);
-  if (pMacro)
-  {
-    delete pMacro;
-    m_MacroMap.erase(strMacro);
   }
 }
 
@@ -338,22 +277,6 @@ void cPreProcessor::Endif()
   {
     LOG("Error: Nesting Error. Endif without if");
   }
-}
-
-bool cPreProcessor::IsDefined(const char* strMacro)
-{
-  return GetMacro(strMacro) != NULL;
-}
-
-cPreprocessorMacro* cPreProcessor::GetMacro(const char* strMacro)
-{
-  tMacroMap::const_iterator it = m_MacroMap.find(strMacro);
-  if (it != m_MacroMap.end())
-  {
-    return it->second;
-  }
-  LOG("Macro '%s' not found!", strMacro);
-  return NULL;
 }
 
 bool cPreProcessor::IsOutputAllowed()
@@ -373,21 +296,7 @@ void cPreProcessor::HandleMacro(tToken& oToken)
   }
   else if (m_pCurrentMacro->IsReady())
   {
-    if (IsOutputAllowed())
-    {
-      tMacroMap::iterator it = m_MacroMap.find(m_pCurrentMacro->GetName());
-      if (it == m_MacroMap.end())
-      {
-        LOG("Insert Macro: %s", m_pCurrentMacro->GetName());
-        m_MacroMap.insert(tMacroMapEntry(m_pCurrentMacro->GetName(), m_pCurrentMacro));
-      }
-      else
-      {
-        delete m_pCurrentMacro;
-        LOG("Error: already defined");
-      }
-    }
-    else
+    if (!IsOutputAllowed() || InsertMacro(m_pCurrentMacro) == NULL)
     {
       delete m_pCurrentMacro;
       LOG("Ignored.");
@@ -412,7 +321,7 @@ void cPreProcessor::ResolveMacro(tToken& oToken)
     m_pMacroResolver = NULL;
     if (IsOutputAllowed())
     {
-      m_pStats->UseDefine(pMacroResolver->GetMacro()->GetName(), m_FileInfoStack.top());
+      Stats()->UseDefine(pMacroResolver->GetMacro()->GetName(), GetFileInfo());
       pMacroResolver->ExpandMacro(this);
       LOG("Macro expanded");
     }
@@ -474,7 +383,7 @@ void cPreProcessor::ProcessPragma(cPragmaHandler* pPragmaHandler)
   {
     case PP_PRAGMA_ONCE:
     {
-      std::string strFile = m_FileInfoStack.top().GetFile();
+      std::string strFile = GetCurrentFile();
       LOG("Pragma once: %s", strFile.c_str());
       MakeMacroFromPath(strFile);
       LOG("Generated Macro: %s", strFile.c_str());
@@ -528,9 +437,9 @@ void cPreProcessor::OutputCode(char cCode)
     LOG("OutputCode: '%c'", cCode);
     if (cCode == '\n')
     {
-      if (m_FileInfoStack.top().GetLine() > 0)
+      if (GetCurrentLine() > 0)
       {
-        m_pCodeHandler->HandleCode(m_strLine.str().c_str(), m_FileInfoStack.top());
+        m_pCodeHandler->HandleCode(m_strLine.str().c_str(), GetFileInfo());
       }
       m_strLine.str(std::string());
     }
@@ -745,12 +654,4 @@ void cPreProcessor::SetBreakPoint(cBreakPoint* pBreakPoint)
   m_pBreakPoint = pBreakPoint;
 }
 
-void cPreProcessor::SetPreprocessorStatistics(IPreProcessorStatistics* pStats)
-{
-  static cPreProcessorStatisticsDummy s_DummyStats;
-  if (pStats != NULL)
-    m_pStats = pStats;
-  else
-    m_pStats = &s_DummyStats;
-}
 

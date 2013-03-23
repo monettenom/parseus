@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "testsuite.h"
 
 cTestSuite::cTestSuite()
 {

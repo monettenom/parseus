@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "pragmahandler.h"
 
 static tKeyword g_KeyWords[] = {
   {"", PP_PRAGMA_NULL},

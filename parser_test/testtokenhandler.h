@@ -1,9 +1,6 @@
 #ifndef TESTTOKENHANDLER_H
 #define TESTTOKENHANDLER_H
 
-#include "tokenizer.h"
-#include "testsuite.h"
-
 const int IGNORE_TOKEN_COUNT = -2;
 
 struct tTestData
@@ -16,7 +13,9 @@ struct tTestData
   const int m_pTokenTypeList[128];
 };
 
-class cTestTokenHandler: public ITokenHandler, public ITester
+class cTestTokenHandler
+: public ITokenHandler
+, public ITester
 {
 public:
   cTestTokenHandler(cTokenizer* pTokenizer, tTestData pTestData[]);
