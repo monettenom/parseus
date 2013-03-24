@@ -29,6 +29,8 @@ set(CPP_PREPROCESSOR_FILES
   preprocessorstatistics.h
   preprocessor.h
   preprocessor.cpp
+  
+  preprocessorlib.h
 )
 
 add_library(cpp_preprocessor

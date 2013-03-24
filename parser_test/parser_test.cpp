@@ -85,7 +85,7 @@ int main(int argc, char* argv[])
   pp.AddStandardInclude("C:/Program Files (x86)/Microsoft Visual Studio 8/VC/include");
   pp.AddProjectInclude("C:/Projekte/parseus");
   pp.AddProjectInclude("C:/Projekte/parseus/parseus");
-  
+
   pp.Define("__cplusplus", "199711L");
   pp.Define("_WIN32");
   pp.Define("_WIN64");

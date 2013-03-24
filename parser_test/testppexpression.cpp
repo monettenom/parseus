@@ -120,3 +120,15 @@ bool cTestPPExpression::HandleToken(tToken& oToken)
   return true;
 }
 
+const cFileInfo& cTestPPExpression::GetFileInfo()
+{
+  static cFileInfo FileInfo;
+  return FileInfo;
+}
+
+IPreProcessorStatistics* cTestPPExpression::Stats()
+{
+  static cPreProcessorStatisticsDummy Dummy;
+  return &Dummy;
+}
+

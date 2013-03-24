@@ -22,6 +22,9 @@ public:
   cPreprocessorMacro* Define(const char* strMacro, const char* strText = NULL);
   cPreprocessorMacro* Define(const char* strMacro, int nValue);
 
+  const cFileInfo& GetFileInfo();
+  IPreProcessorStatistics* Stats();
+
   void LogMacros();
 
 protected:
@@ -34,9 +37,6 @@ protected:
   void IncCurrentLine();
   void PushFileInfo(const char* strFile, int iLine);
   void PopFileInfo();
-  const cFileInfo& GetFileInfo();
-
-  IPreProcessorStatistics* Stats();
 
 private:
   IPreProcessorStatistics* m_pStats;

@@ -37,8 +37,6 @@ public:
 
   void SetBreakPoint(cBreakPoint* pBreakPoint);
 
-  void LogMacros();
-
 protected:
   void OutputCode(char cCode);
   void OutputCode(const char* strCode);

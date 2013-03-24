@@ -63,8 +63,10 @@ cPreprocessorMacro* cMacroHandler::InsertMacro(cPreprocessorMacro* pMacro)
   tMacroMap::iterator it = m_MacroMap.find(pMacro->GetName());
   if (it == m_MacroMap.end())
   {
-    LOG("Insert Macro: %s", pMacro->GetName());
-    m_MacroMap.insert(tMacroMapEntry(pMacro->GetName(), pMacro));
+    const char* strMacro = pMacro->GetName();
+    LOG("Define macro %s", strMacro);
+    Stats()->AddDefine(strMacro, GetFileInfo());
+    m_MacroMap.insert(tMacroMapEntry(strMacro, pMacro));
     return pMacro;
   }
   else
@@ -78,7 +80,7 @@ cPreprocessorMacro* cMacroHandler::InsertMacro(const char* strMacro, int nToken,
 {
   Undef(strMacro);
 
-  LOG("Defining macro %s, type: %d, text: %s", strMacro, nToken, (strText != NULL) ? strText : "NULL");
+  LOG("Define macro %s, type: %d, text: %s", strMacro, nToken, (strText != NULL) ? strText : "NULL");
   Stats()->AddDefine(strMacro, GetFileInfo());
   cPreprocessorMacro* pMacro = new cPreprocessorMacro;
   pMacro->HandleToken(tToken(TOKEN_LABEL, strMacro));

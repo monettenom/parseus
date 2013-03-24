@@ -5,7 +5,7 @@ class cPreprocessorExpression
 : public ITokenHandler
 {
 public:
-  cPreprocessorExpression(IMacroHandler* pMacroMap);
+  cPreprocessorExpression(IMacroHandler* pMacroHandler);
   ~cPreprocessorExpression();
 
   bool HandleToken(tToken& oToken);
@@ -54,7 +54,7 @@ private:
   } m_eState;
 
   tTokenList m_Expression;
-  IMacroHandler* m_pMacroMap;
+  IMacroHandler* m_pMacroHandler;
   cMacroResolver* m_pMacroResolver;
   tTokenList::const_iterator m_itCursor;
   bool m_bExpectLabel;

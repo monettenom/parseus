@@ -1,8 +1,8 @@
 #include "stdafx.h"
 
-cPreprocessorExpression::cPreprocessorExpression(IMacroHandler* pMacroMap)
+cPreprocessorExpression::cPreprocessorExpression(IMacroHandler* pMacroHandler)
 : m_eState(eInit)
-, m_pMacroMap(pMacroMap)
+, m_pMacroHandler(pMacroHandler)
 , m_pMacroResolver(NULL)
 , m_bExpectLabel(false)
 , m_bNegateResult(false)
@@ -27,6 +27,7 @@ void cPreprocessorExpression::ResolveMacro(tToken& oToken)
     cMacroResolver* pMacroResolver = m_pMacroResolver;
     m_pMacroResolver = NULL;
     pMacroResolver->ExpandMacro(this);
+    m_pMacroHandler->Stats()->UseDefine(pMacroResolver->GetMacro()->GetName(), m_pMacroHandler->GetFileInfo());
     delete pMacroResolver;
   }
 }
@@ -120,10 +121,10 @@ bool cPreprocessorExpression::HandleToken(tToken& oToken)
         m_bExpectLabel = false;
         PushToken(oToken);
       }
-      else if(m_pMacroMap->IsDefined(oToken.m_strName))
+      else if(m_pMacroHandler->IsDefined(oToken.m_strName))
       {
         LOG("MACRO: %s", oToken.m_strName);
-        m_pMacroResolver = new cMacroResolver(m_pMacroMap->GetMacro(oToken.m_strName));
+        m_pMacroResolver = new cMacroResolver(m_pMacroHandler->GetMacro(oToken.m_strName));
       }
       else
       {
@@ -305,7 +306,7 @@ int cPreprocessorExpression::GetParenthesizedMacroExpression()
   }
   else if (m_itCursor->IsToken(TOKEN_LABEL))
   {
-    iResult = m_pMacroMap->IsDefined(m_itCursor->m_strName) ? 1 : 0;
+    iResult = m_pMacroHandler->IsDefined(m_itCursor->m_strName) ? 1 : 0;
     m_itCursor++;
   }
   else

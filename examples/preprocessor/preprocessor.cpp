@@ -1,8 +1,5 @@
-#include <string>
-#include <iostream>
-#include <sstream>
 #include "parseus.h"
-#include "preprocessor.h"
+#include "preprocessorlib.h"
 
 class cCPPCode
 : public ICodeHandler

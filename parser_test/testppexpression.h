@@ -4,7 +4,9 @@
 typedef std::map<std::string, cPreprocessorMacro*> tMacroMap;
 typedef std::pair<std::string, cPreprocessorMacro*> tMacroMapEntry;
 
-class cTestPPExpression: public cTestTokenHandler, IMacroHandler
+class cTestPPExpression
+: public cTestTokenHandler
+, IMacroHandler
 {
 public:
   cTestPPExpression();
@@ -17,6 +19,9 @@ protected:
   bool IsDefined(const char* strMacro);
   cPreprocessorMacro* GetMacro(const char* strMacro);
   void HandleMacro(tToken& oToken);
+
+  const cFileInfo& GetFileInfo();
+  IPreProcessorStatistics* Stats();
 
 private:
   cPreprocessorExpression* m_pExpression;
