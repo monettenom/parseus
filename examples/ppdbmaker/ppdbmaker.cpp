@@ -4,8 +4,11 @@
 
 // cPreProcessorStatisticsHandler
 
+typedef std::map<std::string, std::string> tStringMap;
+
 class cPreProcessorStatisticsHandler
 : public IPreProcessorStatistics
+, public ICodeHandler
 {
 public:
   cPreProcessorStatisticsHandler();
@@ -14,64 +17,187 @@ public:
   void AddInclude(const char* strInclude, const cFileInfo& FileInfo);
   void AddDefine(const char* strDefine, const cFileInfo& FileInfo);
   void UseDefine(const char* strDefine, const cFileInfo& FileInfo);
+  void AddSource(const char* strCode, const cFileInfo& FileInfo);
+
+  void HandleCode(const char* strLine, const cFileInfo& FileInfo);
+
+protected:
+  void CreateDatabase();
+  void InsertRow(const char* strTable, const tSQLiteDBRow& dbRow);
+  const char* GetFileID(const char* strFile);
+  void SaveFileMap();
+
+  const char* GetMacroID(const char* strMacro);
+  void SaveMacroMap();
+
+private:
+  cSQLiteDB* m_pDB;
+  tStringMap m_FileMap;
+  tStringMap m_MacroMap;
 };
 
 cPreProcessorStatisticsHandler::cPreProcessorStatisticsHandler()
+: m_pDB(NULL)
 {
-
+  CreateDatabase();
 }
 
 cPreProcessorStatisticsHandler::~cPreProcessorStatisticsHandler()
 {
+  if (m_pDB != NULL)
+  {
+    SaveFileMap();
+    SaveMacroMap();
+    m_pDB->Close();
+    delete m_pDB;
+    m_pDB = NULL;
+  }
+}
 
+const char* cPreProcessorStatisticsHandler::GetFileID(const char* strFile)
+{
+  std::string File(strFile);
+
+  tStringMap::const_iterator it = m_FileMap.find(File);
+  if (it != m_FileMap.end())
+  {
+    return it->second.c_str();
+  }
+  else
+  {
+    std::stringstream FileId;
+    FileId << m_FileMap.size();
+    m_FileMap[File] = FileId.str();
+    return GetFileID(strFile);
+  }
+}
+
+void cPreProcessorStatisticsHandler::SaveFileMap()
+{
+  for (tStringMap::const_iterator it = m_FileMap.begin(); it != m_FileMap.end(); ++it)
+  {
+    tSQLiteDBRow dbRow;
+    dbRow["FileID"] = it->second;
+    dbRow["Name"] = it->first;
+
+    m_pDB->InsertRow("Files", dbRow);
+  }
+}
+
+const char* cPreProcessorStatisticsHandler::GetMacroID(const char* strMacro)
+{
+  std::string Macro(strMacro);
+
+  tStringMap::const_iterator it = m_MacroMap.find(Macro);
+  if (it != m_MacroMap.end())
+  {
+    return it->second.c_str();
+  }
+  else
+  {
+    std::stringstream FileId;
+    FileId << m_MacroMap.size();
+    m_MacroMap[Macro] = FileId.str();
+    return GetMacroID(strMacro);
+  }
+}
+
+void cPreProcessorStatisticsHandler::SaveMacroMap()
+{
+  for (tStringMap::const_iterator it = m_MacroMap.begin(); it != m_MacroMap.end(); ++it)
+  {
+    tSQLiteDBRow dbRow;
+    dbRow["MacroID"] = it->second;
+    dbRow["Name"] = it->first;
+
+    m_pDB->InsertRow("Macros", dbRow);
+  }
 }
 
 void cPreProcessorStatisticsHandler::AddInclude(const char* strInclude, const cFileInfo& FileInfo)
 {
-  std::cout << "ADD INCLUDE: " << strInclude << " (" << FileInfo.GetFile() << ":" << FileInfo.GetLine() << ")" << std::endl;
+  std::stringstream strLine;
+  strLine << FileInfo.GetLine();
+
+  tSQLiteDBRow dbRow;
+  dbRow["Include"] = GetFileID(strInclude);
+  dbRow["File"] = GetFileID(FileInfo.GetFile());
+  dbRow["Line"] = strLine.str();
+
+  m_pDB->InsertRow("Includes", dbRow);
 }
 
 void cPreProcessorStatisticsHandler::AddDefine(const char* strDefine, const cFileInfo& FileInfo)
 {
-  std::cout << "ADD DEFINE: " << strDefine << " (" << FileInfo.GetFile() << ":" << FileInfo.GetLine() << ")" << std::endl;
+  std::stringstream strLine;
+  strLine << FileInfo.GetLine();
+
+  tSQLiteDBRow dbRow;
+  dbRow["Macro"] = GetMacroID(strDefine);
+  dbRow["File"] = GetFileID(FileInfo.GetFile());
+  dbRow["Line"] = strLine.str();
+
+  m_pDB->InsertRow("MacroDefine", dbRow);
 }
 
 void cPreProcessorStatisticsHandler::UseDefine(const char* strDefine, const cFileInfo& FileInfo)
 {
-  std::cout << "USE DEFINE: " << strDefine << " (" << FileInfo.GetFile() << ":" << FileInfo.GetLine() << ")" << std::endl;
+  std::stringstream strLine;
+  strLine << FileInfo.GetLine();
+
+  tSQLiteDBRow dbRow;
+  dbRow["Macro"] = GetMacroID(strDefine);
+  dbRow["File"] = GetFileID(FileInfo.GetFile());
+  dbRow["Line"] = strLine.str();
+
+  m_pDB->InsertRow("MacroUsage", dbRow);
 }
 
-// cCPPCode
-
-class cCPPCode
-: public ICodeHandler
+void cPreProcessorStatisticsHandler::AddSource(const char* strCode, const cFileInfo& FileInfo)
 {
-public:
-  cCPPCode();
-  ~cCPPCode();
+  std::string strCodeLine(strCode);
 
-  void HandleCode(const char* strLine, const cFileInfo& FileInfo);
-};
+  strCodeLine.erase (std::remove (strCodeLine.begin(), strCodeLine.end(), ' '), strCodeLine.end());
+  if (strCodeLine.size() > 0)
+  {
+    std::stringstream strLine;
+    strLine << FileInfo.GetLine();
 
-cCPPCode::cCPPCode()
-{
+    tSQLiteDBRow dbRow;
+    dbRow["Code"] = strCode;
+    dbRow["File"] = GetFileID(FileInfo.GetFile());
+    dbRow["Line"] = strLine.str();
+
+    m_pDB->InsertRow("Source", dbRow);
+  }
 }
 
-cCPPCode::~cCPPCode()
+void cPreProcessorStatisticsHandler::CreateDatabase()
 {
+  m_pDB = new cSQLiteDB("C:/Projekte/parseus/examples/ppdbmaker/test.sqlite");
+  if (m_pDB->Open(true))
+  {
+    m_pDB->CreateTable("Files", "CREATE TABLE Files (FileID INTEGER, Name VARCHAR(250));");
+    m_pDB->CreateTable("Macros", "CREATE TABLE Macros (MacroID INTEGER, Name VARCHAR(250));");
+    m_pDB->CreateTable("Includes", "CREATE TABLE Includes (Include INTEGER, File INTEGER, Line INTEGER);", true);
+    m_pDB->CreateTable("MacroDefine", "CREATE TABLE MacroDefine (Macro Integer, File INTEGER, Line INTEGER);", true);
+    m_pDB->CreateTable("MacroUsage", "CREATE TABLE MacroUsage (Macro Integer, File INTEGER, Line INTEGER);", true);
+    m_pDB->CreateTable("Source", "CREATE TABLE Source (Code VARCHAR(1024), File INTEGER, Line INTEGER);", true);
+  }
 }
 
-void cCPPCode::HandleCode(const char* strLine, const cFileInfo& FileInfo)
+void cPreProcessorStatisticsHandler::HandleCode(const char* strLine, const cFileInfo& FileInfo)
 {
   std::cout << strLine << std::endl;
 }
 
-void Test()
+int main(int argc, char* argv[])
 {
-  cCPPCode cppCode;
   cPreProcessorStatisticsHandler Stats;
 
-  cPreProcessor pp(&cppCode);
+  cPreProcessor pp(&Stats);
+  pp.SetPreprocessorStatistics(&Stats);
+
   pp.AddStandardInclude("C:/Program Files (x86)/Microsoft Visual Studio 8/VC/include");
   pp.AddProjectInclude("C:/Projekte/parseus/parseus");
   pp.AddProjectInclude("C:/Projekte/parseus/cpp_preprocessor");
@@ -86,36 +212,5 @@ void Test()
   pp.Define("_MSC_VER", 1400);
   pp.Parse("#define __pragma(x)");
 
-  pp.Process("preprocessor.cpp");
-}
-
-int main(int argc, char* argv[])
-{
-  cSQLiteDB db("C:/Projekte/parseus/examples/ppdbmaker/test.sqlite");
-
-  if (db.Open(true))
-  {
-    if(db.CreateTable("a", "CREATE TABLE a (b INTEGER, c INTEGER);", true))
-    {
-      tSQLiteDBRow dbRow;
-      dbRow["b"] = "100";
-      dbRow["c"] = "200";
-      db.InsertRow("a", dbRow);
-      dbRow["b"] = "300";
-      dbRow["c"] = "400";
-      db.InsertRow("a", dbRow);
-
-      cSQLiteSelect* pSelect = db.Select("select * from a");
-      tSQLiteDBRow dbResult;
-
-      while (pSelect->Fetch(dbResult))
-      {
-        std::cout << "b: " << dbResult["b"] << std::endl;
-        std::cout << "c: " << dbResult["c"] << std::endl;
-      }
-
-      delete pSelect;
-    }
-  }
-  db.Close();
+  pp.Process("C:/Projekte/parseus/examples/ppdbmaker/ppdbmaker.cpp");
 }

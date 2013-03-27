@@ -8,6 +8,7 @@ public:
   void AddInclude(const char* strInclude, const cFileInfo& FileInfo){};
   void AddDefine(const char* strDefine, const cFileInfo& FileInfo){};
   void UseDefine(const char* strDefine, const cFileInfo& FileInfo){};
+  void AddSource(const char* strLine, const cFileInfo& FileInfo){};
 };
 
 #endif

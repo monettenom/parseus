@@ -13,6 +13,7 @@ public:
   virtual void AddInclude(const char* strInclude, const cFileInfo& FileInfo) = 0;
   virtual void AddDefine(const char* strDefine, const cFileInfo& FileInfo) = 0;
   virtual void UseDefine(const char* strDefine, const cFileInfo& FileInfo) = 0;
+  virtual void AddSource(const char* strCode, const cFileInfo& FileInfo) = 0;
 };
 
 class IMacroHandler

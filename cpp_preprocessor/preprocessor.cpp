@@ -196,6 +196,7 @@ bool cPreProcessor::Process(const char* strFile)
 bool cPreProcessor::Parse(const char* strLine, bool bSkipWhiteSpaces, bool bSkipComments)
 {
   SetLineMacro(GetCurrentLine());
+  Stats()->AddSource(strLine, GetFileInfo());
   bool bResult = m_Tokenizer.Parse(strLine, bSkipWhiteSpaces, bSkipComments);
   IncCurrentLine();
   return bResult;

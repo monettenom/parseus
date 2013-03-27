@@ -1,44 +1,6 @@
 #include "stdafx.h"
 #include "preprocessorlib.h"
 
-class cPreProcessorStatisticsHandler
-: public IPreProcessorStatistics
-{
-public:
-  cPreProcessorStatisticsHandler();
-  ~cPreProcessorStatisticsHandler();
-
-  void AddInclude(const char* strInclude, const cFileInfo& FileInfo);
-  void AddDefine(const char* strDefine, const cFileInfo& FileInfo);
-  void UseDefine(const char* strDefine, const cFileInfo& FileInfo);
-};
-
-cPreProcessorStatisticsHandler::cPreProcessorStatisticsHandler()
-{
-
-}
-
-cPreProcessorStatisticsHandler::~cPreProcessorStatisticsHandler()
-{
-
-}
-
-void cPreProcessorStatisticsHandler::AddInclude(const char* strInclude, const cFileInfo& FileInfo)
-{
-  std::cout << "ADD INCLUDE: " << strInclude << " (" << FileInfo.GetFile() << ":" << FileInfo.GetLine() << ")" << std::endl;
-}
-
-void cPreProcessorStatisticsHandler::AddDefine(const char* strDefine, const cFileInfo& FileInfo)
-{
-  std::cout << "ADD DEFINE: " << strDefine << " (" << FileInfo.GetFile() << ":" << FileInfo.GetLine() << ")" << std::endl;
-}
-
-void cPreProcessorStatisticsHandler::UseDefine(const char* strDefine, const cFileInfo& FileInfo)
-{
-  std::cout << "USE DEFINE: " << strDefine << " (" << FileInfo.GetFile() << ":" << FileInfo.GetLine() << ")" << std::endl;
-}
-
-
 class cCPPCode
 : public cCPPTokenizer
 , public ICodeHandler
@@ -79,8 +41,6 @@ void cCPPCode::HandleCode(const char* strLine, const cFileInfo& FileInfo)
 int main(int argc, char* argv[])
 {
   cCPPCode cppCode;
-  cPreProcessorStatisticsHandler Stats;
-
   cPreProcessor pp(&cppCode);
   pp.AddStandardInclude("C:/Program Files (x86)/Microsoft Visual Studio 8/VC/include");
   pp.AddProjectInclude("C:/Projekte/parseus");
@@ -97,7 +57,6 @@ int main(int argc, char* argv[])
 
   cBreakPoint BreakPoint("C:/Program Files (x86)/Microsoft Visual Studio 8/VC/include/crtdefs.h", 713);
   pp.SetBreakPoint(&BreakPoint);
-  pp.SetPreprocessorStatistics(&Stats);
 
   //pp.Process("parser_test.cpp");
   //pp.LogMacros();

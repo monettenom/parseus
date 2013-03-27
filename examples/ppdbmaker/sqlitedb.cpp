@@ -9,6 +9,7 @@ cSQLiteSelect::cSQLiteSelect(sqlite3_stmt* pStatement)
 
 cSQLiteSelect::~cSQLiteSelect()
 {
+  sqlite3_finalize(m_pStatement);
 }
 
 bool cSQLiteSelect::Fetch(tSQLiteDBRow& dbRow)
@@ -63,6 +64,11 @@ bool cSQLiteDB::Open(bool bCreateIfNotExists)
     Close();
     return false;
   }
+
+  ExecuteSQL("PRAGMA synchronous=OFF");
+  ExecuteSQL("PRAGMA count_changes=OFF");
+  ExecuteSQL("PRAGMA journal_mode=MEMORY");
+  ExecuteSQL("PRAGMA temp_store=MEMORY");
   return true;
 }
 
@@ -97,26 +103,28 @@ bool cSQLiteDB::ExecuteSQL(const char* strSQL)
 
   if (nResult == SQLITE_OK)
   {
-    if (sqlite3_step(pStatement) == SQLITE_DONE)
+    nResult = sqlite3_step(pStatement);
+    if (nResult == SQLITE_DONE)
     {
+      sqlite3_finalize(pStatement);
       return true;
     }
   }
+  sqlite3_finalize(pStatement);
   return false;
 }
 
 bool cSQLiteDB::CreateTable(const char* strTable, const char* strCreationSQL, bool bDropIfExists)
 {
   if (bDropIfExists)
-    if (!DropTable(strTable))
-      return false;
+    DropTable(strTable);
   return ExecuteSQL(strCreationSQL);
 }
 
 bool cSQLiteDB::DropTable(const char* strTable)
 {
   std::stringstream strStream;
-  strStream << "drop table " << strTable << ";";
+  strStream << "DROP TABLE IF EXISTS " << strTable << ";";
   return ExecuteSQL(strStream.str().c_str());
 }
 
