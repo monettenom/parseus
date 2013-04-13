@@ -374,6 +374,7 @@ void cPreProcessor::ProcessPragma(cPragmaHandler* pPragmaHandler)
 {
   LOG("Pragma: %d", pPragmaHandler->GetPragma());
   LOG("ParamCount: %d", pPragmaHandler->GetParams().size());
+
   if (!IsOutputAllowed())
   {
     LOG("Pragma ignored.");

@@ -1,21 +1,25 @@
 #include "stdafx.h"
-#include "preprocessorlib.h"
+#include "parseus.h"
 
 class cCPPCode
-: public cCPPTokenizer
-, public ICodeHandler
+: public ITokenHandler
 {
 public:
   cCPPCode();
   ~cCPPCode();
 
-  void HandleCode(const char* strLine, const cFileInfo& FileInfo);
+  bool HandleToken(tToken& oToken);
+  void HandleError(const char* strError, int iLine);
+  void LogEntry(const char* strLog);
+  int GetTokenCount(){return 0;};
 
 private:
-
+  cLanguageElement* m_pElement;
+  std::vector<cLanguageElement*> m_Elements;
 };
 
 cCPPCode::cCPPCode()
+: m_pElement(NULL)
 {
 }
 
@@ -23,42 +27,88 @@ cCPPCode::~cCPPCode()
 {
 }
 
-void cCPPCode::HandleCode(const char* strLine, const cFileInfo& FileInfo)
+void cCPPCode::HandleError(const char* strError, int iLine)
 {
-  static std::string strLastFile;
+  LOG("%s: %d", strError, iLine);
+}
 
-  if (FileInfo.GetFile() != strLastFile)
+void cCPPCode::LogEntry(const char* strLog)
+{
+  LOG(strLog);
+}
+
+bool cCPPCode::HandleToken(tToken& oToken)
+{
+  if (oToken.m_Token == TOKEN_WHITESPACE)
+    return true;
+
+  if (m_pElement)
   {
-    std::cout << FileInfo.GetFile() << std::endl;
-    strLastFile = FileInfo.GetFile();
+    if (m_pElement->HandleToken(oToken))
+    {
+      return true;
+    }
+    else
+    {
+      m_Elements.push_back(m_pElement);
+      m_pElement = NULL;
+    }
   }
 
-  std::cout << FileInfo.GetLine() << ": " << strLine << std::endl;
+  m_pElement = cTypeSpecification::IsTypeSpecification(oToken);
+  if (m_pElement)
+  {
+    m_pElement->HandleToken(oToken);
+    return true;
+  }
 
-  LOG("OUTPUT: %s", strLine);
+  switch(oToken.m_Token)
+  {
+    case TOKEN_KEYWORD:
+    {
+      switch(oToken.m_Type)
+      {
+        case CPP_KW_TYPEDEF:
+        {
+          m_pElement = new cTypedef;
+        }
+        break;
+      }
+    }
+    break;
+  }
+  // extern
+  // namespace
+  // typedef
+  // class
+  // (const) void, int, bool, char... (types)
+  // enum
+  // struct
+  // class
+  // template
+  // __declspec
+  // inline, __inline, __forceinline
+  // using
+  // explicit
+  return false;
 }
+
+
+
+
+
+
+
+
+
 
 int main(int argc, char* argv[])
 {
   cCPPCode cppCode;
-  cPreProcessor pp(&cppCode);
-  pp.AddStandardInclude("C:/Program Files (x86)/Microsoft Visual Studio 8/VC/include");
-  pp.AddProjectInclude("C:/Projekte/parseus");
-  pp.AddProjectInclude("C:/Projekte/parseus/parseus");
+  cCPPTokenizer Tokenizer;
+  Tokenizer.SetTokenHandler(&cppCode);
 
-  pp.Define("__cplusplus", "199711L");
-  pp.Define("_WIN32");
-  pp.Define("_WIN64");
-  pp.Define("_WINDOWS");
-  pp.Define("NDEBUG");
-  pp.Define("_MBCS");
-  pp.Define("_MSC_VER", 1400);
-  pp.Parse("#define __pragma(x)");
+  Tokenizer.Parse("const signed int a;");
 
-  cBreakPoint BreakPoint("C:/Program Files (x86)/Microsoft Visual Studio 8/VC/include/crtdefs.h", 713);
-  pp.SetBreakPoint(&BreakPoint);
-
-  //pp.Process("parser_test.cpp");
-  //pp.LogMacros();
-  cTestSuite::GetTestSuite()->RunTests();
+  //cTestSuite::GetTestSuite()->RunTests();
 }

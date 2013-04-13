@@ -2,10 +2,12 @@
 include_directories(
   "${PROJECT_SOURCE_DIR}"
   "${PROJECT_SOURCE_DIR}/parseus"
+  "${PROJECT_SOURCE_DIR}/cpp_langtree"
   "${PROJECT_SOURCE_DIR}/cpp_preprocessor"
 )
 
 link_directories("${PARSEUS_BINARY_DIR}/parseus")
+link_directories("${PARSEUS_BINARY_DIR}/cpp_langtree")
 link_directories("${PARSEUS_BINARY_DIR}/cpp_preprocessor")
 
 set(
@@ -62,4 +64,4 @@ source_group(
   ${TEST_FILES}
 )
 
-target_link_libraries(parser_test parseus cpp_preprocessor) 
+target_link_libraries(parser_test parseus cpp_langtree cpp_preprocessor) 

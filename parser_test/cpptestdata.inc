@@ -211,6 +211,15 @@ tTestData sCPPTestData[] =
     {TOKEN_LITERAL, TOKEN_OPERATOR, TOKEN_LITERAL, -1},
     {CPP_OP_UNKNOWN, CPP_OP_ADDITION, CPP_OP_UNKNOWN}
   },  
+  // 1+++2 => 1 ++ + 2
+  {
+    {"1+++2", NULL},
+    4,
+    true,
+    {"1", "", "", "2"},
+    {TOKEN_LITERAL, TOKEN_OPERATOR, TOKEN_OPERATOR, TOKEN_LITERAL, -1},
+    {CPP_OP_UNKNOWN, CPP_OP_INCREMENT, CPP_OP_ADDITION, CPP_OP_UNKNOWN}
+  },
   // empty line
   {
     {"", NULL}, 0, false, {""}, {-1}, {-1}

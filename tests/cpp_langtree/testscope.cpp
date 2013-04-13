@@ -1,0 +1,38 @@
+#include "cppunit.h"
+#include "testscope.h"
+
+
+IMPLEMENT_TEST_SUITE_START(Scope);
+REGISTER_TEST(Test1);
+REGISTER_TEST(Test2);
+IMPLEMENT_TEST_SUITE_END;
+
+IMPLEMENT_SETUP_SUITE(Scope)
+{
+}
+
+IMPLEMENT_TEARDOWN_SUITE(Scope)
+{
+}
+
+IMPLEMENT_SETUP_TEST(Scope)
+{
+}
+
+IMPLEMENT_TEARDOWN_TEST(Scope)
+{
+}
+
+IMPLEMENT_TEST_CASE(Scope, Test1)
+{
+  TEST(1==1);
+  TEST_NULL(NULL);
+  TEST_NOT_NULL((void*)1);
+}
+
+IMPLEMENT_TEST_CASE(Scope, Test2)
+{
+  TEST_EQUALS(1,1);
+  TEST_FAIL("indentionally failed!");
+}
+
