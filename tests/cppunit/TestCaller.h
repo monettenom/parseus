@@ -61,14 +61,14 @@ namespace CppUnit
         m_test();
       }
 
-      void setUp()
+      void setUpTest()
       {
-        m_fixture.get()->setUp();
+        m_fixture.get()->setUpTest();
       }
 
-      void tearDown()
+      void tearDownTest()
       {
-        m_fixture.get()->tearDown();
+        m_fixture.get()->tearDownTest();
       }
 
       std::string toString() const

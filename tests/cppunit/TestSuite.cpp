@@ -6,7 +6,7 @@ namespace CppUnit
   /// Deletes all tests in the suite.
   void TestSuite::deleteContents()
   {
-    for (std::vector<Test *>::iterator it = m_tests.begin ();
+    for (std::vector<TestCase*>::iterator it = m_tests.begin ();
          it != m_tests.end();
          ++it)
       delete *it;
@@ -15,7 +15,7 @@ namespace CppUnit
   /// Runs the tests and collects their result in a TestResult.
   void TestSuite::run(TestResult *result)
   {
-    for (std::vector<Test *>::iterator it = m_tests.begin();
+    for (std::vector<TestCase*>::iterator it = m_tests.begin();
          it != m_tests.end();
          ++it)
     {
@@ -24,8 +24,10 @@ namespace CppUnit
 
       result->startTest(this);
 
-      Test *test = *it;
+      TestCase *test = *it;
+      test->setUpTest();
       test->run();
+      test->tearDownTest();
 
       result->endTest(this);
     }
@@ -36,7 +38,7 @@ namespace CppUnit
   {
     int count = 0;
 
-    for (std::vector<Test *>::iterator it = m_tests.begin ();
+    for (std::vector<TestCase*>::iterator it = m_tests.begin ();
          it != m_tests.end ();
          ++it)
       count += (*it)->countTestCases ();
@@ -57,7 +59,7 @@ namespace CppUnit
   }
 
   /// Adds a test to the suite. 
-  void TestSuite::addTest(Test *test)
+  void TestSuite::addTest(TestCase* test)
   {
     m_tests.push_back(test);
   }

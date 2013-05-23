@@ -1,35 +1,22 @@
 #ifndef SCOPE_H
 #define SCOPE_H
 
-class cScope;
-
-std::vector<cScope*> tScopeList;
-std::map<std::string, cScope*> tNamespaceList;
+typedef std::vector<cScope*> tScopeList;
 
 class cScope
+: public cLanguageElement
 {
 public:
-  cScope();
+  cScope(cScope* pParent = NULL);
   virtual ~cScope();
 
-  bool IsGlobalScope();
-  static cScope* GetGlobalScope();
+  virtual bool IsGlobalScope();
+
+  void AddScope(cScope* pScope);
+  tScopeList& GetChildScopes();
 
 private:
-  cScope* m_ParentScope;
+  tScopeList m_ChildScopes;
 };
-
-class cGlobalScope
-: public cScope
-{
-public:
-  cGlobalScope();
-  ~cGlobalScope();
-
-  bool IsGlobalScope();
-
-};
-
-
 
 #endif // SCOPE_H

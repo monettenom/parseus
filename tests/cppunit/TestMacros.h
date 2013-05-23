@@ -19,10 +19,10 @@ class TEST_SUITE_CLASS(suite_name)\
 #define DECLARE_TEST_CASE(test_name)\
   static void TEST_METHOD(test_name)()
 
-#define DECLARE_SETUP_SUITE void setUpSuite()
-#define DECLARE_TEARDOWN_SUITE void tearDownSuite()
-#define DECLARE_SETUP_TEST void setUpTest()
-#define DECLARE_TEARDOWN_TEST void tearDownTest()
+#define DECLARE_SUITE_SETUP void setUpSuite()
+#define DECLARE_SUITE_TEARDOWN void tearDownSuite()
+#define DECLARE_TEST_SETUP void setUpTest()
+#define DECLARE_TEST_TEARDOWN void tearDownTest()
 
 // macros for implementation
 
@@ -43,12 +43,12 @@ class TEST_SUITE_CLASS(suite_name)\
 
 #define IMPLEMENT_TEST_SUITE_END }
 
-#define REGISTER_TEST(test_name) pSuite->addTest(new TestCaller<cTestScope>(#test_name, &TEST_METHOD(test_name)))
+#define REGISTER_TEST_CASE(suite_name, test_name) pSuite->addTest(new TestCaller<TEST_SUITE_CLASS(suite_name)>(#test_name, &TEST_METHOD(test_name)))
 
-#define IMPLEMENT_SETUP_SUITE(suite_name) void TEST_SUITE_CLASS(suite_name)::setUpSuite()
-#define IMPLEMENT_TEARDOWN_SUITE(suite_name) void TEST_SUITE_CLASS(suite_name)::tearDownSuite()
-#define IMPLEMENT_SETUP_TEST(suite_name) void TEST_SUITE_CLASS(suite_name)::setUpTest()
-#define IMPLEMENT_TEARDOWN_TEST(suite_name) void TEST_SUITE_CLASS(suite_name)::tearDownTest()
+#define IMPLEMENT_SUITE_SETUP(suite_name) void TEST_SUITE_CLASS(suite_name)::setUpSuite()
+#define IMPLEMENT_SUITE_TEARDOWN(suite_name) void TEST_SUITE_CLASS(suite_name)::tearDownSuite()
+#define IMPLEMENT_TEST_SETUP(suite_name) void TEST_SUITE_CLASS(suite_name)::setUpTest()
+#define IMPLEMENT_TEST_TEARDOWN(suite_name) void TEST_SUITE_CLASS(suite_name)::tearDownTest()
 
 #define IMPLEMENT_TEST_CASE(suite_name, test_name) void TEST_SUITE_CLASS(suite_name)::TEST_METHOD(test_name)()
 

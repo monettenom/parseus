@@ -4,9 +4,7 @@
 #include <vector>
 #include <string>
 
-#ifndef CPPUNIT_TEST_H
-#include "Test.h"
-#endif
+#include "TestCase.h"
 
 namespace CppUnit
 {
@@ -40,7 +38,7 @@ namespace CppUnit
       void run(TestResult *result);
       void run(){};
       int countTestCases();
-      void addTest(Test *test);
+      void addTest(TestCase *test);
       std::string getName() const;
       std::string toString() const;
 
@@ -51,7 +49,7 @@ namespace CppUnit
       TestSuite& operator= (const TestSuite& other); 
 
     private:
-      std::vector<Test *> m_tests;
+      std::vector<TestCase*> m_tests;
       const std::string m_name;
   };
 } // namespace CppUnit

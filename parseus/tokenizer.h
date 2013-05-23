@@ -193,7 +193,7 @@ protected:
   // was passed to AddKeywords (xx_KW_UNKNOWN)
   virtual int IsKeyword(const char* strLabel);
 
-private:  
+private:
   tKeywordMap m_Keywords;
   tKeywordMap m_Operators;
 

@@ -13,7 +13,7 @@ int main(int argc, char** argv)
 
   for(std::vector<Test*>::iterator it = tests.begin(); it != tests.end(); ++it)
   {
-    std::cout << "Running " << (*it)->toString() << std::endl;
+    std::cout  << std::endl << "Running " << (*it)->toString();
 
     (*it)->run(&res);
   }

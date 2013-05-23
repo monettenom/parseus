@@ -35,6 +35,28 @@ namespace CppUnit
       assertImplementation (false, notEqualsMessage(expected, actual), lineNumber, fileName); 
   }
 
+  /// Check for a failed equality assertion 
+  void TestCase::assertEquals(
+    void* expected,
+    void* actual,
+    long lineNumber,
+    std::string fileName)
+  {
+    if (expected != actual) 
+      throw Exception ("pointer not equal", lineNumber, fileName);
+  }
+
+  /// Check for a failed equality assertion 
+  void TestCase::assertEquals(
+    std::string expected,
+    std::string actual,
+    long lineNumber,
+    std::string fileName)
+  {
+    if (expected != actual) 
+      throw Exception ("strings not equal", lineNumber, fileName);
+  }
+
   /// Check for a failed equality assertion
   void TestCase::assertEquals(
     double expected,
@@ -76,7 +98,7 @@ namespace CppUnit
   /// Run the test and catch any exceptions that are triggered by it 
   void TestCase::run(TestResult *result)
   {
-    setUpTest();
+    setUpSuite();
 
     try
     {
@@ -97,7 +119,7 @@ namespace CppUnit
       result->addError(this, e);
     }
 
-    tearDownTest();
+    tearDownSuite();
   }
 
   /// A default run method 
@@ -158,7 +180,7 @@ namespace CppUnit
   /// Returns the name of the test case
   std::string TestCase::getName() const
   {
-    return m_name; 
+    return m_name;
   }
 
   /// A hook for fixture set up
@@ -185,7 +207,7 @@ namespace CppUnit
   std::string TestCase::toString() const
   {
     const type_info& thisClass = typeid(*this);
-    return std::string(thisClass.name()) + "." + getName(); 
+    return std::string(thisClass.name());
   }
 
   TestSuite* TestCase::suite()

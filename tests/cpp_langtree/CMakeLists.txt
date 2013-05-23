@@ -16,6 +16,8 @@ add_executable(
   main.cpp
   testscope.h
   testscope.cpp
+  testtype.h
+  testtype.cpp
 )
 
 target_link_libraries(

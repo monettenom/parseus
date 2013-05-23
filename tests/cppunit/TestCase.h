@@ -122,6 +122,18 @@ namespace CppUnit
         std::string fileName = Exception::UNKNOWNFILENAME);
 
       static void assertEquals(
+        void* expected,
+        void* actual,
+        long lineNumber = Exception::UNKNOWNLINENUMBER,
+        std::string fileName = Exception::UNKNOWNFILENAME);
+
+      static void assertEquals(
+        std::string expected,
+        std::string actual,
+        long lineNumber = Exception::UNKNOWNLINENUMBER,
+        std::string fileName = Exception::UNKNOWNFILENAME);
+
+      static void assertEquals(
         double expected,
         double actual,
         double delta = 0.0000001,

@@ -5,12 +5,23 @@ include_directories(
 )
 
 set(CPP_LANGTREE_FILES
+  cpp_langtreelib.h
   stdafx.h
   stdafx.cpp
-  specifier.h
-  specifier.cpp
+  languageelement.h
+  languageelement.cpp
+  typequalifier.h
+  typequalifier.cpp
   scope.h
   scope.cpp
+  namedscope.h
+  namedscope.cpp
+  class.h
+  class.cpp
+  namespace.h
+  namespace.cpp
+  globalscope.h
+  globalscope.cpp
 )
 
 add_library(cpp_langtree
